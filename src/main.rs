@@ -1,11 +1,24 @@
-#[macro_use] extern crate rocket;
+use rocket::{Build, Rocket, get, routes};
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
+
+#[derive(OpenApi)]
+#[openapi(paths(hello))]
+struct ApiDoc;
 
 #[get("/hello")]
-fn index() -> &'static str {
+fn hello() -> &'static str {
     "Hello, world!"
 }
 
-#[launch]
-fn rocket() -> _ {
-    rocket::build().mount("/", routes![index])
+#[rocket::launch]
+fn rocket() -> Rocket<Build> {
+    rocket::build()
+        .mount("/", routes![hello])
+        .mount(
+            "/swagger-ui/",
+            SwaggerUi::new("/swagger-ui/<_..>")
+                .url("/api-docs/openapi.json", ApiDoc::openapi()),
+        )
 }
+
