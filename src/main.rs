@@ -15,6 +15,7 @@ fn hello() -> &'static str {
     "Hello, world!"
 }
 
+
 // ロッカー空き状態確認API
 
 // フォーム内容受取API
