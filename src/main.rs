@@ -1,28 +1,27 @@
-use rocket::{Build, Rocket, get, routes};
-use utoipa::OpenApi;
+use rocket::{Build, Rocket, get, post, routes,
+            serde::json::Json};
+use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
-use std::{error::Error, fs::File, io::BufReader, path::Path};
 use serde::{Serialize, Deserialize};
 
 #[derive(OpenApi)]
-#[openapi(paths(
-    hello
-))]
+#[openapi(
+    paths(
+        hello,
+        test_json,
+    ),
+    components(schemas(
+        TestResult,
+    ))
+)]
 struct ApiDoc;
 
-// jsonチェック
-#[derive(Serialize, Deserialize)]
+// jsonテスト用構造体
+#[derive(Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub struct HelloWorld {
+pub struct TestResult {
+    #[schema(example = "Hello world from json!")]
     pub text: String
-}
-
-// jsonデコード
-fn load_json<P: AsRef<Path>>(path: P) -> Result<HelloWorld, Box<dyn Error>> {
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
-    let data = serde_json::from_reader(reader)?;
-    Ok(data)
 }
 
 // ヘルスチェックAPI
@@ -34,18 +33,9 @@ fn hello() -> &'static str {
 
 // jsonテスト
 #[utoipa::path(context_path = "")]
-#[get("/test_json")]
-fn test_json() -> String {
-    const FILEPATH: &str= "./src/test.json";
-
-    let data = match load_json(FILEPATH) {
-        Ok(data) => data,
-        Err(err) => {
-            eprintln!("Error: {}", err);
-            return Default::default();
-        }
-    };
-    data.text
+#[post("/test_json", data = "<data>")]
+fn test_json(data: Json<TestResult>) -> String {
+    format!("Accepted post request! {:?}", data.text)
 }
 
 
