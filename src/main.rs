@@ -7,34 +7,33 @@ use serde::{Serialize, Deserialize};
 #[derive(OpenApi)]
 #[openapi(
     paths(
-        hello,
-        test_json,
+        get_healthcheck,
+        post_healthcheck,
     ),
     components(schemas(
-        TestResult,
+        HealthCheckRequest,
     ))
 )]
 struct ApiDoc;
 
-// jsonテスト用構造体
 #[derive(Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub struct TestResult {
+pub struct HealthCheckRequest {
     #[schema(example = "Hello world from json!")]
     pub text: String
 }
 
-// ヘルスチェックAPI
+// GETヘルスチェック
 #[utoipa::path(context_path = "")]
-#[get("/hello")]
-fn hello() -> &'static str {
+#[get("/get_healthcheck")]
+fn get_healthcheck() -> &'static str {
     "Hello, world!"
 }
 
-// jsonテスト
+// POSTヘルスチェック
 #[utoipa::path(context_path = "")]
-#[post("/test_json", data = "<data>")]
-fn test_json(data: Json<TestResult>) -> String {
+#[post("/post_healthcheck", data = "<data>")]
+fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
     format!("Accepted post request! {:?}", data.text)
 }
 
@@ -54,12 +53,12 @@ fn test_json(data: Json<TestResult>) -> String {
 #[rocket::launch]
 fn rocket() -> Rocket<Build> {
     rocket::build()
-        .mount("/", routes![hello])
+        .mount("/", routes![get_healthcheck])
+        .mount("/", routes![post_healthcheck])
         .mount(
             "/",
             SwaggerUi::new("/swagger-ui/<_..>")
                 .url("/api-docs/openapi.json", ApiDoc::openapi()),
         )
-        .mount("/", routes![test_json])
 }
 
