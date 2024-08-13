@@ -37,10 +37,9 @@ fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
     format!("Accepted post request! {:?}", data.text)
 }
 
+// ユーザー情報登録API
 
 // ロッカー空き状態確認API
-
-// フォーム内容受取API
 
 // メール認証API
 
