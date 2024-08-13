@@ -9,9 +9,13 @@ use serde::{Serialize, Deserialize};
     paths(
         get_healthcheck,
         post_healthcheck,
+        user_register,
     ),
     components(schemas(
         HealthCheckRequest,
+        UserInfo,
+        PairInfo,
+        UserRegisterRequest,
     ))
 )]
 struct ApiDoc;
@@ -21,6 +25,30 @@ struct ApiDoc;
 pub struct HealthCheckRequest {
     #[schema(example = "Hello world from json!")]
     pub text: String
+}
+
+#[derive(Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct UserRegisterRequest {
+    pub data: PairInfo,
+}
+
+#[derive(Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct PairInfo {
+    pub main_user: UserInfo,
+    pub co_user: UserInfo,
+}
+
+#[derive(Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct UserInfo {
+    #[schema(example = "4622999")]
+    pub student_id: String,
+    #[schema(example = "山田")]
+    pub family_name: String,
+    #[schema(example = "太郎")]
+    pub given_name: String,
 }
 
 // GETヘルスチェック
@@ -38,6 +66,13 @@ fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
 }
 
 // ユーザー情報登録API
+#[utoipa::path(context_path = "")]
+#[post("/locker/user-register", data = "<data>")]
+fn user_register(data: Json<UserRegisterRequest>) -> String {
+    let main_user = &data.data.main_user;
+    let co_user = &data.data.co_user;
+    format!("Accepted user register request! {:?} {:?}", main_user.student_id, co_user.student_id)
+}
 
 // ロッカー空き状態確認API
 
@@ -52,8 +87,7 @@ fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
 #[rocket::launch]
 fn rocket() -> Rocket<Build> {
     rocket::build()
-        .mount("/", routes![get_healthcheck])
-        .mount("/", routes![post_healthcheck])
+        .mount("/", routes![get_healthcheck, post_healthcheck, user_register])
         .mount(
             "/",
             SwaggerUi::new("/swagger-ui/<_..>")
