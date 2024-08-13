@@ -67,10 +67,10 @@ fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
 
 // ユーザー情報登録API
 #[utoipa::path(context_path = "")]
-#[post("/locker/user-register", data = "<data>")]
-fn user_register(data: Json<UserRegisterRequest>) -> String {
-    let main_user = &data.data.main_user;
-    let co_user = &data.data.co_user;
+#[post("/locker/user-register", data = "<request>")]
+fn user_register(request: Json<UserRegisterRequest>) -> String {
+    let main_user = &request.data.main_user;
+    let co_user = &request.data.co_user;
     format!("Accepted user register request! {:?} {:?}", main_user.student_id, co_user.student_id)
 }
 
