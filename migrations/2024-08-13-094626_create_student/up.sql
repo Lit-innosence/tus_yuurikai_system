@@ -1,0 +1,8 @@
+-- Your SQL goes here
+CREATE TABLE student(
+    student_id TEXT PRIMARY KEY,
+    family_name TEXT NOT NULL,
+    given_name TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
