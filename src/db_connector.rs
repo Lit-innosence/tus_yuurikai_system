@@ -23,7 +23,7 @@ pub fn insert_student(
 
 let new_student = NewStudent { student_id, family_name, given_name };
 diesel::insert_into(student::table)
-    .values(&new_student)
-    .get_result(conn)
+        .values(&new_student)
+        .get_result(conn)
 
 }
