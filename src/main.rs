@@ -1,5 +1,8 @@
+mod db_connector;
+mod models;
+mod schema;
 use rocket::{Build, Rocket, get, post, routes,
-            serde::json::Json};
+            serde::json::Json, http::Status};
 use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
 use serde::{Serialize, Deserialize};
@@ -68,10 +71,22 @@ fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
 // ユーザー情報登録API
 #[utoipa::path(context_path = "")]
 #[post("/locker/user-register", data = "<request>")]
-fn user_register(request: Json<UserRegisterRequest>) -> String {
+fn user_register(request: Json<UserRegisterRequest>) -> Result<String, Status> {
+    let mut conn = db_connector::create_connection();
+
+    // メインユーザーの登録
     let main_user = &request.data.main_user;
+    if db_connector::insert_student(&mut conn, &main_user.student_id, &main_user.family_name, &main_user.given_name).is_err() {
+        return Err(Status::InternalServerError);
+    }
+
+    // 共用ユーザーの登録
     let co_user = &request.data.co_user;
-    format!("Accepted user register request! {:?} {:?}", main_user.student_id, co_user.student_id)
+    if db_connector::insert_student(&mut conn, &co_user.student_id, &co_user.family_name, &co_user.given_name).is_err() {
+        return Err(Status::InternalServerError);
+    }
+
+    Ok("Both students registered correctly".to_string())
 }
 
 // ロッカー空き状態確認API
