@@ -21,9 +21,9 @@ pub fn insert_student(
     family_name: &String,
     given_name: &String) -> Result<Student, Error> {
 
-let new_student = NewStudent { student_id, family_name, given_name };
-diesel::insert_into(student::table)
-        .values(&new_student)
-        .get_result(conn)
+    let new_student = NewStudent { student_id, family_name, given_name };
+    diesel::insert_into(student::table)
+            .values(&new_student)
+            .get_result(conn)
 
 }
