@@ -72,7 +72,11 @@ fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
 #[utoipa::path(context_path = "")]
 #[post("/locker/user-register", data = "<request>")]
 fn user_register(request: Json<UserRegisterRequest>) -> Status {
-    let mut conn = db_connector::create_connection();
+    // データベース接続
+    let mut conn = match db_connector::create_connection() {
+        Ok(connection) => connection,
+        Err(_) => return Status::InternalServerError,
+    };
 
     // メインユーザーの登録
     let main_user = &request.data.main_user;
