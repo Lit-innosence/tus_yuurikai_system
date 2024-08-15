@@ -24,6 +24,9 @@ pub fn insert_student(
     let new_student = NewStudent { student_id, family_name, given_name };
     diesel::insert_into(student::table)
             .values(&new_student)
+            .on_conflict(student::student_id)
+            .do_update()
+            .set(student::updated_at.eq(diesel::dsl::now))
             .get_result(conn)
 
 }
