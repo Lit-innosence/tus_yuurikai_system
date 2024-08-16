@@ -6,6 +6,7 @@ use rocket::{Build, Rocket, get, post, routes,
 use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
 use serde::{Serialize, Deserialize};
+use chrono::{Datelike, Local};
 
 #[derive(OpenApi)]
 #[openapi(
@@ -87,6 +88,12 @@ fn user_register(request: Json<UserRegisterRequest>) -> Status {
     // 共用ユーザーの登録
     let co_user = &request.data.co_user;
     if db_connector::insert_student(&mut conn, &co_user.student_id, &co_user.family_name, &co_user.given_name).is_err() {
+        return Status::InternalServerError;
+    }
+
+    // ペア情報の登録
+    let year = Local::now().year();
+    if db_connector::insert_studentpair(&mut conn, &main_user.student_id, &co_user.student_id, &year).is_err() {
         return Status::InternalServerError;
     }
 

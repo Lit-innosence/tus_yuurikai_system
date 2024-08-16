@@ -29,3 +29,16 @@ pub fn insert_student(
             .get_result(conn)
 
 }
+
+pub fn insert_studentpair(
+    conn:     &mut PgConnection, 
+    student_id1 : &String,
+    student_id2 : &String,
+    year: &i32) -> Result<StudentPair, Error> {
+
+    let new_studentpair = NewStudentPair { student_id1, student_id2, year };
+    diesel::insert_into(student_pair::table)
+            .values(&new_studentpair)
+            .get_result(conn)
+
+}
