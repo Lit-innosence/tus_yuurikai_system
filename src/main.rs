@@ -14,12 +14,15 @@ use chrono::{Datelike, Local};
         get_healthcheck,
         post_healthcheck,
         user_register,
+        locker_register,
     ),
     components(schemas(
         HealthCheckRequest,
         UserInfo,
         PairInfo,
         UserRegisterRequest,
+        AssignmentInfo,
+        LockerResisterRequest,
     ))
 )]
 struct ApiDoc;
@@ -53,6 +56,21 @@ pub struct UserInfo {
     pub family_name: String,
     #[schema(example = "太郎")]
     pub given_name: String,
+}
+
+#[derive(Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct LockerResisterRequest {
+    pub data: AssignmentInfo,
+}
+
+#[derive(Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct AssignmentInfo {
+    #[schema(example = "4622999")]
+    pub student_id: String,
+    #[schema(example = "2001")]
+    pub locker_id: i32,
 }
 
 // GETヘルスチェック
@@ -102,6 +120,21 @@ fn user_register(request: Json<UserRegisterRequest>) -> Status {
 
 // ロッカー空き状態確認API
 
+// ロッカー登録API
+#[utoipa::path(context_path = "")]
+#[post("/locker/locker-register", data = "<request>")]
+fn locker_register(request: Json<LockerResisterRequest>) -> String {
+    let assignmentinfo = &request.data;
+
+    // pair_idの検索
+
+    // データベース登録
+
+    // 割り当て情報の登録
+
+    format!("Request accepted! {:?} {:?}", assignmentinfo.student_id, assignmentinfo.locker_id)
+}
+
 // メール認証API
 
 // 完了通知API
@@ -113,7 +146,7 @@ fn user_register(request: Json<UserRegisterRequest>) -> Status {
 #[rocket::launch]
 fn rocket() -> Rocket<Build> {
     rocket::build()
-        .mount("/", routes![get_healthcheck, post_healthcheck, user_register])
+        .mount("/", routes![get_healthcheck, post_healthcheck, user_register, locker_register])
         .mount(
             "/",
             SwaggerUi::new("/swagger-ui/<_..>")
