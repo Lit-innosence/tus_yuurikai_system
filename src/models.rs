@@ -27,9 +27,9 @@ pub struct Locker {
 }
 
 #[derive(Queryable)]
-pub struct AssginmentRecord {
+pub struct AssignmentRecord {
     pub record_id: Uuid,
-    pub pair_id: Strubg,
+    pub pair_id: Uuid,
     pub locker_id: String,
     pub year: i32,
     pub created_at: chrono::NaiveDateTime,

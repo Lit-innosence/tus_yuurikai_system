@@ -70,7 +70,7 @@ pub struct AssignmentInfo {
     #[schema(example = "4622999")]
     pub student_id: String,
     #[schema(example = "2001")]
-    pub locker_id: i32,
+    pub locker_id: String,
 }
 
 // GETヘルスチェック
@@ -94,7 +94,7 @@ fn user_register(request: Json<UserRegisterRequest>) -> Status {
     // データベース接続
     let mut conn = match db_connector::create_connection() {
         Ok(connection) => connection,
-        Err(_) => return Status::InternalServerError,
+        Err(_) => return Status::InternalServerError
     };
 
     // メインユーザーの登録
@@ -123,16 +123,29 @@ fn user_register(request: Json<UserRegisterRequest>) -> Status {
 // ロッカー登録API
 #[utoipa::path(context_path = "")]
 #[post("/locker/locker-register", data = "<request>")]
-fn locker_register(request: Json<LockerResisterRequest>) -> String {
-    let assignmentinfo = &request.data;
+fn locker_register(request: Json<LockerResisterRequest>) -> (Status, &'static str) {
+
+    // データベース接続
+    let mut conn = match db_connector::create_connection() {
+        Ok(connection) => connection,
+        Err(_) => return (Status::InternalServerError, "failed to connect database"),
+    };
+
+    let assignment = &request.data;
 
     // pair_idの検索
-
-    // データベース登録
+    let user_pair = match db_connector::get_studentpair_by_student_id(&mut conn, &assignment.student_id) {
+        Ok(student_pair) => student_pair,
+        Err(_) => return (Status::InternalServerError, "failed to get student_pair id"),
+    };
 
     // 割り当て情報の登録
+    let year = Local::now().year();
+    if db_connector::insert_assignmentrecord(&mut conn, &user_pair.pair_id, &assignment.locker_id, &year).is_err() {
+        return (Status::InternalServerError, "failed to insert request");
+    }
 
-    format!("Request accepted! {:?} {:?}", assignmentinfo.student_id, assignmentinfo.locker_id)
+    (Status::Created, "success to create assignment")
 }
 
 // メール認証API
