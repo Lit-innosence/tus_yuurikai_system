@@ -69,6 +69,8 @@ fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
     format!("Accepted post request! {:?}", data.text)
 }
 
+// メール認証API
+
 // ユーザー情報登録API
 #[utoipa::path(context_path = "")]
 #[post("/locker/user-register", data = "<request>")]
@@ -101,8 +103,6 @@ fn user_register(request: Json<UserRegisterRequest>) -> Status {
 }
 
 // ロッカー空き状態確認API
-
-// メール認証API
 
 // 完了通知API
 
