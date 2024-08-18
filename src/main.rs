@@ -1,17 +1,25 @@
+mod db_connector;
+mod models;
+mod schema;
 use rocket::{Build, Rocket, get, post, routes,
-            serde::json::Json};
+            serde::json::Json, http::Status};
 use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
 use serde::{Serialize, Deserialize};
+use chrono::{Datelike, Local};
 
 #[derive(OpenApi)]
 #[openapi(
     paths(
         get_healthcheck,
         post_healthcheck,
+        user_register,
     ),
     components(schemas(
         HealthCheckRequest,
+        UserInfo,
+        PairInfo,
+        UserRegisterRequest,
     ))
 )]
 struct ApiDoc;
@@ -21,6 +29,30 @@ struct ApiDoc;
 pub struct HealthCheckRequest {
     #[schema(example = "Hello world from json!")]
     pub text: String
+}
+
+#[derive(Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct UserRegisterRequest {
+    pub data: PairInfo,
+}
+
+#[derive(Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct PairInfo {
+    pub main_user: UserInfo,
+    pub co_user: UserInfo,
+}
+
+#[derive(Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct UserInfo {
+    #[schema(example = "4622999")]
+    pub student_id: String,
+    #[schema(example = "山田")]
+    pub family_name: String,
+    #[schema(example = "太郎")]
+    pub given_name: String,
 }
 
 // GETヘルスチェック
@@ -37,10 +69,38 @@ fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
     format!("Accepted post request! {:?}", data.text)
 }
 
+// ユーザー情報登録API
+#[utoipa::path(context_path = "")]
+#[post("/locker/user-register", data = "<request>")]
+fn user_register(request: Json<UserRegisterRequest>) -> Status {
+    // データベース接続
+    let mut conn = match db_connector::create_connection() {
+        Ok(connection) => connection,
+        Err(_) => return Status::InternalServerError,
+    };
+
+    // メインユーザーの登録
+    let main_user = &request.data.main_user;
+    if db_connector::insert_student(&mut conn, &main_user.student_id, &main_user.family_name, &main_user.given_name).is_err() {
+        return Status::InternalServerError;
+    }
+
+    // 共用ユーザーの登録
+    let co_user = &request.data.co_user;
+    if db_connector::insert_student(&mut conn, &co_user.student_id, &co_user.family_name, &co_user.given_name).is_err() {
+        return Status::InternalServerError;
+    }
+
+    // ペア情報の登録
+    let year = Local::now().year();
+    if db_connector::insert_studentpair(&mut conn, &main_user.student_id, &co_user.student_id, &year).is_err() {
+        return Status::InternalServerError;
+    }
+
+    Status::Created
+}
 
 // ロッカー空き状態確認API
-
-// フォーム内容受取API
 
 // メール認証API
 
@@ -53,8 +113,7 @@ fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
 #[rocket::launch]
 fn rocket() -> Rocket<Build> {
     rocket::build()
-        .mount("/", routes![get_healthcheck])
-        .mount("/", routes![post_healthcheck])
+        .mount("/", routes![get_healthcheck, post_healthcheck, user_register])
         .mount(
             "/",
             SwaggerUi::new("/swagger-ui/<_..>")
