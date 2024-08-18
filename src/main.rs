@@ -7,12 +7,18 @@ use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
 use serde::{Serialize, Deserialize};
 use chrono::{Datelike, Local};
+use lettre::message::header::ContentType;
+use lettre::transport::smtp::authentication::Credentials;
+use lettre::{Message, SmtpTransport, Transport};
+use std::env;
+use dotenv::dotenv;
 
 #[derive(OpenApi)]
 #[openapi(
     paths(
         get_healthcheck,
         post_healthcheck,
+        mail_auth,
         user_register,
     ),
     components(schemas(
@@ -70,6 +76,43 @@ fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
 }
 
 // メール認証API
+#[utoipa::path(context_path = "")]
+#[post("/locker/mail-auth", data = "<request>")]
+fn mail_auth(request: Json<UserRegisterRequest>) -> Status {
+    // 環境変数の読み取り
+    dotenv().ok();
+    let sender_address = env::var("SENDER_MAIL_ADDRESS").expect("SENDER_MAIL_ADDRESS must be set.");
+    let appkey = env::var("MAIL_APP_KEY").expect("MAIL_APP_KEY must be set.");
+
+    // トークンの生成
+    let token = "token".to_string();
+
+    // 一時保存データベースにトークンと学生情報を保存
+
+    // メール内容の作成
+    let email = Message::builder()
+    .from(format!("Developer <{}>", sender_address).parse().unwrap())
+    .to(format!("User <{}>", sender_address).parse().unwrap())
+    .subject("メール認証")
+    .header(ContentType::TEXT_PLAIN)
+    .body(String::from("Be happy!"))
+    .unwrap();
+
+    let creds = Credentials::new(sender_address.to_owned(), appkey.to_owned());
+
+    // Gmailにsmtp接続する
+    let mailer = SmtpTransport::relay("smtp.gmail.com")
+        .unwrap()
+        .credentials(creds)
+        .build();
+
+    // メール送信
+    match mailer.send(&email) {
+        Ok(_) => println!("Email sent successfully!"),
+        Err(_) => return Status::InternalServerError,
+    }
+    Status::Ok
+}
 
 // ユーザー情報登録API
 #[utoipa::path(context_path = "")]
@@ -113,7 +156,7 @@ fn user_register(request: Json<UserRegisterRequest>) -> Status {
 #[rocket::launch]
 fn rocket() -> Rocket<Build> {
     rocket::build()
-        .mount("/", routes![get_healthcheck, post_healthcheck, user_register])
+        .mount("/", routes![get_healthcheck, post_healthcheck, mail_auth, user_register])
         .mount(
             "/",
             SwaggerUi::new("/swagger-ui/<_..>")
