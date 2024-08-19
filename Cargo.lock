@@ -2388,6 +2388,7 @@ dependencies = [
  "diesel",
  "dotenv",
  "lettre",
+ "rand",
  "rocket",
  "serde",
  "serde_json",

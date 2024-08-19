@@ -12,6 +12,7 @@ use lettre::transport::smtp::authentication::Credentials;
 use lettre::{Message, SmtpTransport, Transport};
 use std::env;
 use dotenv::dotenv;
+use rand::{distributions::Alphanumeric, Rng};
 
 #[derive(OpenApi)]
 #[openapi(
@@ -85,9 +86,19 @@ fn mail_auth(request: Json<UserRegisterRequest>) -> Status {
     let appkey = env::var("MAIL_APP_KEY").expect("MAIL_APP_KEY must be set.");
 
     // トークンの生成
-    let token = "token".to_string();
+    let mut rng = rand::thread_rng();
+    let token: String = (0..16).map(|_| rng.sample(Alphanumeric) as char).collect();
 
     // 一時保存データベースにトークンと学生情報を保存
+    let mut conn = match db_connector::create_connection() {
+        Ok(connection) => connection,
+        Err(_) => return Status::InternalServerError,
+    };
+    let main_user = &request.data.main_user;
+    let co_user = &request.data.co_user;
+    if db_connector::insert_auth(&mut conn, &token, &main_user.student_id, &main_user.family_name, &main_user.given_name, &co_user.student_id, &co_user.family_name, &co_user.given_name).is_err() {
+        return Status::InternalServerError;
+    }
 
     // メール内容の作成
     let email = Message::builder()
