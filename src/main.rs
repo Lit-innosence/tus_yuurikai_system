@@ -132,15 +132,15 @@ fn locker_register(request: Json<LockerResisterRequest>) -> (Status, &'static st
     };
 
     let assignment = &request.data;
+    let year = Local::now().year();
 
     // pair_idの検索
-    let user_pair = match db_connector::get_studentpair_by_student_id(&mut conn, &assignment.student_id) {
+    let user_pair = match db_connector::get_studentpair_by_student_id_and_year(&mut conn, &assignment.student_id, &year) {
         Ok(student_pair) => student_pair,
         Err(_) => return (Status::InternalServerError, "failed to get student_pair id"),
     };
 
     // 割り当て情報の登録
-    let year = Local::now().year();
     if db_connector::insert_assignmentrecord(&mut conn, &user_pair.pair_id, &assignment.locker_id, &year).is_err() {
         return (Status::InternalServerError, "failed to insert request");
     }

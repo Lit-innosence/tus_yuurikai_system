@@ -67,11 +67,12 @@ pub fn insert_assignmentrecord(
             .get_result(conn)
 }
 
-pub fn get_studentpair_by_student_id(
+pub fn get_studentpair_by_student_id_and_year(
     conn: &mut PgConnection,
-    student_id: &String) -> Result<StudentPair, Error> {
+    student_id: &String,
+    year: &i32) -> Result<StudentPair, Error> {
 
     student_pair::table
-        .filter(student_pair::student_id1.eq(student_id))
+        .filter(student_pair::student_id1.eq(student_id).and(student_pair::year.eq(year)))
         .first(conn)
 }
