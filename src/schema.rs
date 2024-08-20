@@ -3,12 +3,10 @@
 diesel::table! {
     auth (auth_token) {
         auth_token -> Text,
-        main_student_id -> Text,
-        main_family_name -> Text,
-        main_given_name -> Text,
-        co_student_id -> Text,
-        co_family_name -> Text,
-        co_given_name -> Text,
+        student_id -> Text,
+        family_name -> Text,
+        given_name -> Text,
+        created_at -> Timestamptz,
     }
 }
 

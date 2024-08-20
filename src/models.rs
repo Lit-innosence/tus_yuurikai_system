@@ -23,12 +23,10 @@ pub struct StudentPair {
 #[derive(Queryable)]
 pub struct Auth {
     pub auth_token: String,
-    pub main_student_id: String,
-    pub main_family_name: String,
-    pub main_given_name: String,
-    pub co_student_id: String,
-    pub co_family_name: String,
-    pub co_given_name: String,
+    pub student_id: String,
+    pub family_name: String,
+    pub given_name: String,
+    pub created_at: chrono::NaiveDateTime,
 }
 
 #[derive(Insertable)]
@@ -51,10 +49,7 @@ pub struct NewStudentPair<'a>{
 #[table_name = "auth"]
 pub struct NewAuth<'a> {
     pub auth_token: &'a String,
-    pub main_student_id: &'a String,
-    pub main_family_name: &'a String,
-    pub main_given_name: &'a String,
-    pub co_student_id: &'a String,
-    pub co_family_name: &'a String,
-    pub co_given_name: &'a String,
+    pub student_id: &'a String,
+    pub family_name: &'a String,
+    pub given_name: &'a String,
 }

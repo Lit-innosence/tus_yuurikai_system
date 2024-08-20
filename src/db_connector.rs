@@ -46,14 +46,11 @@ pub fn insert_studentpair(
 pub fn insert_auth(
     conn:     &mut PgConnection, 
     auth_token: &String,
-    main_student_id: &String,
-    main_family_name: &String,
-    main_given_name: &String,
-    co_student_id: &String,
-    co_family_name: &String,
-    co_given_name: &String) -> Result<Auth, Error> {
+    student_id: &String,
+    family_name: &String,
+    given_name: &String) -> Result<Auth, Error> {
 
-    let new_auth = NewAuth { auth_token, main_student_id, main_family_name, main_given_name, co_student_id, co_family_name, co_given_name };
+    let new_auth = NewAuth { auth_token, student_id, family_name, given_name };
     diesel::insert_into(auth::table)
             .values(&new_auth)
             .get_result(conn)
