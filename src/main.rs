@@ -77,9 +77,9 @@ fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
     format!("Accepted post request! {:?}", data.text)
 }
 
-// メール認証API
+// 認証メール送信API
 #[utoipa::path(context_path = "")]
-#[post("/locker/mail-auth", data = "<request>")]
+#[post("/locker/mail-sender", data = "<request>")]
 fn mail_auth(request: Json<UserRegisterRequest>) -> Status {
     // 環境変数の読み取り
     dotenv().ok();
