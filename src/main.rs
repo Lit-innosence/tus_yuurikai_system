@@ -145,7 +145,7 @@ fn locker_register(request: Json<LockerResisterRequest>) -> (Status, &'static st
         return (Status::InternalServerError, "failed to insert request");
     }
 
-    (Status::Created, "success to create assignment")
+    (Status::Created, "success create assignment")
 }
 
 // メール認証API
