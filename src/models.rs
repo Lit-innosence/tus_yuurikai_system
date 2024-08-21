@@ -33,7 +33,7 @@ pub struct AssignmentRecord {
     pub locker_id: String,
     pub year: i32,
     pub created_at: chrono::NaiveDateTime,
-    pub deleted_at: chrono::NaiveDateTime,
+    pub deleted_at: Option<chrono::NaiveDateTime>,
 }
 
 #[derive(Insertable)]
