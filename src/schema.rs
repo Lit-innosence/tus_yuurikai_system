@@ -7,7 +7,7 @@ diesel::table! {
         locker_id -> Text,
         year -> Int4,
         created_at -> Timestamptz,
-        updated_at -> Timestamptz,
+        deleted_at -> Nullable<Timestamptz>,
     }
 }
 

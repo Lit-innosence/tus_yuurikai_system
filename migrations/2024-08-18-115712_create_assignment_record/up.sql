@@ -5,7 +5,7 @@ CREATE TABLE assignment_record(
     locker_id TEXT NOT NULL,
     year INT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMPTZ,
     FOREIGN KEY (pair_id) REFERENCES student_pair(pair_id),
     FOREIGN KEY (locker_id) REFERENCES locker(locker_id)
 );
