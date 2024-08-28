@@ -3,3 +3,6 @@
 
 # Environment file
 .env
+
+# diesel file
+diesel.toml
