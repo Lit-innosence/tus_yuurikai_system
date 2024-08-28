@@ -2,7 +2,8 @@ mod db_connector;
 mod models;
 mod schema;
 use rocket::{Build, Rocket, get, post, routes,
-            serde::json::Json, http::Status};
+            serde::json::Json,
+            http::Status,};
 use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
 use serde::{Serialize, Deserialize};
@@ -27,7 +28,7 @@ use chrono::{Datelike, Local};
 )]
 struct ApiDoc;
 
-#[derive(Deserialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct HealthCheckRequest {
     #[schema(example = "Hello world from json!")]
@@ -167,3 +168,37 @@ fn rocket() -> Rocket<Build> {
         )
 }
 
+#[cfg(test)]
+mod test {
+    use super::HealthCheckRequest;
+    use super::rocket;
+    use rocket::http::{Status, ContentType};
+    use rocket::local::blocking::Client;
+    use rocket::uri;
+
+    #[test]
+    fn get_healthcheck() {
+        let client = Client::tracked(rocket()).expect("valid rocket instance");
+        let mut response = client.get(uri!(super::get_healthcheck)).dispatch();
+
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().unwrap(), "Hello, world!");
+    }
+
+    #[test]
+    fn post_healthcheck() {
+        let client = Client::tracked(rocket()).expect("valid rocket instance");
+
+        let healthcheck = HealthCheckRequest{
+            text: String::from("Hello world from json!")
+        };
+
+        let mut response = client.post(uri!(super::post_healthcheck))
+            .header(ContentType::JSON)
+            .json(&healthcheck)
+            .dispatch();
+
+        assert_eq!(response.status(), Status::Ok);
+        assert_eq!(response.into_string().unwrap(), "Accepted post request! \"Hello world from json!\"")
+    }
+}
