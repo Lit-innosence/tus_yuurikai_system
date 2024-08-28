@@ -1,18 +1,26 @@
 mod db_connector;
 mod models;
 mod schema;
+use diesel::dsl::family;
 use rocket::{Build, Rocket, get, post, routes,
             serde::json::Json, http::Status};
 use utoipa::{OpenApi, ToSchema};
 use utoipa_swagger_ui::SwaggerUi;
 use serde::{Serialize, Deserialize};
 use chrono::{Datelike, Local};
+use lettre::message::header::ContentType;
+use lettre::transport::smtp::authentication::Credentials;
+use lettre::{Message, SmtpTransport, Transport};
+use std::env;
+use dotenv::dotenv;
+use rand::{distributions::Alphanumeric, Rng};
 
 #[derive(OpenApi)]
 #[openapi(
     paths(
         get_healthcheck,
         post_healthcheck,
+        mail_auth,
         user_register,
         locker_register,
     ),
@@ -148,8 +156,6 @@ fn locker_register(request: Json<LockerResisterRequest>) -> (Status, &'static st
     (Status::Created, "success create assignment")
 }
 
-// メール認証API
-
 // 完了通知API
 
 // パスワード照合API
@@ -159,7 +165,7 @@ fn locker_register(request: Json<LockerResisterRequest>) -> (Status, &'static st
 #[rocket::launch]
 fn rocket() -> Rocket<Build> {
     rocket::build()
-        .mount("/", routes![get_healthcheck, post_healthcheck, user_register, locker_register])
+        .mount("/", routes![get_healthcheck, post_healthcheck, mail_auth, user_register, locker_register])
         .mount(
             "/",
             SwaggerUi::new("/swagger-ui/<_..>")
