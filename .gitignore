@@ -6,3 +6,6 @@
 
 # disel file
 **/schema.rs
+
+# diesel file
+diesel.toml

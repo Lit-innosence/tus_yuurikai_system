@@ -29,6 +29,22 @@ pub struct Auth {
     pub created_at: chrono::NaiveDateTime,
 }
 
+#[derive(Queryable)]
+pub struct Locker {
+    pub locker_id: String,
+    pub location: String,
+}
+
+#[derive(Queryable)]
+pub struct AssignmentRecord {
+    pub record_id: Uuid,
+    pub pair_id: Uuid,
+    pub locker_id: String,
+    pub year: i32,
+    pub created_at: chrono::NaiveDateTime,
+    pub deleted_at: Option<chrono::NaiveDateTime>,
+}
+
 #[derive(Insertable)]
 #[table_name = "student"]
 pub struct NewStudent<'a> {
@@ -52,4 +68,20 @@ pub struct NewAuth<'a> {
     pub student_id: &'a String,
     pub family_name: &'a String,
     pub given_name: &'a String,
+}
+
+
+#[derive(Insertable)]
+#[table_name = "locker"]
+pub struct NewLocker<'a>{
+    pub locker_id: &'a String,
+    pub location: &'a String,
+}
+
+#[derive(Insertable)]
+#[table_name = "assignment_record"]
+pub struct NewAssignmentRecord<'a>{
+    pub pair_id: &'a Uuid,
+    pub locker_id: &'a String,
+    pub year: &'a i32,
 }

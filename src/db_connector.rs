@@ -5,17 +5,18 @@ use diesel::prelude::*;
 use diesel::result::Error;
 use dotenv::dotenv;
 use std::env;
+use uuid::Uuid;
 
 pub fn create_connection() -> Result<PgConnection, ConnectionError> {
     dotenv().ok();
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
     PgConnection::establish(&database_url)
-    
+
 }
 
 pub fn insert_student(
-    conn:     &mut PgConnection, 
+    conn:     &mut PgConnection,
     student_id: &String,
     family_name: &String,
     given_name: &String) -> Result<Student, Error> {
@@ -31,7 +32,7 @@ pub fn insert_student(
 }
 
 pub fn insert_studentpair(
-    conn:     &mut PgConnection, 
+    conn:     &mut PgConnection,
     student_id1 : &String,
     student_id2 : &String,
     year: &i32) -> Result<StudentPair, Error> {
@@ -44,7 +45,7 @@ pub fn insert_studentpair(
 }
 
 pub fn insert_auth(
-    conn:     &mut PgConnection, 
+    conn:     &mut PgConnection,
     auth_token: &String,
     student_id: &String,
     family_name: &String,
@@ -55,4 +56,37 @@ pub fn insert_auth(
             .values(&new_auth)
             .get_result(conn)
 
+}
+
+pub fn insert_locker(
+    conn: &mut PgConnection,
+    locker_id: &String,
+    location: &String) -> Result<Locker, Error> {
+
+    let new_locker = NewLocker { locker_id, location };
+    diesel::insert_into(locker::table)
+            .values(&new_locker)
+            .get_result(conn)
+}
+
+pub fn insert_assignmentrecord(
+    conn: &mut PgConnection,
+    pair_id: &Uuid,
+    locker_id: &String,
+    year: &i32) -> Result<AssignmentRecord, Error> {
+
+    let new_assignmentrecord = NewAssignmentRecord { pair_id, locker_id, year };
+    diesel::insert_into(assignment_record::table)
+            .values(&new_assignmentrecord)
+            .get_result(conn)
+}
+
+pub fn get_studentpair_by_student_id_and_year(
+    conn: &mut PgConnection,
+    student_id: &String,
+    year: &i32) -> Result<StudentPair, Error> {
+
+    student_pair::table
+        .filter(student_pair::student_id1.eq(student_id).and(student_pair::year.eq(year)))
+        .first(conn)
 }
