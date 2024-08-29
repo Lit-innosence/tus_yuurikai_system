@@ -13,7 +13,7 @@ pub struct Student {
 
 #[derive(Queryable)]
 pub struct StudentPair {
-    pub pair_id:  	Uuid,
+    pub pair_id: Uuid,
     pub student_id1: String,
     pub student_id2: String,
     pub year: i32,
@@ -55,10 +55,10 @@ pub struct NewStudent<'a> {
 
 #[derive(Insertable)]
 #[table_name = "student_pair"]
-pub struct NewStudentPair<'a>{
+pub struct NewStudentPair<'a> {
     pub student_id1: &'a String,
     pub student_id2: &'a String,
-    pub year: &'a i32
+    pub year: &'a i32,
 }
 
 #[derive(Insertable)]
@@ -70,17 +70,16 @@ pub struct NewAuth<'a> {
     pub given_name: &'a String,
 }
 
-
 #[derive(Insertable)]
 #[table_name = "locker"]
-pub struct NewLocker<'a>{
+pub struct NewLocker<'a> {
     pub locker_id: &'a String,
     pub location: &'a String,
 }
 
 #[derive(Insertable)]
 #[table_name = "assignment_record"]
-pub struct NewAssignmentRecord<'a>{
+pub struct NewAssignmentRecord<'a> {
     pub pair_id: &'a Uuid,
     pub locker_id: &'a String,
     pub year: &'a i32,

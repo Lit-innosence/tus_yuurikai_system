@@ -6,6 +6,7 @@
 
 # disel file
 **/schema.rs
-
-# diesel file
 diesel.toml
+
+# locker file
+lockerdata.csv
