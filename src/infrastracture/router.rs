@@ -2,9 +2,6 @@ use std::sync::Arc;
 use std::env;
 use diesel::{PgConnection, r2d2::ConnectionManager};
 use dotenv::dotenv;
-use rocket::{routes, Build, Rocket};
-use utoipa_swagger_ui::SwaggerUi;
-use utoipa::OpenApi;
 use crate::adapters::repository::{
                                 StudentRepositorySqlImpl,
                                 StudentPairRepositorySqlImpl,
@@ -12,20 +9,12 @@ use crate::adapters::repository::{
                                 LockerRepositorySqlImpl,
                                 AuthRepositorySqlImpl,
                                 AssignmentRecordRepositorySqlImpl};
-use crate::adapters::controller::{
-                                get_healthcheck,
-                                post_healthcheck,
-                                mail_auth,
-                                user_register,
-                                locker_register};
 use crate::usecase::{
                     student::StudentUsecaseImpl,
                     student_pair::StudentPairUsecaseImpl,
                     assignment_record::AssignmentRecordUsecaseImpl,
                     auth::AuthUsecaseImpl,
                 };
-
-use crate::adapters;
 
 pub type Pool<T> = diesel::r2d2::Pool<ConnectionManager<T>>;
 pub struct App{
@@ -65,28 +54,3 @@ impl Default for App {
         Self::new()
     }
 }
-
-pub async fn run() -> Result<(), rocket::Error> {
-    let app = App::new();
-    let _rocket = rocket::build()
-        .manage(app)
-        .mount(
-            "/",
-            routes![
-                get_healthcheck,
-                post_healthcheck,
-                mail_auth,
-                user_register,
-                locker_register
-            ],
-        )
-        .mount(
-            "/",
-            SwaggerUi::new("/swagger-ui/<_..>").url("/api-docs/openapi.json", adapters::controller::ApiDoc::openapi()),
-        )
-        .ignite().await?
-        .launch().await?;
-
-    Ok(())
-}
-
