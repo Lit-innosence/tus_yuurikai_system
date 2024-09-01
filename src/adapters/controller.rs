@@ -3,16 +3,12 @@ use crate::infrastracture::router::App;
 use crate::usecase::{
                     student::StudentUsecase,
                     student_pair::StudentPairUsecase,
-                    assignment_record::AssignmentRecordUsecase};
+                    assignment_record::AssignmentRecordUsecase,
+                    auth::AuthUsecase};
 
-use dotenv::dotenv;
-use lettre::message::header::ContentType;
-use lettre::transport::smtp::authentication::Credentials;
-use lettre::{Message, SmtpTransport, Transport};
 use rand::{distributions::Alphanumeric, Rng};
 use rocket::{get, http::Status, post, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
-use std::env;
 use utoipa::{OpenApi, ToSchema};
 
 #[derive(OpenApi)]
@@ -59,86 +55,19 @@ pub fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
 // 認証メール送信API
 #[utoipa::path(context_path = "")]
 #[post("/locker/mail-sender", data = "<request>")]
-pub fn mail_auth(request: Json<UserRegisterRequest>, app: &State<App>) -> Status {
-    // 環境変数の読み取り
-    dotenv().ok();
+pub async fn mail_auth(request: Json<UserRegisterRequest>, app: &State<App>) -> Status {
 
-    let sender_address = env::var("SENDER_MAIL_ADDRESS").expect("SENDER_MAIL_ADDRESS must be set.");
+    let data = &request.data;
 
-    let appkey = env::var("MAIL_APP_KEY").expect("MAIL_APP_KEY must be set.");
-
-    let app_url = env::var("APP_URL").expect("APP_URL must be set.");
-
-    // メール送信
-    if mail_sender(&sender_address, &appkey, &app_url, &request.data.main_user).is_err() {
+    if app.auth.mail_sender(&data.main_user.clone()).await.is_err(){
         return Status::InternalServerError;
     }
 
-    if mail_sender(&sender_address, &appkey, &app_url, &request.data.co_user).is_err() {
+    if app.auth.mail_sender(&data.co_user.clone()).await.is_err(){
         return Status::InternalServerError;
     }
 
     Status::Created
-}
-
-fn mail_sender(
-    sender_address: &String,
-    appkey: &String,
-    app_url: &String,
-    user: &UserInfo,
-) -> Result<(), Status> {
-    // トークンの生成
-    let mut rng = rand::thread_rng();
-    let token: String = (0..16).map(|_| rng.sample(Alphanumeric) as char).collect();
-
-    // 一時保存データベースにトークンと学生情報を保存
-    let mut conn = db_connector::create_connection().map_err(|_| Status::InternalServerError)?;
-
-    if db_connector::insert_auth(
-        &mut conn,
-        &token,
-        &user.student_id,
-        &user.family_name,
-        &user.given_name,
-    )
-    .is_err()
-    {
-        return Err(Status::InternalServerError);
-    }
-
-    // メール内容の作成
-    let user_address = format!("{}@ed.tus.ac.jp", user.student_id);
-
-    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?token={}",user.family_name, user.given_name, app_url, token);
-
-    let email = Message::builder()
-        .from(
-            format!("Developer <{}>", sender_address)
-                .parse()
-                .map_err(|_| Status::InternalServerError)?,
-        )
-        .to(format!("User <{}>", user_address)
-            .parse()
-            .map_err(|_| Status::InternalServerError)?)
-        .subject("ロッカーシステム メール認証")
-        .header(ContentType::TEXT_PLAIN)
-        .body(content)
-        .map_err(|_| Status::InternalServerError)?;
-
-    let creds = Credentials::new(sender_address.to_owned(), appkey.to_owned());
-
-    // Gmailにsmtp接続する
-    let mailer = SmtpTransport::relay("smtp.gmail.com")
-        .map_err(|_| Status::InternalServerError)?
-        .credentials(creds)
-        .build();
-
-    // メール送信
-    mailer
-        .send(&email)
-        .map_err(|_| Status::InternalServerError)?;
-
-    Ok(())
 }
 
 // ユーザー情報登録API

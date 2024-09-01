@@ -23,10 +23,11 @@ use crate::adapters::controller::{
                                 user_register,
                                 locker_register};
 use crate::usecase::{
-                        student::StudentUsecaseImpl,
-                        student_pair::StudentPairUsecaseImpl,
-                        assignment_record::AssignmentRecordUsecaseImpl
-};
+                    student::StudentUsecaseImpl,
+                    student_pair::StudentPairUsecaseImpl,
+                    assignment_record::AssignmentRecordUsecaseImpl,
+                    auth::AuthUsecaseImpl,
+                };
 
 use crate::adapters;
 
@@ -34,7 +35,7 @@ pub type Pool<T> = diesel::r2d2::Pool<ConnectionManager<T>>;
 pub struct App{
     pub student: StudentUsecaseImpl,
     pub student_pair: StudentPairUsecaseImpl,
-    pub auth: Arc<dyn AuthRepository>,
+    pub auth: AuthUsecaseImpl,
     pub locker: Arc<dyn LockerRepository>,
     pub assignment_record: AssignmentRecordUsecaseImpl
 }
@@ -49,7 +50,7 @@ impl App{
 
         let student_repository = StudentUsecaseImpl::new(Arc::new(StudentRepositorySqlImpl::new(pool.clone())));
         let student_pair_repository = StudentPairUsecaseImpl::new(Arc::new(StudentPairRepositorySqlImpl::new(pool.clone())));
-        let auth_repository = Arc::new(AuthRepositorySqlImpl::new(pool.clone()));
+        let auth_repository = AuthUsecaseImpl::new(Arc::new(AuthRepositorySqlImpl::new(pool.clone())));
         let locker_repository = Arc::new(LockerRepositorySqlImpl::new(pool.clone()));
         let assignment_record_repository = AssignmentRecordUsecaseImpl::new(Arc::new(AssignmentRecordRepositorySqlImpl::new(pool.clone())));
 
