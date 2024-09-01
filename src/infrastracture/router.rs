@@ -6,15 +6,11 @@ use rocket::{routes, Build, Rocket};
 use utoipa_swagger_ui::SwaggerUi;
 use utoipa::OpenApi;
 use crate::adapters::repository::{
-                                StudentRepository,
                                 StudentRepositorySqlImpl,
-                                StudentPairRepository,
                                 StudentPairRepositorySqlImpl,
                                 LockerRepository,
                                 LockerRepositorySqlImpl,
-                                AuthRepository,
                                 AuthRepositorySqlImpl,
-                                AssignmentRecordRepository,
                                 AssignmentRecordRepositorySqlImpl};
 use crate::adapters::controller::{
                                 get_healthcheck,
@@ -70,9 +66,9 @@ impl Default for App {
     }
 }
 
-pub fn run() -> Rocket<Build> {
+pub async fn run() -> Result<(), rocket::Error> {
     let app = App::new();
-    rocket::build()
+    let _rocket = rocket::build()
         .manage(app)
         .mount(
             "/",
@@ -88,5 +84,9 @@ pub fn run() -> Rocket<Build> {
             "/",
             SwaggerUi::new("/swagger-ui/<_..>").url("/api-docs/openapi.json", adapters::controller::ApiDoc::openapi()),
         )
+        .ignite().await?
+        .launch().await?;
+
+    Ok(())
 }
 

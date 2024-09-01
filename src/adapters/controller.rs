@@ -6,7 +6,6 @@ use crate::usecase::{
                     assignment_record::AssignmentRecordUsecase,
                     auth::AuthUsecase};
 
-use rand::{distributions::Alphanumeric, Rng};
 use rocket::{get, http::Status, post, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
