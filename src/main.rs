@@ -2,8 +2,9 @@ use tus_yuurikai_system::{infrastracture::router::App, adapters::controller::Api
 use tus_yuurikai_system::adapters::controller::{
                                 get_healthcheck,
                                 post_healthcheck,
-                                mail_auth,
-                                user_register,
+                                token_generator,
+                                main_auth,
+                                co_auth,
                                 locker_register};
 use rocket::routes;
 use utoipa_swagger_ui::SwaggerUi;
@@ -19,8 +20,9 @@ async fn main() -> Result<(), rocket::Error> {
             routes![
                 get_healthcheck,
                 post_healthcheck,
-                mail_auth,
-                user_register,
+                token_generator,
+                main_auth,
+                co_auth,
                 locker_register
             ],
         )

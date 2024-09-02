@@ -120,10 +120,18 @@ impl StudentPairRepository for StudentPairRepositorySqlImpl{
 pub trait AuthRepository: Send + Sync {
     async fn insert (
     &self,
-    auth_token: &String,
-    student_id: &String,
-    family_name: &String,
-    given_name: &String,
+    main_auth_token: &String,
+    main_student_id: &String,
+    main_family_name: &String,
+    main_given_name: &String,
+    co_auth_token: &String,
+    co_student_id: &String,
+    co_family_name: &String,
+    co_given_name: &String,
+    ) -> Result<Auth, Error>;
+    async fn get(
+        &self,
+        auth_token: &String,
     ) -> Result<Auth, Error>;
 }
 
@@ -141,21 +149,42 @@ impl AuthRepositorySqlImpl {
 impl AuthRepository for AuthRepositorySqlImpl {
     async fn insert(
         &self,
-        auth_token: &String,
-        student_id: &String,
-        family_name: &String,
-        given_name: &String,
+        main_auth_token: &String,
+        main_student_id: &String,
+        main_family_name: &String,
+        main_given_name: &String,
+        co_auth_token: &String,
+        co_student_id: &String,
+        co_family_name: &String,
+        co_given_name: &String,
     ) -> Result<Auth, Error> {
         let new_auth = NewAuth {
-            auth_token,
-            student_id,
-            family_name,
-            given_name,
+            main_auth_token,
+            main_student_id,
+            main_family_name,
+            main_given_name,
+            co_auth_token,
+            co_student_id,
+            co_family_name,
+            co_given_name,
         };
         let mut conn = self.pool.get().unwrap();
         diesel::insert_into(auth::table)
             .values(&new_auth)
             .get_result(&mut conn)
+    }
+    async fn get(
+        &self,
+        auth_token: &String,
+    ) -> Result<Auth, Error> {
+        let mut conn = self.pool.get().unwrap();
+        auth::table
+            .filter(
+                auth::main_auth_token
+                    .eq(auth_token)
+                    .or(auth::co_auth_token.eq(auth_token)),
+            )
+            .first(&mut conn)
     }
 }
 

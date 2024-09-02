@@ -15,15 +15,16 @@ use utoipa::{OpenApi, ToSchema};
     paths(
         get_healthcheck,
         post_healthcheck,
-        mail_auth,
-        user_register,
+        token_generator,
+        main_auth,
+        co_auth,
         locker_register,
     ),
     components(schemas(
         HealthCheckRequest,
         UserInfo,
         PairInfo,
-        UserRegisterRequest,
+        TokenGenRequest,
         AssignmentInfo,
         LockerResisterRequest,
     ))
@@ -51,52 +52,94 @@ pub fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
     format!("Accepted post request! {:?}", data.text)
 }
 
-// 認証メール送信API
+// token生成、メール送信API
+#[derive(Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct TokenGenRequest {
+    pub data: PairInfo,
+}
 #[utoipa::path(context_path = "")]
-#[post("/locker/mail-sender", data = "<request>")]
-pub async fn mail_auth(request: Json<UserRegisterRequest>, app: &State<App>) -> Status {
+#[post("/locker/token-gen", data = "<request>")]
+pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -> Status {
 
     let data = &request.data;
 
-    if app.auth.mail_sender(&data.main_user.clone()).await.is_err(){
-        return Status::InternalServerError;
-    }
+    let token = match app.auth.register(&data.main_user.clone(), &data.co_user.clone()).await{
+        Ok(auth) => auth.main_auth_token,
+        Err(_) => return Status::InternalServerError,
+    };
 
-    if app.auth.mail_sender(&data.co_user.clone()).await.is_err(){
+    if app.auth.mail_sender(&data.main_user.clone(), token).await.is_err(){
         return Status::InternalServerError;
     }
 
     Status::Created
 }
 
-// ユーザー情報登録API
-#[derive(Deserialize, ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct UserRegisterRequest {
-    pub data: PairInfo,
-}
-
+// main_user認証API {
 #[utoipa::path(context_path = "")]
-#[post("/locker/user-register", data = "<request>")]
-pub async fn user_register(request: Json<UserRegisterRequest>, app: &State<App>) -> Status {
-    // メインユーザーの登録
-    let main_user = &request.data.main_user;
+#[get("/locker/main-auth?<token>")]
+pub async fn main_auth(token: String, app: &State<App>) -> Status {
+
+    let auth = match app.auth.token_check(token, true).await{
+        Ok(auth) => auth,
+        Err(status) => return status,
+    };
+
+    let main_user = &UserInfo{
+        student_id: auth.main_student_id.clone(),
+        family_name: auth.main_family_name.clone(),
+        given_name: auth.main_given_name.clone(),
+    };
 
     if app.student.register(&main_user.clone()).await.is_err(){
         return Status::InternalServerError;
     }
 
-    // 共用ユーザーの登録
-    let co_user = &request.data.co_user;
+    let co_user = &UserInfo{
+        student_id: auth.co_student_id.clone(),
+        family_name: auth.co_family_name.clone(),
+        given_name: auth.co_given_name.clone(),
+    };
+
+    if app.auth.mail_sender(&co_user.clone(), auth.co_auth_token).await.is_err(){
+        return Status::InternalServerError;
+    }
+
+    Status::Created
+}
+
+// co_user認証API {
+#[utoipa::path(context_path = "")]
+#[get("/locker/co-auth?<token>")]
+pub async fn co_auth(token: String, app: &State<App>) -> Status {
+
+    let auth = match app.auth.token_check(token, false).await{
+        Ok(auth) => auth,
+        Err(status) => return status,
+    };
+
+    let co_user = &UserInfo{
+        student_id: auth.co_student_id.clone(),
+        family_name: auth.co_family_name.clone(),
+        given_name: auth.co_given_name.clone(),
+    };
+
     if app.student.register(&co_user.clone()).await.is_err(){
         return Status::InternalServerError;
     }
 
-    // ペア情報の登録
+    let main_user = &UserInfo{
+        student_id: auth.main_student_id.clone(),
+        family_name: auth.main_family_name.clone(),
+        given_name: auth.main_given_name.clone(),
+    };
+
     let student_pair = &PairInfo{
         main_user: main_user.clone(),
         co_user: co_user.clone(),
     };
+
     if app.student_pair.register(student_pair).await.is_err(){
         return Status::InternalServerError;
     }
