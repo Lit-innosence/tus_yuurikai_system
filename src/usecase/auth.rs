@@ -11,6 +11,7 @@ use lettre::transport::smtp::authentication::Credentials;
 use lettre::{Message, SmtpTransport, Transport};
 use rocket::http::Status;
 use async_trait::async_trait;
+use diesel::result::Error;
 
 pub struct AuthUsecaseImpl {
     auth_repository: Arc<dyn AuthRepository>,
@@ -18,7 +19,9 @@ pub struct AuthUsecaseImpl {
 
 #[async_trait]
 pub trait AuthUsecase: Sync + Send {
-    async fn mail_sender(&self, student: &UserInfo) -> Result<Auth, Status>;
+    async fn register(&self, main_user: &UserInfo, co_user: &UserInfo) -> Result<Auth, Error>;
+    async fn mail_sender(&self, student: &UserInfo, token: String) -> Result<(), Status>;
+    async fn token_check(&self, token: String, is_main: bool) -> Result<Auth, Status>;
 }
 
 impl AuthUsecaseImpl {
@@ -29,17 +32,18 @@ impl AuthUsecaseImpl {
 
 #[async_trait]
 impl AuthUsecase for AuthUsecaseImpl {
-    async fn mail_sender(&self, student: &UserInfo) -> Result<Auth, Status> {
+    // tokenの生成、DBへの登録
+    async fn register(&self, main_user: &UserInfo, co_user: &UserInfo) -> Result<Auth, Error> {
+        let main_token = generate_token();
+        let co_token = generate_token();
+        self.auth_repository.insert(&main_token, &main_user.student_id, &main_user.family_name, &main_user.given_name, &co_token, &co_user.student_id, &co_user.family_name, &co_user.given_name).await
+    }
+    async fn mail_sender(&self, student: &UserInfo, token: String) -> Result<(), Status> {
         // 環境変数の読み取り
         dotenv().ok();
         let sender_address = env::var("SENDER_MAIL_ADDRESS").expect("SENDER_MAIL_ADDRESS must be set.");
         let appkey = env::var("MAIL_APP_KEY").expect("MAIL_APP_KEY must be set.");
         let app_url = env::var("APP_URL").expect("APP_URL must be set.");
-
-        // tokenの生成
-        let token = generate_token();
-
-        let auth = self.auth_repository.insert(&token, &student.student_id, &student.family_name, &student.given_name).await.map_err(|_| Status::InternalServerError)?;
 
         // メール内容の作成
         let user_address = format!("{}@ed.tus.ac.jp", student.student_id);
@@ -71,6 +75,17 @@ impl AuthUsecase for AuthUsecaseImpl {
         // メール送信
         mailer.send(&email).map_err(|_| Status::InternalServerError)?;
 
-        Ok(auth)
+        Ok(())
+    }
+    async fn token_check(&self, token: String, is_main: bool) -> Result<Auth, Status> {
+        let auth = match self.auth_repository.get_by_token(&token).await {
+            Ok(auth) => auth,
+            Err(_) => return Err(Status::Unauthorized),
+        };
+        if (is_main && auth.main_auth_token == token) || (!is_main && auth.co_auth_token == token) {
+            Ok(auth)
+        } else {
+            Err(Status::Unauthorized)
+        }
     }
 }
