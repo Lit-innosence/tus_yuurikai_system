@@ -78,7 +78,7 @@ impl AuthUsecase for AuthUsecaseImpl {
         Ok(())
     }
     async fn token_check(&self, token: String, is_main: bool) -> Result<Auth, Status> {
-        let auth = match self.auth_repository.get(&token).await {
+        let auth = match self.auth_repository.get_by_token(&token).await {
             Ok(auth) => auth,
             Err(_) => return Err(Status::Unauthorized),
         };

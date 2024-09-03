@@ -129,7 +129,7 @@ pub trait AuthRepository: Send + Sync {
     co_family_name: &String,
     co_given_name: &String,
     ) -> Result<Auth, Error>;
-    async fn get(
+    async fn get_by_token(
         &self,
         auth_token: &String,
     ) -> Result<Auth, Error>;
@@ -173,7 +173,7 @@ impl AuthRepository for AuthRepositorySqlImpl {
             .values(&new_auth)
             .get_result(&mut conn)
     }
-    async fn get(
+    async fn get_by_token(
         &self,
         auth_token: &String,
     ) -> Result<Auth, Error> {
