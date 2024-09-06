@@ -6,6 +6,8 @@ use crate::usecase::{
                     assignment_record::AssignmentRecordUsecase,
                     auth::AuthUsecase};
 
+use std::env;
+use dotenv::dotenv;
 use rocket::{get, http::Status, post, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
@@ -69,7 +71,17 @@ pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -
         Err(_) => return Status::InternalServerError,
     };
 
-    if app.auth.mail_sender(&data.main_user.clone(), token).await.is_err(){
+    // メール内容の作成
+    let main_user = &data.main_user;
+
+    dotenv().ok();
+    let app_url = env::var("APP_URL").expect("APP_URL must be set.");
+
+    let user_address = format!("{}@ed.tus.ac.jp", main_user.student_id);
+    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?token={}", main_user.family_name, main_user.given_name, app_url, token);
+    let subject = "ロッカーシステム メール認証";
+
+    if app.auth.mail_sender(user_address, content, subject).await.is_err(){
         return Status::InternalServerError;
     }
 
@@ -102,7 +114,15 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
         given_name: auth.co_given_name.clone(),
     };
 
-    if app.auth.mail_sender(&co_user.clone(), auth.co_auth_token).await.is_err(){
+    // メール内容の作成
+    dotenv().ok();
+    let app_url = env::var("APP_URL").expect("APP_URL must be set.");
+
+    let user_address = format!("{}@ed.tus.ac.jp", co_user.student_id);
+    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?token={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token);
+    let subject = "ロッカーシステム メール認証";
+
+    if app.auth.mail_sender(user_address, content, subject).await.is_err(){
         return Status::InternalServerError;
     }
 
@@ -141,6 +161,18 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     };
 
     if app.student_pair.register(student_pair).await.is_err(){
+        return Status::InternalServerError;
+    }
+
+    dotenv().ok();
+    let app_url = env::var("APP_URL").expect("APP_URL must be set.");
+
+    // リンクが未定義
+    let user_address = format!("{}@ed.tus.ac.jp", main_user.student_id);
+    let content = format!("認証が完了しました。\n以下のリンクから使用するロッカー番号を選択してください。\n\n{}", app_url);
+    let subject = "ロッカーシステム 認証完了通知";
+
+    if app.auth.mail_sender(user_address, content, subject).await.is_err(){
         return Status::InternalServerError;
     }
 

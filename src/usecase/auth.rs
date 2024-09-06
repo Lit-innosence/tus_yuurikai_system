@@ -20,7 +20,7 @@ pub struct AuthUsecaseImpl {
 #[async_trait]
 pub trait AuthUsecase: Sync + Send {
     async fn register(&self, main_user: &UserInfo, co_user: &UserInfo) -> Result<Auth, Error>;
-    async fn mail_sender(&self, student: &UserInfo, token: String) -> Result<(), Status>;
+    async fn mail_sender(&self, user_address: String, content: String, subject: &str) -> Result<(), Status>;
     async fn token_check(&self, token: String, is_main: bool) -> Result<Auth, Status>;
 }
 
@@ -38,17 +38,11 @@ impl AuthUsecase for AuthUsecaseImpl {
         let co_token = generate_token();
         self.auth_repository.insert(&main_token, &main_user.student_id, &main_user.family_name, &main_user.given_name, &co_token, &co_user.student_id, &co_user.family_name, &co_user.given_name).await
     }
-    async fn mail_sender(&self, student: &UserInfo, token: String) -> Result<(), Status> {
+    async fn mail_sender(&self, user_address: String, content: String, subject: &str) -> Result<(), Status> {
         // 環境変数の読み取り
         dotenv().ok();
         let sender_address = env::var("SENDER_MAIL_ADDRESS").expect("SENDER_MAIL_ADDRESS must be set.");
         let appkey = env::var("MAIL_APP_KEY").expect("MAIL_APP_KEY must be set.");
-        let app_url = env::var("APP_URL").expect("APP_URL must be set.");
-
-        // メール内容の作成
-        let user_address = format!("{}@ed.tus.ac.jp", student.student_id);
-
-        let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?token={}", student.family_name, student.given_name, app_url, token);
 
         let email = Message::builder()
             .from(
@@ -59,7 +53,7 @@ impl AuthUsecase for AuthUsecaseImpl {
             .to(format!("User <{}>", user_address)
                 .parse()
                 .map_err(|_| Status::InternalServerError)?)
-            .subject("ロッカーシステム メール認証")
+            .subject(subject)
             .header(ContentType::TEXT_PLAIN)
             .body(content)
             .map_err(|_| Status::InternalServerError)?;
