@@ -39,7 +39,7 @@ pub fn get_healthcheck() -> &'static str {
 }
 
 // POSTヘルスチェック
-#[derive(Deserialize, ToSchema)]
+#[derive(Deserialize, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct HealthCheckRequest {
     #[schema(example = "Hello world from json!")]
@@ -150,7 +150,7 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
 // ロッカー空き状態確認API
 
 // ロッカー登録API
-#[derive(Deserialize, ToSchema)]
+#[derive(Deserialize, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct LockerResisterRequest {
     pub data: AssignmentInfo,
