@@ -12,7 +12,7 @@ pub struct Student {
 }
 
 #[derive(Insertable)]
-#[table_name = "student"]
+#[diesel(table_name = student)]
 pub struct NewStudent<'a> {
     pub student_id: &'a String,
     pub family_name: &'a String,
@@ -31,7 +31,7 @@ pub struct StudentPair {
 }
 
 #[derive(Insertable)]
-#[table_name = "student_pair"]
+#[diesel(table_name = student_pair)]
 pub struct NewStudentPair<'a> {
     pub student_id1: &'a String,
     pub student_id2: &'a String,
@@ -47,7 +47,7 @@ pub struct Locker {
 }
 
 #[derive(Insertable)]
-#[table_name = "locker"]
+#[diesel(table_name = locker)]
 pub struct NewLocker<'a> {
     pub locker_id: &'a String,
     pub location: &'a String,
@@ -66,7 +66,7 @@ pub struct AssignmentRecord {
 }
 
 #[derive(Insertable)]
-#[table_name = "assignment_record"]
+#[diesel(table_name = assignment_record)]
 pub struct NewAssignmentRecord<'a> {
     pub pair_id: &'a uuid::Uuid,
     pub locker_id: &'a String,
@@ -89,7 +89,7 @@ pub struct Auth {
 }
 
 #[derive(Insertable)]
-#[table_name = "auth"]
+#[diesel(table_name = auth)]
 pub struct NewAuth<'a> {
     pub main_auth_token: &'a String,
     pub main_student_id: &'a String,
