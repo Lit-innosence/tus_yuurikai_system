@@ -4,7 +4,7 @@ extern crate tus_yuurikai_system;
 
 mod utils;
 
-use utils::router::rocket;
+use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType};
 use tus_yuurikai_system::adapters::controller::{self, HealthCheckRequest};

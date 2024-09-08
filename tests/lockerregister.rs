@@ -4,8 +4,7 @@ extern crate tus_yuurikai_system;
 
 mod utils;
 
-use rocket::response;
-use utils::router::rocket;
+use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType};
 use tus_yuurikai_system::adapters::controller::{self, LockerResisterRequest};
@@ -15,6 +14,7 @@ use tus_yuurikai_system::infrastracture::router::App;
 
 #[rocket::async_test]
 async fn passing() {
+
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
     let app = App::new();
@@ -40,6 +40,10 @@ async fn passing() {
         main_user: mainuser.clone(),
         co_user: couser.clone()
     };
+
+    // dbの初期化
+    setup_db();
+
     // student2人をdbに保存
     match app.student.register(mainuser).await {
         Ok(_) => {},
@@ -54,6 +58,7 @@ async fn passing() {
         Ok(_) => {},
         Err(err) => {panic!("{}", err);},
     };
+
 
     // Act
     let response = client.post(uri!(controller::locker_register))
