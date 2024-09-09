@@ -20,6 +20,7 @@ use utoipa::{OpenApi, ToSchema};
         token_generator,
         main_auth,
         co_auth,
+        auth_check,
         locker_register,
     ),
     components(schemas(
@@ -27,6 +28,7 @@ use utoipa::{OpenApi, ToSchema};
         UserInfo,
         PairInfo,
         TokenGenRequest,
+        AuthCheckResponse,
         AssignmentInfo,
         LockerResisterRequest,
     ))
@@ -66,7 +68,7 @@ pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -
 
     let data = &request.data;
 
-    let token = match app.auth.register(&data.main_user.clone(), &data.co_user.clone()).await{
+    let token = match app.auth.register(&data.main_user.clone(), &data.co_user.clone(), false).await{
         Ok(auth) => auth.main_auth_token,
         Err(_) => return Status::InternalServerError,
     };
@@ -133,7 +135,6 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
 #[utoipa::path(context_path = "")]
 #[get("/locker/co-auth?<token>")]
 pub async fn co_auth(token: String, app: &State<App>) -> Status {
-
     let auth = match app.auth.token_check(token, false).await{
         Ok(auth) => auth,
         Err(status) => return status,
@@ -164,12 +165,16 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
         return Status::InternalServerError;
     }
 
+    let token = match app.auth.register(&main_user.clone(), &co_user.clone(), true).await{
+        Ok(auth) => auth.main_auth_token,
+        Err(_) => return Status::InternalServerError,
+    };
+
     dotenv().ok();
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
 
-    // リンクが未定義
     let user_address = format!("{}@ed.tus.ac.jp", main_user.student_id);
-    let content = format!("認証が完了しました。\n以下のリンクから使用するロッカー番号を選択してください。\n\n{}", app_url);
+    let content = format!("認証が完了しました。\n以下のリンクから使用するロッカー番号を選択してください。\n\n{}?token={}", app_url, token);
     let subject = "ロッカーシステム 認証完了通知";
 
     if app.auth.mail_sender(user_address, content, subject).await.is_err(){
@@ -177,6 +182,43 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     }
 
     Status::Created
+}
+
+#[derive(Serialize, ToSchema)] 
+pub struct AuthCheckResponse {
+    pub data: PairInfo,
+}
+
+// 認証検証API
+#[utoipa::path(context_path = "")]
+#[get("/locker/auth-check?<token>")]
+pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthCheckResponse>, Status> {
+    let auth = match app.auth.token_check(token, true).await{
+        Ok(auth) => auth,
+        Err(status) => return Err(status),
+    };
+
+    let main_user = &UserInfo{
+        student_id: auth.main_student_id.clone(),
+        family_name: auth.main_family_name.clone(),
+        given_name: auth.main_given_name.clone(),
+    };
+
+    let co_user = &UserInfo{
+        student_id: auth.co_student_id.clone(),
+        family_name: auth.co_family_name.clone(),
+        given_name: auth.co_given_name.clone(),
+    };
+
+    let student_pair = &PairInfo{
+        main_user: main_user.clone(),
+        co_user: co_user.clone(),
+    };
+
+    Ok(Json(AuthCheckResponse{
+        data: student_pair.clone(),
+    }))
+
 }
 
 // ロッカー空き状態確認API
