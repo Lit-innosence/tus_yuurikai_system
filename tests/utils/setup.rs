@@ -10,10 +10,10 @@ pub fn setup_db() {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
     let mut conn = PgConnection::establish(&database_url).unwrap_or_else(|_| panic!("Error connectiong to {}", database_url));
 
-    diesel::delete(student::table)
+    let _ = diesel::delete(student::table)
         .execute(&mut conn);
-    diesel::delete(student_pair::table)
+    let _ = diesel::delete(student_pair::table)
         .execute(&mut conn);
-    diesel::delete(assignment_record::table)
+    let _ = diesel::delete(assignment_record::table)
         .execute(&mut conn);
 }
