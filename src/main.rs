@@ -5,6 +5,7 @@ use tus_yuurikai_system::adapters::controller::{
                                 token_generator,
                                 main_auth,
                                 co_auth,
+                                auth_check,
                                 locker_register};
 use rocket::routes;
 use utoipa_swagger_ui::SwaggerUi;
@@ -23,6 +24,7 @@ async fn main() -> Result<(), rocket::Error> {
                 token_generator,
                 main_auth,
                 co_auth,
+                auth_check,
                 locker_register
             ],
         )
