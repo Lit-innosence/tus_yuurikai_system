@@ -28,13 +28,13 @@ async fn normal() {
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
-            family_name: String::from("test_user"),
-            given_name: String::from("test_user")
+            family_name: String::from("テスト太郎"),
+            given_name: String::from("てすと太郎")
         };
     let couser = &UserInfo{
             student_id: String::from("4622000"),
-            family_name: String::from("test_user"),
-            given_name: String::from("test_user")
+            family_name: String::from("テスト太郎"),
+            given_name: String::from("てすと太郎")
         };
 
     let studentpair = &PairInfo{
@@ -88,8 +88,8 @@ async fn student_id_allow_a_b() {
 
     let mainuser = &UserInfo{
             student_id: String::from("3A22999"),
-            family_name: String::from("test_user"),
-            given_name: String::from("test_user")
+            family_name: String::from("テスト太郎"),
+            given_name: String::from("てすと太郎")
         };
     let couser = &UserInfo{
             student_id: String::from("3B22999"),
@@ -148,14 +148,16 @@ async fn student_id_do_not_match() {
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
-            family_name: String::from("test_user"),
-            given_name: String::from("test_user")
+            family_name: String::from("テスト太郎"),
+            given_name: String::from("てすと太郎")
         };
     let couser = &UserInfo{
             student_id: String::from("4622000"),
-            family_name: String::from("test_user"),
-            given_name: String::from("test_user")
+            family_name: String::from("テスト太郎"),
+            given_name: String::from("てすと太郎")
         };
+
+
 
     let studentpair = &PairInfo{
         main_user: mainuser.clone(),
@@ -209,20 +211,14 @@ async fn year_do_not_match() {
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
-            family_name: String::from("test_user"),
-            given_name: String::from("test_user")
+            family_name: String::from("テスト太郎"),
+            given_name: String::from("てすと太郎")
         };
     let couser = &UserInfo{
             student_id: String::from("4622000"),
-            family_name: String::from("test_user"),
-            given_name: String::from("test_user")
+            family_name: String::from("テスト太郎"),
+            given_name: String::from("てすと太郎")
         };
-    /*
-    let studentpair = &PairInfo{
-        main_user: mainuser.clone(),
-        co_user: couser.clone()
-    };
-    */
 
     // dbの初期化
     setup_db();
