@@ -12,14 +12,14 @@ use crate::infrastracture::router::Pool;
 
 #[async_trait]
 pub trait StudentRepository: Send + Sync {
-    async fn insert (
+    async fn insert(
         &self,
         student_id: &String,
         family_name: &String,
         given_name: &String,
     ) -> Result<Student, Error>;
 
-    async fn delete (
+    async fn delete_all(
         &self
     ) -> Result<usize, Error>;
 }
@@ -55,7 +55,7 @@ impl StudentRepository for StudentRepositorySqlImpl{
             .get_result(&mut conn)
     }
 
-    async fn delete (
+    async fn delete_all(
         &self
     ) -> Result<usize, Error> {
         let mut conn = self.pool.get().unwrap();
@@ -79,7 +79,7 @@ pub trait StudentPairRepository: Send + Sync {
         student_id: &String,
         year: &i32,
     ) -> Result<StudentPair, Error>;
-    async fn delete(
+    async fn delete_all(
         &self
     ) -> Result<usize, Error>;
 }
@@ -128,7 +128,7 @@ impl StudentPairRepository for StudentPairRepositorySqlImpl{
             .first(&mut conn)
     }
 
-    async fn delete(
+    async fn delete_all(
         &self
     ) -> Result<usize, Error> {
         let mut conn = self.pool.get().unwrap();
@@ -157,7 +157,7 @@ pub trait AuthRepository: Send + Sync {
         &self,
         auth_token: &String,
     ) -> Result<Auth, Error>;
-    async fn delete(
+    async fn delete_all(
         &self
     ) -> Result<usize, Error>;
 }
@@ -214,7 +214,7 @@ impl AuthRepository for AuthRepositorySqlImpl {
             .first(&mut conn)
     }
 
-    async fn delete(
+    async fn delete_all(
         &self
     ) -> Result<usize, Error> {
         let mut conn = self.pool.get().unwrap();
@@ -232,7 +232,7 @@ pub trait LockerRepository: Send + Sync {
         locker_id: &String,
         location: &String,
     ) -> Result<Locker, Error>;
-    async fn delete(
+    async fn delete_all(
         &self
     ) -> Result<usize, Error>;
 }
@@ -264,7 +264,7 @@ impl LockerRepository for LockerRepositorySqlImpl {
             .get_result(&mut conn)
     }
 
-    async fn delete(
+    async fn delete_all(
         &self
     ) -> Result<usize, Error> {
         let mut conn = self.pool.get().unwrap();
@@ -284,7 +284,7 @@ pub trait AssignmentRecordRepository: Send + Sync {
         year: &i32,
     ) -> Result<AssignmentRecord, Error>;
 
-    async fn delete(
+    async fn delete_all(
         &self
     ) -> Result<usize, Error>;
 }
@@ -318,7 +318,7 @@ impl AssignmentRecordRepository for AssignmentRecordRepositorySqlImpl {
             .get_result(&mut conn)
     }
 
-    async fn delete(
+    async fn delete_all(
         &self
     ) -> Result<usize, Error> {
         let mut conn = self.pool.get().unwrap();
