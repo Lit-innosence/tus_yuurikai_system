@@ -37,13 +37,13 @@ pub struct ApiDoc;
 
 // GETヘルスチェック
 #[utoipa::path(context_path = "")]
-#[get("/get_healthcheck")]
+#[get("/get-healthcheck")]
 pub fn get_healthcheck() -> &'static str {
     "Hello, world!"
 }
 
 // POSTヘルスチェック
-#[derive(Deserialize, ToSchema)]
+#[derive(Deserialize, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct HealthCheckRequest {
     #[schema(example = "Hello world from json!")]
@@ -51,7 +51,7 @@ pub struct HealthCheckRequest {
 }
 
 #[utoipa::path(context_path = "")]
-#[post("/post_healthcheck", data = "<data>")]
+#[post("/post-healthcheck", data = "<data>")]
 pub fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
     format!("Accepted post request! {:?}", data.text)
 }
@@ -62,8 +62,8 @@ pub fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
 pub struct TokenGenRequest {
     pub data: PairInfo,
 }
-#[utoipa::path(context_path = "")]
-#[post("/locker/token-gen", data = "<request>")]
+#[utoipa::path(context_path = "/locker")]
+#[post("/token-gen", data = "<request>")]
 pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -> Status {
 
     let data = &request.data;
@@ -91,8 +91,8 @@ pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -
 }
 
 // main_user認証API {
-#[utoipa::path(context_path = "")]
-#[get("/locker/main-auth?<token>")]
+#[utoipa::path(context_path = "/locker")]
+#[get("/main-auth?<token>")]
 pub async fn main_auth(token: String, app: &State<App>) -> Status {
 
     let auth = match app.auth.token_check(token, true).await{
@@ -132,8 +132,8 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
 }
 
 // co_user認証API {
-#[utoipa::path(context_path = "")]
-#[get("/locker/co-auth?<token>")]
+#[utoipa::path(context_path = "/locker")]
+#[get("/co-auth?<token>")]
 pub async fn co_auth(token: String, app: &State<App>) -> Status {
     let auth = match app.auth.token_check(token, false).await{
         Ok(auth) => auth,
@@ -224,14 +224,14 @@ pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthChec
 // ロッカー空き状態確認API
 
 // ロッカー登録API
-#[derive(Deserialize, ToSchema)]
+#[derive(Deserialize, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct LockerResisterRequest {
     pub data: AssignmentInfo,
 }
 
-#[utoipa::path(context_path = "")]
-#[post("/locker/locker-register", data = "<request>")]
+#[utoipa::path(context_path = "/locker")]
+#[post("/locker-register", data = "<request>")]
 pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<App>) -> (Status, &'static str) {
 
     let assignment = &request.data;

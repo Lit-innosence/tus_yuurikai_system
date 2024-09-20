@@ -7,7 +7,7 @@ use async_trait::async_trait;
 use chrono::{Datelike, Local};
 
 pub struct StudentPairUsecaseImpl {
-    student_pair_repository: Arc<dyn StudentPairRepository>,
+    pub student_pair_repository: Arc<dyn StudentPairRepository>,
 }
 
 #[async_trait]

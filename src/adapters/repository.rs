@@ -9,14 +9,19 @@ use crate::infrastracture::models::{Student, NewStudent, StudentPair, NewStudent
 use crate::infrastracture::router::Pool;
 
 // student
+
 #[async_trait]
 pub trait StudentRepository: Send + Sync {
-    async fn insert (
+    async fn insert(
         &self,
         student_id: &String,
         family_name: &String,
         given_name: &String,
     ) -> Result<Student, Error>;
+
+    async fn delete_all(
+        &self
+    ) -> Result<usize, Error>;
 }
 pub struct StudentRepositorySqlImpl {
     pool: Pool<PgConnection>
@@ -49,6 +54,14 @@ impl StudentRepository for StudentRepositorySqlImpl{
             .set(student::updated_at.eq(diesel::dsl::now))
             .get_result(&mut conn)
     }
+
+    async fn delete_all(
+        &self
+    ) -> Result<usize, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::delete(student::table)
+            .execute(&mut conn)
+    }
 }
 
 // student_pair
@@ -66,6 +79,9 @@ pub trait StudentPairRepository: Send + Sync {
         student_id: &String,
         year: &i32,
     ) -> Result<StudentPair, Error>;
+    async fn delete_all(
+        &self
+    ) -> Result<usize, Error>;
 }
 
 pub struct StudentPairRepositorySqlImpl{
@@ -111,6 +127,14 @@ impl StudentPairRepository for StudentPairRepositorySqlImpl{
             )
             .first(&mut conn)
     }
+
+    async fn delete_all(
+        &self
+    ) -> Result<usize, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::delete(student_pair::table)
+            .execute(&mut conn)
+    }
 }
 
 
@@ -133,6 +157,9 @@ pub trait AuthRepository: Send + Sync {
         &self,
         auth_token: &String,
     ) -> Result<Auth, Error>;
+    async fn delete_all(
+        &self
+    ) -> Result<usize, Error>;
 }
 
 pub struct AuthRepositorySqlImpl {
@@ -186,6 +213,14 @@ impl AuthRepository for AuthRepositorySqlImpl {
             )
             .first(&mut conn)
     }
+
+    async fn delete_all(
+        &self
+    ) -> Result<usize, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::delete(auth::table)
+            .execute(&mut conn)
+    }
 }
 
 // locker
@@ -197,6 +232,9 @@ pub trait LockerRepository: Send + Sync {
         locker_id: &String,
         location: &String,
     ) -> Result<Locker, Error>;
+    async fn delete_all(
+        &self
+    ) -> Result<usize, Error>;
 }
 
 pub struct LockerRepositorySqlImpl {
@@ -225,6 +263,14 @@ impl LockerRepository for LockerRepositorySqlImpl {
             .values(&new_locker)
             .get_result(&mut conn)
     }
+
+    async fn delete_all(
+        &self
+    ) -> Result<usize, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::delete(locker::table)
+            .execute(&mut conn)
+    }
 }
 
 // assignment_record
@@ -237,6 +283,10 @@ pub trait AssignmentRecordRepository: Send + Sync {
         locker_id: &String,
         year: &i32,
     ) -> Result<AssignmentRecord, Error>;
+
+    async fn delete_all(
+        &self
+    ) -> Result<usize, Error>;
 }
 
 pub struct AssignmentRecordRepositorySqlImpl {
@@ -266,5 +316,13 @@ impl AssignmentRecordRepository for AssignmentRecordRepositorySqlImpl {
         diesel::insert_into(assignment_record::table)
             .values(&new_assignmentrecord)
             .get_result(&mut conn)
+    }
+
+    async fn delete_all(
+        &self
+    ) -> Result<usize, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::delete(assignment_record::table)
+            .execute(&mut conn)
     }
 }

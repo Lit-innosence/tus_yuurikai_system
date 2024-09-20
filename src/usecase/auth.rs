@@ -14,7 +14,7 @@ use async_trait::async_trait;
 use diesel::result::Error;
 
 pub struct AuthUsecaseImpl {
-    auth_repository: Arc<dyn AuthRepository>,
+     pub auth_repository: Arc<dyn AuthRepository>,
 }
 
 #[async_trait]
