@@ -21,11 +21,21 @@ pub fn rocket() -> Rocket<Build> {
             "/",
             routes![
                 get_healthcheck,
-                post_healthcheck,
+                post_healthcheck
+            ]
+        )
+        .mount(
+            "/locker",
+            routes![
                 token_generator,
                 main_auth,
                 co_auth,
                 locker_register
+            ],
+        )
+        .mount(
+            "/circle",
+            routes![
             ],
         )
         .mount(

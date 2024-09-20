@@ -6,7 +6,7 @@ use diesel::result::Error;
 use async_trait::async_trait;
 
 pub struct StudentUsecaseImpl {
-    student_repository: Arc<dyn StudentRepository>,
+    pub student_repository: Arc<dyn StudentRepository>,
 }
 
 #[async_trait]

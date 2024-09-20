@@ -43,7 +43,7 @@ async fn normal() {
     };
 
     // dbの初期化
-    setup_db();
+    setup_db(&app).await;
 
     // student2人をdbに保存
     match app.student.register(mainuser).await {
@@ -62,7 +62,7 @@ async fn normal() {
 
 
     // Act
-    let response = client.post(uri!(controller::locker_register))
+    let response = client.post("/locker/locker-register")
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -93,8 +93,8 @@ async fn student_id_allow_a_b() {
         };
     let couser = &UserInfo{
             student_id: String::from("3B22999"),
-            family_name: String::from("test_user"),
-            given_name: String::from("test_user")
+            family_name: String::from("テスト太郎"),
+            given_name: String::from("てすと太郎")
         };
 
     let studentpair = &PairInfo{
@@ -103,7 +103,7 @@ async fn student_id_allow_a_b() {
     };
 
     // dbの初期化
-    setup_db();
+    setup_db(&app).await;
 
     // student2人をdbに保存
     match app.student.register(mainuser).await {
@@ -122,7 +122,7 @@ async fn student_id_allow_a_b() {
 
 
     // Act
-    let response = client.post(uri!(controller::locker_register))
+    let response = client.post("/locker/locker-register")
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -165,7 +165,7 @@ async fn student_id_do_not_match() {
     };
 
     // dbの初期化
-    setup_db();
+    setup_db(&app).await;
 
     // student2人をdbに保存
     match app.student.register(mainuser).await {
@@ -184,7 +184,7 @@ async fn student_id_do_not_match() {
 
 
     // Act
-    let response = client.post(uri!(controller::locker_register))
+    let response = client.post("/locker/locker-register")
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -221,7 +221,7 @@ async fn year_do_not_match() {
         };
 
     // dbの初期化
-    setup_db();
+    setup_db(&app).await;
 
     // student2人をdbに保存
     match app.student.register(mainuser).await {
@@ -241,7 +241,7 @@ async fn year_do_not_match() {
 
 
     // Act
-    let response = client.post(uri!(controller::locker_register))
+    let response = client.post("/locker/locker-register")
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
