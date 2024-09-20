@@ -1,4 +1,3 @@
-#[macro_use]
 extern crate rocket;
 extern crate tus_yuurikai_system;
 
@@ -7,7 +6,7 @@ mod utils;
 use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType};
-use tus_yuurikai_system::adapters::controller::{self, LockerResisterRequest};
+use tus_yuurikai_system::adapters::controller::LockerResisterRequest;
 use tus_yuurikai_system::domain::{assignment::AssignmentInfo, student_pair::PairInfo, student::UserInfo};
 use tus_yuurikai_system::usecase::{student_pair::StudentPairUsecase, student::StudentUsecase};
 use tus_yuurikai_system::infrastracture::router::App;
