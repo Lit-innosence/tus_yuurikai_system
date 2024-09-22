@@ -44,6 +44,7 @@ pub struct NewStudentPair<'a> {
 pub struct Locker {
     pub locker_id: String,
     pub location: String,
+    pub status: String,
 }
 
 #[derive(Insertable)]
@@ -51,6 +52,7 @@ pub struct Locker {
 pub struct NewLocker<'a> {
     pub locker_id: &'a String,
     pub location: &'a String,
+    pub status: &'a String,
 }
 
 // assignment_record

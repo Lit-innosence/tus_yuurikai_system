@@ -4,7 +4,8 @@ use crate::usecase::{
                     student::StudentUsecase,
                     student_pair::StudentPairUsecase,
                     assignment_record::AssignmentRecordUsecase,
-                    auth::AuthUsecase};
+                    auth::AuthUsecase,
+                    locker::LockerUsecase};
 
 use std::env;
 use dotenv::dotenv;
@@ -184,7 +185,7 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     Status::Created
 }
 
-#[derive(Serialize, ToSchema)] 
+#[derive(Serialize, ToSchema)]
 pub struct AuthCheckResponse {
     pub data: PairInfo,
 }
@@ -242,9 +243,24 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
         Err(_) => return (Status::InternalServerError, "failed to get student_pair id"),
     };
 
+    // 対象ロッカーの空き確認
+    let locker = match app.locker.get_by_id(&assignment.locker_id).await {
+        Ok(locker) => locker,
+        Err(_) => return (Status::InternalServerError, "failed to get locker"),
+    };
+
+    if locker.status != "vacant" {
+        return (Status::InternalServerError, "This locker is not vacant");
+    }
+
     // 割り当て情報の登録
     if app.assignment_record.register(&user_pair, assignment).await.is_err() {
         return (Status::InternalServerError, "failed to insert request");
+    }
+
+    // ロッカーのステータス更新
+    if app.locker.update_to_unavailable(&assignment.locker_id).await.is_err() {
+        return (Status::InternalServerError, "failed to update locker status");
     }
 
     (Status::Created, "success create assignment")
