@@ -259,7 +259,8 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     }
 
     // ロッカーのステータス更新
-    if app.locker.update_to_unavailable(&assignment.locker_id).await.is_err() {
+    let status = String::from("unavailable");
+    if app.locker.update_status(&assignment.locker_id, &status).await.is_err() {
         return (Status::InternalServerError, "failed to update locker status");
     }
 

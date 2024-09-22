@@ -3,6 +3,7 @@ extern crate tus_yuurikai_system;
 
 mod utils;
 
+use tus_yuurikai_system::usecase::locker::LockerUsecase;
 use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType};
@@ -69,6 +70,11 @@ async fn normal() {
     // Assert
     assert_eq!(response.status(), Status::Created);
     assert_eq!(response.into_string().await.unwrap(), "success create assignment");
+
+    // 後処理
+    if app.locker.update_status(&request.data.locker_id, &String::from("vacant")).await.is_err() {
+        panic!("failed to update status");
+    }
 }
 
 // 正常系＝学籍番号にA,Bを許す
@@ -129,6 +135,11 @@ async fn student_id_allow_a_b() {
     // Assert
     assert_eq!(response.status(), Status::Created);
     assert_eq!(response.into_string().await.unwrap(), "success create assignment");
+
+    // 後処理
+    if app.locker.update_status(&request.data.locker_id, &String::from("vacant")).await.is_err() {
+        panic!("failed to update status");
+    }
 }
 
 // 異常系＝student_idがテーブル内のタプルと一致しない
@@ -191,6 +202,11 @@ async fn student_id_do_not_match() {
     // Assert
     assert_eq!(response.status(), Status::InternalServerError);
     assert_eq!(response.into_string().await.unwrap(), "failed to get student_pair id");
+
+    // 後処理
+    if app.locker.update_status(&request.data.locker_id, &String::from("vacant")).await.is_err() {
+        panic!("failed to update status");
+    }
 }
 
 
@@ -248,4 +264,9 @@ async fn year_do_not_match() {
     // Assert
     assert_eq!(response.status(), Status::InternalServerError);
     assert_eq!(response.into_string().await.unwrap(), "failed to get student_pair id");
+
+    // 後処理
+    if app.locker.update_status(&request.data.locker_id, &String::from("vacant")).await.is_err() {
+        panic!("failed to update status");
+    }
 }

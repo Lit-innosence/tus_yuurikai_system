@@ -234,9 +234,15 @@ pub trait LockerRepository: Send + Sync {
         status: &String,
     ) -> Result<Locker, Error>;
 
-    async fn update_status_to_unavailable(
+    async fn update_status(
         &self,
         locker_id: &String,
+        status: &String,
+    ) -> Result<usize, Error>;
+
+    async fn update_all_status(
+        &self,
+        status: &String,
     ) -> Result<usize, Error>;
 
     async fn get_by_id(
@@ -278,13 +284,24 @@ impl LockerRepository for LockerRepositorySqlImpl {
             .get_result(&mut conn)
     }
 
-    async  fn update_status_to_unavailable(
+    async fn update_status(
             &self,
             locker_id: &String,
+            status: &String,
         ) -> Result<usize, Error> {
         let mut conn = self.pool.get().unwrap();
         diesel::update(locker::table.find(locker_id))
-            .set(locker::status.eq("unavailable"))
+            .set(locker::status.eq(status))
+            .execute(&mut conn)
+    }
+
+    async fn update_all_status(
+            &self,
+            status: &String,
+        ) -> Result<usize, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::update(locker::table)
+            .set(locker::status.eq(status))
             .execute(&mut conn)
     }
 
