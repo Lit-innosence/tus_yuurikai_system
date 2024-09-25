@@ -1,25 +1,29 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { Suspense, lazy } from 'react';
+import { Route, Routes } from 'react-router-dom';
+import Loading from './routes/Loading';
+import Page404 from './routes/Page404';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      suspense: true,
+    },
+  },
+});
+
+const Toppage = lazy(() => import('./routes/Toppage'));
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <Suspense fallback={<Loading />}>
+      <Routes>
+        <Route path='/' element={<Toppage/>}/>
+        <Route path='*' element={<Page404/>}/>
+      </Routes>
+      </Suspense>
+    </QueryClientProvider>
   );
 }
 
