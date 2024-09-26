@@ -250,7 +250,7 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     };
 
     if locker.status != "vacant" {
-        return (Status::InternalServerError, "This locker is not vacant");
+        return (Status::BadRequest, "This locker is not vacant");
     }
 
     // 割り当て情報の登録
@@ -267,8 +267,6 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     (Status::Created, "success create assignment")
 }
 
-// 完了通知API
-
-// パスワード照合API
+// 管理者パスワード照合API
 
 // ロッカー利用者検索API
