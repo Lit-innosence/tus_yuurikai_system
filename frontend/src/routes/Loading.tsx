@@ -1,17 +1,26 @@
 import React from 'react';
+import { Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 
-type RootProps = {
+type LoadingProps = {
     children?: React.ReactNode;
 };
 
-const Root: React.FC<RootProps> = (props) => {
+const loadingStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh', 
+    width: '100vw', 
+};
+
+const Loading: React.FC<LoadingProps> = (props) => {
+
     return (
-    <div className='container vh-100 js-loading'>
-        <div className='row vh-100 justify-content-center align-items-center'>
-            <p>Loading</p>
+        <div style={loadingStyle}>
+            <Spin indicator={<LoadingOutlined spin />} tip="Loading..." style={{transform: 'scale(3)'}} />
         </div>
-    </div>
     );
 };
 
-export default Root;
+export default Loading;

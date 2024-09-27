@@ -1,14 +1,30 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button, Result } from 'antd';
 
 type Page404Props = {
     children?: React.ReactNode;
 };
 
 const Page404: React.FC<Page404Props> = (props) => {
+    const navigate = useNavigate();
+    
+    const containerStyle: React.CSSProperties = {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh', 
+        width: '100vw',  
+    };
+
     return (
-        <div className='px-6 py-10 text-center text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200'>
-        <h1 className='mb-6 text-5xl font-bold'>404 </h1>
-        <h3 className='mb-8 text-3xl font-bold'>Page not found</h3>
+        <div style={containerStyle}>
+            <Result
+                status="404"
+                title="404"
+                subTitle="Sorry, the page you visited does not exist."
+                extra={<Button type="primary" onClick={() => { navigate('/') }}>Back Home</Button>}
+            />
         </div>
     );
 };
