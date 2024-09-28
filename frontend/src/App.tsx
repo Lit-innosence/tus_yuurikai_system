@@ -13,6 +13,13 @@ const queryClient = new QueryClient({
 });
 
 const Toppage = lazy(() => import('./routes/Toppage'));
+const LockerTerms = lazy(() => import('./routes/locker/Terms'));
+const LockerForm = lazy(() => import('./routes/locker/Form'));
+const LockerConfirm = lazy(() => import('./routes/locker/ConfirmPage'));
+const FormComp = lazy(() => import('./routes/locker/FormComp'));
+const AuthComp = lazy(() => import('./routes/locker/AuthComp'));
+const LockerProcess = lazy(() => import('./routes/locker/Process'));
+
 
 function App() {
   return (
@@ -20,6 +27,12 @@ function App() {
       <Suspense fallback={<Loading />}>
       <Routes>
         <Route path='/' element={<Toppage/>}/>
+        <Route path='/locker-terms' element={<LockerTerms/>}/>
+        <Route path='/locker-form' element={<LockerForm/>}/>
+        <Route path='/locker-confirm' element={<LockerConfirm/>}/>
+        <Route path='/form-complete' element={<FormComp/>}/>
+        <Route path='/auth-complete' element={<AuthComp/>}/>
+        <Route path='/locker-process' element={<LockerProcess/>}/>
         <Route path='*' element={<Page404/>}/>
       </Routes>
       </Suspense>

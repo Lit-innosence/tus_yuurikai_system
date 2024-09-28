@@ -7,7 +7,7 @@ type ToppageProps = {
 };
 
 const content = [
-    { title: 'ロッカー空き検索', route: '/locker' },
+    { title: 'ロッカー空き検索', route: '/locker-terms' },
     { title: 'サークル団体登録', route: '/circle' },
 ];
 
@@ -19,7 +19,7 @@ const Toppage: React.FC<ToppageProps> = (props) => {
     return (
     <React.Fragment>
         <Layout style={{ minHeight: '100vh' }}>
-            <Header style={{ color: 'white', textAlign: 'center', backgroundColor: '#1677FF' }}>TUS YURIKAI SYSTEM</Header>
+            <Header style={{ color: 'white', textAlign: 'center', backgroundColor: '#004ab3' }}>TUS YURIKAI SYSTEM</Header>
             <Content style={{ padding: '50px 50px', minHeight: '80vh' }}>
                 <List
                     itemLayout="horizontal"

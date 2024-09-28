@@ -22,8 +22,8 @@ const Page404: React.FC<Page404Props> = (props) => {
             <Result
                 status="404"
                 title="404"
-                subTitle="Sorry, the page you visited does not exist."
-                extra={<Button type="primary" onClick={() => { navigate('/') }}>Back Home</Button>}
+                subTitle="すみません、そのようなページは存在しません。"
+                extra={<Button type="primary" onClick={() => { navigate('/') }}>ホームに戻る</Button>}
             />
         </div>
     );
