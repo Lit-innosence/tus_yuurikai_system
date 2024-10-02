@@ -250,7 +250,7 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     };
 
     if locker.status != "vacant" {
-        return (Status::InternalServerError, "This locker is not vacant");
+        return (Status::BadRequest, "This locker is not vacant");
     }
 
     // 割り当て情報の登録
