@@ -39,7 +39,7 @@ const Process: React.FC = () => {
                                     children: '共同利用者のメール認証',
                                 },
                                 {
-                                    children: '申込者に認証完了のメール通知',
+                                    children: '申請者に認証完了のメール通知',
                                 },
                                 {
                                     children: 'ロッカー番号の選択',
@@ -50,7 +50,8 @@ const Process: React.FC = () => {
                             ]}
                         />
                     </div>
-                    <p>メール認証は、対象者の大学のメールに送られます。</p>
+                    <p>認証メールは、[学籍番号]@ed.tus.ac.jp宛てに送られます。</p>
+                    <p>※このページは閉じてもかまいません</p>
                 </Card>
             </Content>
             <Footer style={{ textAlign: 'center', backgroundColor: 'white' }}>

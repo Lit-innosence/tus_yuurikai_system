@@ -49,7 +49,7 @@ const ConfirmPage: React.FC = () => {
                     style={{ width: '100%', maxWidth: '600px', textAlign: 'left' }}
                     headStyle={{ fontSize: '1.5em', textAlign: 'center' }}
                 >
-                    <h3>利用者</h3>
+                    <h3>申請者</h3>
                     <p><strong>学籍番号:</strong> {formData.studentId}</p>
                     <p><strong>氏名:</strong> {formData.lastName} {formData.firstName}</p>
                     

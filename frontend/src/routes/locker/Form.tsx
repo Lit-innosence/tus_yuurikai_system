@@ -24,7 +24,7 @@ const LockerForm: React.FC = () => {
                     onFinish={onFinish}
                     style={{ maxWidth: '600px', width: '100%' }}
                 >
-                    <h3>利用者の情報</h3>
+                    <h3>申請者の情報</h3>
                     <Form.Item
                         label="学籍番号"
                         name="studentId"

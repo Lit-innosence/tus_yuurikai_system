@@ -27,9 +27,9 @@ function App() {
       <Suspense fallback={<Loading />}>
       <Routes>
         <Route path='/' element={<Toppage/>}/>
-        <Route path='/locker-terms' element={<LockerTerms/>}/>
-        <Route path='/locker-form' element={<LockerForm/>}/>
-        <Route path='/locker-confirm' element={<LockerConfirm/>}/>
+        <Route path='/locker/terms' element={<LockerTerms/>}/>
+        <Route path='/locker/form' element={<LockerForm/>}/>
+        <Route path='/locker/confirm' element={<LockerConfirm/>}/>
         <Route path='/form-complete' element={<FormComp/>}/>
         <Route path='/auth-complete' element={<AuthComp/>}/>
         <Route path='/locker-process' element={<LockerProcess/>}/>
