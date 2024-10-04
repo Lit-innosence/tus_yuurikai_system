@@ -231,7 +231,25 @@ pub trait LockerRepository: Send + Sync {
         &self,
         locker_id: &String,
         location: &String,
+        status: &String,
     ) -> Result<Locker, Error>;
+
+    async fn update_status(
+        &self,
+        locker_id: &String,
+        status: &String,
+    ) -> Result<usize, Error>;
+
+    async fn update_all_status(
+        &self,
+        status: &String,
+    ) -> Result<usize, Error>;
+
+    async fn get_by_id(
+        &self,
+        locker_id: &String,
+    ) -> Result<Locker, Error>;
+
     async fn delete_all(
         &self
     ) -> Result<usize, Error>;
@@ -253,15 +271,50 @@ impl LockerRepository for LockerRepositorySqlImpl {
         &self,
         locker_id: &String,
         location: &String,
+        status: &String,
     ) -> Result<Locker, Error> {
         let new_locker = NewLocker {
             locker_id,
             location,
+            status
         };
         let mut conn = self.pool.get().unwrap();
         diesel::insert_into(locker::table)
             .values(&new_locker)
             .get_result(&mut conn)
+    }
+
+    async fn update_status(
+            &self,
+            locker_id: &String,
+            status: &String,
+        ) -> Result<usize, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::update(locker::table.find(locker_id))
+            .set(locker::status.eq(status))
+            .execute(&mut conn)
+    }
+
+    async fn update_all_status(
+            &self,
+            status: &String,
+        ) -> Result<usize, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::update(locker::table)
+            .set(locker::status.eq(status))
+            .execute(&mut conn)
+    }
+
+    async  fn get_by_id(
+            &self,
+            locker_id: &String,
+        ) -> Result<Locker, Error> {
+            let mut conn = self.pool.get().unwrap();
+        locker::table
+            .filter(
+                locker::locker_id
+                .eq(locker_id)
+            ).first(&mut conn)
     }
 
     async fn delete_all(

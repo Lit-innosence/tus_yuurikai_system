@@ -17,4 +17,7 @@ pub async fn setup_db(app: &App) {
         Ok(_) => {},
         Err(err) => panic!("{}", err),
     }
+    if app.locker.locker_repository.update_all_status(&String::from("vacant")).await.is_err() {
+        panic!("failed to update locker status");
+    }
 }
