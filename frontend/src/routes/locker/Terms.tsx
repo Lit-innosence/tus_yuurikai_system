@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Checkbox, Button, Card, Layout } from 'antd';
+import CustomHeader from '../component/CustomHeader';
+import CustomFooter from '../component/CustomFooter';
 
-const { Header, Content, Footer } = Layout;
+const { Content } = Layout;
 
 const LockerTerms: React.FC = () => {
     const navigate  = useNavigate();
@@ -94,9 +96,7 @@ const LockerTerms: React.FC = () => {
     
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <Header style={{ color: 'white', textAlign: 'center', backgroundColor: '#004ab3' }}>
-                TUS YURIKAI SYSTEM
-            </Header>
+            <CustomHeader />
             <Content style={contentStyle}>
                 <Card title="利用規約" bordered={true} style={cardStyle}>
                     {termsContent}
@@ -108,14 +108,12 @@ const LockerTerms: React.FC = () => {
                     type="primary" 
                     disabled={!isChecked}
                     style={{ marginTop: '16px' }}
-                    onClick={() => { navigate('/locker-form') }}
+                    onClick={() => { navigate('/locker/form') }}
                 >
                     同意して次に進む
                 </Button>
             </Content>
-            <Footer style={{ textAlign: 'center', backgroundColor: 'white' }}>
-                YURUKAI SYSTEM ©2024
-            </Footer>
+            <CustomFooter />
         </Layout>
     );
 };

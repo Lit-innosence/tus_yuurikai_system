@@ -1,17 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout, List, Button } from 'antd';
+import CustomHeader from './component/CustomHeader'; 
+import CustomFooter from './component/CustomFooter'; 
 
 type ToppageProps = {
     children?: React.ReactNode;
 };
 
 const content = [
-    { title: 'ロッカー空き検索', route: '/locker-terms' },
+    { title: 'ロッカー空き検索', route: '/locker/terms' },
     { title: 'サークル団体登録', route: '/circle' },
 ];
 
-const { Header, Content, Footer } = Layout;
+const { Content } = Layout;
 
 const Toppage: React.FC<ToppageProps> = (props) => {
     const navigate = useNavigate();
@@ -19,7 +21,7 @@ const Toppage: React.FC<ToppageProps> = (props) => {
     return (
     <React.Fragment>
         <Layout style={{ minHeight: '100vh' }}>
-            <Header style={{ color: 'white', textAlign: 'center', backgroundColor: '#004ab3' }}>TUS YURIKAI SYSTEM</Header>
+            <CustomHeader />
             <Content style={{ padding: '50px 50px', minHeight: '80vh' }}>
                 <List
                     itemLayout="horizontal"
@@ -38,7 +40,7 @@ const Toppage: React.FC<ToppageProps> = (props) => {
                     )}
                 />
             </Content>
-            <Footer style={{ textAlign: 'center', backgroundColor: 'white' }}>YURUKAI SYSTEM ©2024</Footer>
+            <CustomFooter />
         </Layout>
     </React.Fragment>
     );

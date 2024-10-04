@@ -1,14 +1,14 @@
 import React from 'react';
 import { Timeline, Layout, Card } from 'antd';
+import CustomHeader from '../component/CustomHeader';
+import CustomFooter from '../component/CustomFooter';
 
-const { Header, Content, Footer } = Layout;
+const { Content } = Layout;
 
 const Process: React.FC = () => {
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <Header style={{ color: 'white', textAlign: 'center', backgroundColor: '#004ab3' }}>
-                TUS YURIKAI SYSTEM
-            </Header>
+            <CustomHeader />
             <Content style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '50px', minHeight: '70vh' }}>
                 <Card
                     style={{
@@ -54,9 +54,7 @@ const Process: React.FC = () => {
                     <p>※このページは閉じてもかまいません</p>
                 </Card>
             </Content>
-            <Footer style={{ textAlign: 'center', backgroundColor: 'white' }}>
-                YURUKAI SYSTEM ©2024
-            </Footer>
+            <CustomFooter />
         </Layout>
     );
 };

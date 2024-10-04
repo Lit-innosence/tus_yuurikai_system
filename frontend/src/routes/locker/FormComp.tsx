@@ -12,7 +12,7 @@ const FormComp: React.FC = () => {
             title="フォームの提出に成功しました！"
             subTitle="登録した学籍番号宛に認証用のメールを送信しました。"
             extra={[
-            <Button type="primary" key="dashboard" onClick={() => navigate('/locker-process')}>
+            <Button type="primary" key="dashboard" onClick={() => navigate('/locker/process')}>
                 今後のステップを確認する
             </Button>,
             ]}

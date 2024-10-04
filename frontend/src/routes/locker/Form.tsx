@@ -1,22 +1,22 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Input, Button, Layout } from 'antd';
+import CustomHeader from '../component/CustomHeader';
+import CustomFooter from '../component/CustomFooter';
 
-const { Header, Content, Footer } = Layout;
+const { Content } = Layout;
 
 const LockerForm: React.FC = () => {
     const navigate = useNavigate();  
 
     const onFinish = (values: any) => {
         // 入力内容を確認ページに渡す
-        navigate('/locker-confirm', { state: { formData: values } });
+        navigate('/locker/confirm', { state: { formData: values } });
     };
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <Header style={{ color: 'white', textAlign: 'center', backgroundColor: '#004ab3' }}>
-                TUS YURIKAI SYSTEM
-            </Header>
+            <CustomHeader />
             <Content style={{ padding: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Form
                     name="lockerForm"
@@ -123,9 +123,7 @@ const LockerForm: React.FC = () => {
                     </Form.Item>
                 </Form>
             </Content>
-            <Footer style={{ textAlign: 'center', backgroundColor: 'white' }}>
-                YURUKAI SYSTEM ©2024
-            </Footer>
+            <CustomFooter />
         </Layout>
     );
 };

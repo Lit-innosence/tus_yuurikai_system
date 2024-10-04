@@ -1,14 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { Button, Layout, Card, message } from 'antd';
+import { Button, Layout, Card, Checkbox, message } from 'antd';
+import CustomHeader from '../component/CustomHeader';
+import CustomFooter from '../component/CustomFooter';
 
-const { Header, Content, Footer } = Layout;
+const { Content } = Layout;
 
 const ConfirmPage: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { formData } = location.state as { formData: any };
+
+    // チェックボックスの状態を管理
+    const [isChecked, setIsChecked] = useState(false);
+
+    const handleCheckboxChange = (e: any) => {
+        setIsChecked(e.target.checked);
+    };
 
     const handleConfirm = async () => {
         const formattedData = {
@@ -30,7 +39,7 @@ const ConfirmPage: React.FC = () => {
             // const response = await axios.post('https://your-backend-server.com/api/endpoint', formattedData);
             // console.log('成功:', response.data);
             message.success('フォームが正常に送信されました');
-            navigate('/form-complete');
+            navigate('/locker/form/complete');
         } catch (error) {
             console.error('エラー:', error);
             message.error('送信に失敗しました');
@@ -39,9 +48,7 @@ const ConfirmPage: React.FC = () => {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <Header style={{ color: 'white', textAlign: 'center', backgroundColor: '#004ab3' }}>
-                TUS_YURUKAI_SYSTEM
-            </Header>
+            <CustomHeader />
             <Content style={{ padding: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Card
                     title="入力内容の確認"
@@ -59,16 +66,20 @@ const ConfirmPage: React.FC = () => {
                     <p><strong>学籍番号:</strong> {formData.coUserStudentId}</p>
                     <p><strong>氏名:</strong> {formData.coUserLastName} {formData.coUserFirstName}</p>
                     
+                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                        <Checkbox onChange={handleCheckboxChange}>
+                            入力内容を確認しました。
+                        </Checkbox>
+                    </div>
+
                     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px' }}>
-                        <Button type="primary" onClick={handleConfirm}>
+                        <Button type="primary" onClick={handleConfirm} disabled={!isChecked}>
                             確認して登録
                         </Button>
                     </div>
                 </Card>
             </Content>
-            <Footer style={{ textAlign: 'center', backgroundColor: 'white' }}>
-                YURUKAI SYSTEM ©2024
-            </Footer>
+            <CustomFooter />
         </Layout>
     );
 };
