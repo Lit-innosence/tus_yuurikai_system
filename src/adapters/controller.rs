@@ -37,7 +37,7 @@ use utoipa::{OpenApi, ToSchema};
 pub struct ApiDoc;
 
 // GETヘルスチェック
-#[utoipa::path(context_path = "")]
+#[utoipa::path(context_path = "/api")]
 #[get("/get-healthcheck")]
 pub fn get_healthcheck() -> &'static str {
     "Hello, world!"
@@ -51,7 +51,7 @@ pub struct HealthCheckRequest {
     pub text: String,
 }
 
-#[utoipa::path(context_path = "")]
+#[utoipa::path(context_path = "/api")]
 #[post("/post-healthcheck", data = "<data>")]
 pub fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
     format!("Accepted post request! {:?}", data.text)
@@ -63,7 +63,7 @@ pub fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
 pub struct TokenGenRequest {
     pub data: PairInfo,
 }
-#[utoipa::path(context_path = "/locker")]
+#[utoipa::path(context_path = "/api/locker")]
 #[post("/token-gen", data = "<request>")]
 pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -> Status {
 
@@ -92,7 +92,7 @@ pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -
 }
 
 // main_user認証API {
-#[utoipa::path(context_path = "/locker")]
+#[utoipa::path(context_path = "/api/locker")]
 #[get("/main-auth?<token>")]
 pub async fn main_auth(token: String, app: &State<App>) -> Status {
 
@@ -133,7 +133,7 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
 }
 
 // co_user認証API {
-#[utoipa::path(context_path = "/locker")]
+#[utoipa::path(context_path = "/api/locker")]
 #[get("/co-auth?<token>")]
 pub async fn co_auth(token: String, app: &State<App>) -> Status {
     let auth = match app.auth.token_check(token, false).await{
@@ -191,8 +191,8 @@ pub struct AuthCheckResponse {
 }
 
 // 認証検証API
-#[utoipa::path(context_path = "")]
-#[get("/locker/auth-check?<token>")]
+#[utoipa::path(context_path = "/api/locker")]
+#[get("/auth-check?<token>")]
 pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthCheckResponse>, Status> {
     let auth = match app.auth.token_check(token, true).await{
         Ok(auth) => auth,
@@ -231,7 +231,7 @@ pub struct LockerResisterRequest {
     pub data: AssignmentInfo,
 }
 
-#[utoipa::path(context_path = "/locker")]
+#[utoipa::path(context_path = "/api/locker")]
 #[post("/locker-register", data = "<request>")]
 pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<App>) -> (Status, &'static str) {
 

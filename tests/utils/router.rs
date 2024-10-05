@@ -18,14 +18,14 @@ pub fn rocket() -> Rocket<Build> {
     let rocket = rocket::build()
         .manage(app)
         .mount(
-            "/",
+            "/api",
             routes![
                 get_healthcheck,
                 post_healthcheck
             ]
         )
         .mount(
-            "/locker",
+            "/api/locker",
             routes![
                 token_generator,
                 main_auth,
@@ -34,7 +34,7 @@ pub fn rocket() -> Rocket<Build> {
             ],
         )
         .mount(
-            "/circle",
+            "/api/circle",
             routes![
             ],
         )
