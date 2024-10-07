@@ -9,7 +9,7 @@ use crate::usecase::{
 
 use std::env;
 use dotenv::dotenv;
-use rocket::{get, http::Status, post, serde::json::Json, State};
+use rocket::{get, http::{Status, RawStr}, post, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
 
@@ -238,7 +238,7 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     let assignment = &request.data;
 
     // pair_idの検索
-    let user_pair = match app.student_pair.get_by_id(assignment).await {
+    let user_pair = match app.student_pair.get_by_id(&assignment.student_id).await {
         Ok(student_pair) => student_pair,
         Err(_) => return (Status::InternalServerError, "failed to get student_pair id"),
     };
@@ -269,4 +269,85 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
 
 // 管理者パスワード照合API
 
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct UserSearchResult {
+    pub locker_id : String,
+    pub floor : i8,
+    pub main_user : UserInfo,
+    pub co_user : UserInfo,
+    pub year : i32,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct UserSearchResponce {
+    pub data: Vec<UserSearchResult>,
+}
+
 // ロッカー利用者検索API
+// 名前は申請者の名前のみ受け付ける
+#[utoipa::path(context_path = "/api/locker")]
+#[get("/user-search/<year>?<floor>&<familyname>&<givenname>")]
+pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String>, givenname: Option<String>, app: &State<App>) -> Result<Json<UserSearchResponce>, Status> {
+    let family_name_val = match familyname {
+        None => String::from(""),
+        Some(x) => String::from(RawStr::new(&x).url_decode().unwrap()),
+    };
+    let given_name_val = match givenname {
+        None => String::from(""),
+        Some(x) => String::from(RawStr::new(&x).url_decode().unwrap()),
+    };
+
+    println!("f:{} g:{}", family_name_val, given_name_val);
+
+    let main_user = match app.student.get_by_name(&family_name_val, &given_name_val).await {
+        Ok(student) => student,
+        Err(_) => return Err(Status::BadGateway),
+    };
+
+    let user_pair = match app.student_pair.get_by_id(&main_user.student_id).await {
+        Ok(student_pair) => student_pair,
+        Err(_) => return Err(Status::NotFound),
+    };
+
+    let get_result = match app.assignment_record.get(&year, floor, &user_pair.pair_id).await {
+        Ok(res) => res,
+        Err(_) => return Err(Status::BadRequest),
+    };
+
+    let mut result: Vec<UserSearchResult> = Vec::new();
+
+    for element in get_result {
+        let co_user = match app.student.get_by_id(&element.student_id2).await {
+            Ok(student) => student,
+            Err(_) => return Err(Status::NotFound),
+        };
+
+        let main_user_info = UserInfo {
+            student_id: main_user.student_id.clone(),
+            family_name: main_user.family_name.clone(),
+            given_name: main_user.given_name.clone(),
+        };
+
+        let co_user_info = UserInfo {
+            student_id: co_user.student_id,
+            family_name: co_user.family_name,
+            given_name: co_user.given_name,
+        };
+
+        let locker_id_borrow = element.locker_id.clone();
+
+        let num = UserSearchResult {
+            locker_id: element.locker_id,
+            floor: locker_id_borrow.chars().nth(0).unwrap().to_digit(10).unwrap() as i8,
+            main_user: main_user_info,
+            co_user: co_user_info,
+            year: year,
+        };
+
+        result.push(num);
+    }
+
+    Ok(Json(UserSearchResponce{
+        data: result,
+    }))
+}

@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use crate::domain::{assignment::AssignmentInfo, student_pair::PairInfo};
+use crate::domain::student_pair::PairInfo;
 use crate::adapters::repository::StudentPairRepository;
 use crate::infrastracture::models::StudentPair;
 use diesel::result::Error;
@@ -13,7 +13,7 @@ pub struct StudentPairUsecaseImpl {
 #[async_trait]
 pub trait StudentPairUsecase: Sync + Send {
     async fn register(&self, student_pair: &PairInfo) -> Result<StudentPair, Error>;
-    async fn get_by_id(&self, assignment: &AssignmentInfo) -> Result<StudentPair, Error>;
+    async fn get_by_id(&self, student_id: &String) -> Result<StudentPair, Error>;
 }
 
 impl StudentPairUsecaseImpl {
@@ -28,8 +28,8 @@ impl StudentPairUsecase for StudentPairUsecaseImpl {
         let year = Local::now().year();
         self.student_pair_repository.insert(&student_pair.main_user.student_id, &student_pair.co_user.student_id, &year).await
     }
-    async fn get_by_id(&self, assignment: &AssignmentInfo) -> Result<StudentPair, Error> {
+    async fn get_by_id(&self, student_id: &String) -> Result<StudentPair, Error> {
         let year = Local::now().year();
-        self.student_pair_repository.get_by_student_id_and_year(&assignment.student_id, &year).await
+        self.student_pair_repository.get_by_student_id_and_year(student_id, &year).await
     }
 }

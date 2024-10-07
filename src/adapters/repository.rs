@@ -5,7 +5,7 @@ use uuid::Uuid;
 use async_trait::async_trait;
 
 use crate::infrastracture::schema::{student, student_pair, locker, assignment_record, auth};
-use crate::infrastracture::models::{Student, NewStudent, StudentPair, NewStudentPair, Auth, NewAuth, Locker, NewLocker ,AssignmentRecord, NewAssignmentRecord};
+use crate::infrastracture::models::{Student, NewStudent, StudentPair, NewStudentPair, Auth, NewAuth, Locker, NewLocker ,AssignmentRecord, NewAssignmentRecord, AssignmentRecordGetResult};
 use crate::infrastracture::router::Pool;
 
 // student
@@ -15,6 +15,17 @@ pub trait StudentRepository: Send + Sync {
     async fn insert(
         &self,
         student_id: &String,
+        family_name: &String,
+        given_name: &String,
+    ) -> Result<Student, Error>;
+
+    async fn get_by_id(
+        &self,
+        student_id: &String,
+    ) -> Result<Student, Error>;
+
+    async fn get_by_name(
+        &self,
         family_name: &String,
         given_name: &String,
     ) -> Result<Student, Error>;
@@ -53,6 +64,27 @@ impl StudentRepository for StudentRepositorySqlImpl{
             .do_update()
             .set(student::updated_at.eq(diesel::dsl::now))
             .get_result(&mut conn)
+    }
+
+    async fn get_by_id(
+            &self,
+            student_id: &String,
+        ) -> Result<Student, Error> {
+        let mut conn = self.pool.get().unwrap();
+        student::table
+            .filter(student::student_id.eq(student_id))
+            .get_result(&mut conn)
+    }
+
+    async fn get_by_name(
+        &self,
+        family_name: &String,
+        given_name: &String,
+    ) -> Result<Student, Error> {
+        let mut conn = self.pool.get().unwrap();
+        student::table
+            .filter(student::family_name.eq(family_name).and(student::given_name.eq(given_name)))
+            .first(&mut conn)
     }
 
     async fn delete_all(
@@ -337,6 +369,13 @@ pub trait AssignmentRecordRepository: Send + Sync {
         year: &i32,
     ) -> Result<AssignmentRecord, Error>;
 
+    async fn get(
+        &self,
+        year: &i32,
+        floor: &String,
+        pair_id: &Uuid,
+    ) -> Result<Vec<AssignmentRecordGetResult>, Error>;
+
     async fn delete_all(
         &self
     ) -> Result<usize, Error>;
@@ -369,6 +408,26 @@ impl AssignmentRecordRepository for AssignmentRecordRepositorySqlImpl {
         diesel::insert_into(assignment_record::table)
             .values(&new_assignmentrecord)
             .get_result(&mut conn)
+    }
+
+    async fn get (
+        &self,
+        year: &i32,
+        floor: &String,
+        pair_id: &Uuid,
+    ) -> Result<Vec<AssignmentRecordGetResult>, Error> {
+        let mut conn = self.pool.get().unwrap();
+
+        let floor_ex = format!("{}%", floor);
+
+        student_pair::table
+            .select((student_pair::pair_id, student_pair::student_id1, student_pair::student_id2, student_pair::year)
+            ).inner_join(assignment_record::table)
+            .select((student_pair::pair_id, student_pair::student_id1, student_pair::student_id2, assignment_record::record_id, assignment_record::locker_id, assignment_record::year))
+            .filter(assignment_record::locker_id
+                .like(floor_ex)
+            ).filter(student_pair::pair_id.eq(pair_id).and(assignment_record::year.eq(year))
+            ).get_results(&mut conn)
     }
 
     async fn delete_all(

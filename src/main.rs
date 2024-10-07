@@ -6,7 +6,9 @@ use tus_yuurikai_system::adapters::controller::{
                                 main_auth,
                                 co_auth,
                                 auth_check,
-                                locker_register};
+                                locker_register,
+                                user_search
+                            };
 use rocket::routes;
 use utoipa_swagger_ui::SwaggerUi;
 use utoipa::OpenApi;
@@ -30,7 +32,8 @@ async fn main() -> Result<(), rocket::Error> {
                 main_auth,
                 co_auth,
                 auth_check,
-                locker_register
+                locker_register,
+                user_search
             ],
         )
         .mount(

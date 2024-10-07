@@ -7,7 +7,9 @@ use tus_yuurikai_system::adapters::controller::{
                                 token_generator,
                                 main_auth,
                                 co_auth,
-                                locker_register};
+                                locker_register,
+                                user_search
+                            };
 
 use rocket::{routes, Rocket, Build};
 use utoipa_swagger_ui::SwaggerUi;
@@ -30,7 +32,8 @@ pub fn rocket() -> Rocket<Build> {
                 token_generator,
                 main_auth,
                 co_auth,
-                locker_register
+                locker_register,
+                user_search
             ],
         )
         .mount(
