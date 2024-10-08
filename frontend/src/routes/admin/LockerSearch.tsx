@@ -49,7 +49,7 @@ const [form] = Form.useForm();
 const handleSearch = async (values: { family_name?: string; given_name?: string; floor?: number; year?: number }) => {
     // クエリパラメータを生成
     const year = values.year || new Date().getFullYear();
-    let query = `/locker/user-search/${year}/`;
+    let query = `api/locker/user-search/${year}/`;
     const params = new URLSearchParams();
 
     if (values.family_name) params.append('family_name', values.family_name);
@@ -74,10 +74,10 @@ const handleSearch = async (values: { family_name?: string; given_name?: string;
     // モックデータを使ったフィルタリング
     const filteredResults = mockResponse.data.filter((item) => {
     return (
-        (!values.year || item.year === values.year) &&
+        (!values.year || item.year == values.year) &&
         (!values.family_name || item.main_user.family_name.includes(values.family_name) || item.co_user.family_name.includes(values.family_name)) &&
         (!values.given_name || item.main_user.given_name.includes(values.given_name) || item.co_user.given_name.includes(values.given_name)) &&
-        (values.floor === undefined || item.floor === values.floor)
+        (values.floor === undefined || item.floor == values.floor)
     );
     });
 
@@ -92,7 +92,7 @@ const columns = [
     key: 'locker_id',
     },
     {
-    title: 'フロア',
+    title: '階数',
     dataIndex: 'floor',
     key: 'floor',
     },
@@ -102,14 +102,14 @@ const columns = [
     key: 'year',
     },
     {
-    title: '主利用者',
+    title: '主利用者 [学籍番号, 名前]',
     key: 'main_user',
-    render: (record: any) => `${record.main_user.family_name} ${record.main_user.given_name} (学籍番号: ${record.main_user.student_id})`,
+    render: (record: any) => `[${record.main_user.student_id}, ${record.main_user.family_name} ${record.main_user.given_name}]`,
     },
     {
-    title: '共同利用者',
+    title: '共同利用者 [学籍番号, 名前]',
     key: 'co_user',
-    render: (record: any) => `${record.co_user.family_name} ${record.co_user.given_name} (学籍番号: ${record.co_user.student_id})`,
+    render: (record: any) => `[${record.co_user.student_id}, ${record.co_user.family_name} ${record.co_user.given_name}]`,
     },
 ];
 
@@ -120,8 +120,8 @@ return (
             <Card style={{ maxWidth: 800, margin: '20px auto', padding: '20px' }}>
             <Title level={3}>ロッカー利用者検索</Title>
             <Form form={form} layout="vertical" onFinish={handleSearch}>
-                <Form.Item label="年" name="year">
-                <Input type="number" placeholder="年を入力 (例: 2024)" />
+                <Form.Item rules={[{required: true, message: '年を入力してください' }]} label="年" name="year">
+                <Input  type="number" placeholder="年を入力 (例: 2024)" />
                 </Form.Item>
                 <Form.Item label="姓" name="family_name">
                 <Input placeholder="姓を入力" />
@@ -129,8 +129,8 @@ return (
                 <Form.Item label="名" name="given_name">
                 <Input placeholder="名を入力" />
                 </Form.Item>
-                <Form.Item label="フロア" name="floor">
-                <Input type="number" placeholder="フロア番号を入力" />
+                <Form.Item label="階数" name="floor">
+                <Input type="number" placeholder="階数を入力" />
                 </Form.Item>
                 <Button type="primary" htmlType="submit" block>
                 検索

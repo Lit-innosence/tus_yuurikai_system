@@ -6,7 +6,7 @@ const { Footer } = Layout;
 const CustomFooter: React.FC = () => {
     return (
         <Footer style={{ textAlign: 'center', backgroundColor: 'white' }}>
-            YURIKAI SYSTEM ©2024
+            TUS YURIKAI SYSTEM ©2024
         </Footer>
     );
 };
