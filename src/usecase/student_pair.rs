@@ -14,6 +14,8 @@ pub struct StudentPairUsecaseImpl {
 pub trait StudentPairUsecase: Sync + Send {
     async fn register(&self, student_pair: &PairInfo) -> Result<StudentPair, Error>;
     async fn get_by_id(&self, student_id: &String) -> Result<StudentPair, Error>;
+    async fn get_by_main_id(&self, student_id: &String) -> Result<StudentPair, Error>;
+    async fn get_by_pair_id(&self, pair_id: &uuid::Uuid) -> Result<StudentPair, Error>;
 }
 
 impl StudentPairUsecaseImpl {
@@ -31,5 +33,13 @@ impl StudentPairUsecase for StudentPairUsecaseImpl {
     async fn get_by_id(&self, student_id: &String) -> Result<StudentPair, Error> {
         let year = Local::now().year();
         self.student_pair_repository.get_by_student_id_and_year(student_id, &year).await
+    }
+    async fn get_by_main_id(&self, student_id: &String) -> Result<StudentPair, Error> {
+        let year = Local::now().year();
+        self.student_pair_repository.get_by_main_id_and_year(student_id, &year).await
+    }
+    async fn get_by_pair_id(&self, pair_id: &uuid::Uuid) -> Result<StudentPair, Error> {
+        let year = Local::now().year();
+        self.student_pair_repository.get_by_pair_id_and_year(pair_id, &year).await
     }
 }

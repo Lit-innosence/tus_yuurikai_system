@@ -1,5 +1,5 @@
 use crate::domain::{student::UserInfo, student_pair::PairInfo, assignment::AssignmentInfo};
-use crate::infrastracture::router::App;
+use crate::infrastracture::{router::App, models::{AssignmentRecord, StudentPair}};
 use crate::usecase::{
                     student::StudentUsecase,
                     student_pair::StudentPairUsecase,
@@ -7,8 +7,9 @@ use crate::usecase::{
                     auth::AuthUsecase,
                     locker::LockerUsecase};
 
-use std::env;
+use std::{env, collections::HashSet};
 use dotenv::dotenv;
+use rocket::response::status;
 use rocket::{get, http::{Status, RawStr}, post, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
@@ -238,7 +239,7 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     let assignment = &request.data;
 
     // pair_idの検索
-    let user_pair = match app.student_pair.get_by_id(&assignment.student_id).await {
+    let user_pair = match app.student_pair.get_by_main_id(&assignment.student_id).await {
         Ok(student_pair) => student_pair,
         Err(_) => return (Status::InternalServerError, "failed to get student_pair id"),
     };
@@ -297,27 +298,45 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
         Some(x) => String::from(RawStr::new(&x).url_decode().unwrap()),
     };
 
-    println!("f:{} g:{}", family_name_val, given_name_val);
-
-    let main_user = match app.student.get_by_name(&family_name_val, &given_name_val).await {
+    let match_user = match app.student.get_by_name(&family_name_val, &given_name_val).await {
         Ok(student) => student,
         Err(_) => return Err(Status::BadGateway),
     };
 
-    let user_pair = match app.student_pair.get_by_id(&main_user.student_id).await {
-        Ok(student_pair) => student_pair,
-        Err(_) => return Err(Status::NotFound),
-    };
+    let mut user_pairs= Vec::new();
+    for element in match_user {
+        let user_pair = match app.student_pair.get_by_id(&element.student_id).await {
+            Ok(student_pair) => student_pair,
+            Err(_) => return Err(Status::NotFound),
+        };
+        user_pairs.push(user_pair)
+    }
 
-    let get_result = match app.assignment_record.get(&year, floor, &user_pair.pair_id).await {
-        Ok(res) => res,
-        Err(_) => return Err(Status::BadRequest),
-    };
+    let unique_user_pair: HashSet<StudentPair> = user_pairs.into_iter().collect();
+
+    let mut matched_record: Vec<AssignmentRecord> = Vec::new();
+    for element in unique_user_pair {
+        let mut get_result = match app.assignment_record.get(&year, floor, &element.pair_id).await {
+            Ok(res) => res,
+            Err(_) => return Err(Status::BadRequest),
+        };
+        matched_record.append(&mut get_result);
+    }
 
     let mut result: Vec<UserSearchResult> = Vec::new();
 
-    for element in get_result {
-        let co_user = match app.student.get_by_id(&element.student_id2).await {
+    for element in matched_record {
+        let pair = match app.student_pair.get_by_pair_id(&element.pair_id).await {
+            Ok(studentpair) => studentpair,
+            Err(_) => return Err(Status::NotFound),
+        };
+
+        let main_user = match app.student.get_by_id(&pair.student_id1).await {
+            Ok(student) => student,
+            Err(_) => return Err(Status::NotFound),
+        };
+
+        let co_user = match app.student.get_by_id(&pair.student_id2).await {
             Ok(student) => student,
             Err(_) => return Err(Status::NotFound),
         };

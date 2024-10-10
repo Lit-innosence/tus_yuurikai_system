@@ -21,7 +21,7 @@ pub struct NewStudent<'a> {
 
 // student_pair
 
-#[derive(Queryable)]
+#[derive(PartialEq, Eq, Hash, Queryable)]
 pub struct StudentPair {
     pub pair_id: uuid::Uuid,
     pub student_id1: String,
