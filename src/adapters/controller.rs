@@ -9,7 +9,6 @@ use crate::usecase::{
 
 use std::{env, collections::HashSet};
 use dotenv::dotenv;
-use rocket::response::status;
 use rocket::{get, http::{Status, RawStr}, post, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
@@ -82,7 +81,7 @@ pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
 
     let user_address = format!("{}@ed.tus.ac.jp", main_user.student_id);
-    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?token={}", main_user.family_name, main_user.given_name, app_url, token);
+    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?method=1&token={}", main_user.family_name, main_user.given_name, app_url, token);
     let subject = "ロッカーシステム メール認証";
 
     if app.auth.mail_sender(user_address, content, subject).await.is_err(){
@@ -123,7 +122,7 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
 
     let user_address = format!("{}@ed.tus.ac.jp", co_user.student_id);
-    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?token={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token);
+    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?method=0&token={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token);
     let subject = "ロッカーシステム メール認証";
 
     if app.auth.mail_sender(user_address, content, subject).await.is_err(){
@@ -176,7 +175,7 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
 
     let user_address = format!("{}@ed.tus.ac.jp", main_user.student_id);
-    let content = format!("認証が完了しました。\n以下のリンクから使用するロッカー番号を選択してください。\n\n{}?token={}", app_url, token);
+    let content = format!("認証が完了しました。\n以下のリンクから使用するロッカー番号を選択してください。\n\n{}/locker/user-register/?method=2&token={}", app_url, token);
     let subject = "ロッカーシステム 認証完了通知";
 
     if app.auth.mail_sender(user_address, content, subject).await.is_err(){
@@ -300,7 +299,7 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
 
     let match_user = match app.student.get_by_name(&family_name_val, &given_name_val).await {
         Ok(student) => student,
-        Err(_) => return Err(Status::BadGateway),
+        Err(_) => return Err(Status::NotFound),
     };
 
     let mut user_pairs= Vec::new();
@@ -318,7 +317,7 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
     for element in unique_user_pair {
         let mut get_result = match app.assignment_record.get(&year, floor, &element.pair_id).await {
             Ok(res) => res,
-            Err(_) => return Err(Status::BadRequest),
+            Err(_) => return Err(Status::NotFound),
         };
         matched_record.append(&mut get_result);
     }
