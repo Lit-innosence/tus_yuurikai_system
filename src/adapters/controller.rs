@@ -1,5 +1,5 @@
 use crate::domain::{student::UserInfo, student_pair::PairInfo, assignment::AssignmentInfo};
-use crate::infrastracture::router::App;
+use crate::infrastracture::{router::App, models::{AssignmentRecord, StudentPair}};
 use crate::usecase::{
                     student::StudentUsecase,
                     student_pair::StudentPairUsecase,
@@ -7,9 +7,9 @@ use crate::usecase::{
                     auth::AuthUsecase,
                     locker::LockerUsecase};
 
-use std::env;
+use std::{env, collections::HashSet};
 use dotenv::dotenv;
-use rocket::{get, http::Status, post, serde::json::Json, State};
+use rocket::{get, http::{Status, RawStr}, post, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
 
@@ -37,7 +37,7 @@ use utoipa::{OpenApi, ToSchema};
 pub struct ApiDoc;
 
 // GETヘルスチェック
-#[utoipa::path(context_path = "")]
+#[utoipa::path(context_path = "/api")]
 #[get("/get-healthcheck")]
 pub fn get_healthcheck() -> &'static str {
     "Hello, world!"
@@ -51,7 +51,7 @@ pub struct HealthCheckRequest {
     pub text: String,
 }
 
-#[utoipa::path(context_path = "")]
+#[utoipa::path(context_path = "/api")]
 #[post("/post-healthcheck", data = "<data>")]
 pub fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
     format!("Accepted post request! {:?}", data.text)
@@ -63,7 +63,7 @@ pub fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
 pub struct TokenGenRequest {
     pub data: PairInfo,
 }
-#[utoipa::path(context_path = "/locker")]
+#[utoipa::path(context_path = "/api/locker")]
 #[post("/token-gen", data = "<request>")]
 pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -> Status {
 
@@ -81,7 +81,7 @@ pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
 
     let user_address = format!("{}@ed.tus.ac.jp", main_user.student_id);
-    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?token={}", main_user.family_name, main_user.given_name, app_url, token);
+    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?method=1&token={}", main_user.family_name, main_user.given_name, app_url, token);
     let subject = "ロッカーシステム メール認証";
 
     if app.auth.mail_sender(user_address, content, subject).await.is_err(){
@@ -92,7 +92,7 @@ pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -
 }
 
 // main_user認証API {
-#[utoipa::path(context_path = "/locker")]
+#[utoipa::path(context_path = "/api/locker")]
 #[get("/main-auth?<token>")]
 pub async fn main_auth(token: String, app: &State<App>) -> Status {
 
@@ -122,7 +122,7 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
 
     let user_address = format!("{}@ed.tus.ac.jp", co_user.student_id);
-    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?token={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token);
+    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?method=0&token={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token);
     let subject = "ロッカーシステム メール認証";
 
     if app.auth.mail_sender(user_address, content, subject).await.is_err(){
@@ -133,7 +133,7 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
 }
 
 // co_user認証API {
-#[utoipa::path(context_path = "/locker")]
+#[utoipa::path(context_path = "/api/locker")]
 #[get("/co-auth?<token>")]
 pub async fn co_auth(token: String, app: &State<App>) -> Status {
     let auth = match app.auth.token_check(token, false).await{
@@ -175,7 +175,7 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
 
     let user_address = format!("{}@ed.tus.ac.jp", main_user.student_id);
-    let content = format!("認証が完了しました。\n以下のリンクから使用するロッカー番号を選択してください。\n\n{}?token={}", app_url, token);
+    let content = format!("認証が完了しました。\n以下のリンクから使用するロッカー番号を選択してください。\n\n{}/locker/user-register/?method=2&token={}", app_url, token);
     let subject = "ロッカーシステム 認証完了通知";
 
     if app.auth.mail_sender(user_address, content, subject).await.is_err(){
@@ -191,8 +191,8 @@ pub struct AuthCheckResponse {
 }
 
 // 認証検証API
-#[utoipa::path(context_path = "")]
-#[get("/locker/auth-check?<token>")]
+#[utoipa::path(context_path = "/api/locker")]
+#[get("/auth-check?<token>")]
 pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthCheckResponse>, Status> {
     let auth = match app.auth.token_check(token, true).await{
         Ok(auth) => auth,
@@ -231,14 +231,14 @@ pub struct LockerResisterRequest {
     pub data: AssignmentInfo,
 }
 
-#[utoipa::path(context_path = "/locker")]
+#[utoipa::path(context_path = "/api/locker")]
 #[post("/locker-register", data = "<request>")]
 pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<App>) -> (Status, &'static str) {
 
     let assignment = &request.data;
 
     // pair_idの検索
-    let user_pair = match app.student_pair.get_by_id(assignment).await {
+    let user_pair = match app.student_pair.get_by_main_id(&assignment.student_id).await {
         Ok(student_pair) => student_pair,
         Err(_) => return (Status::InternalServerError, "failed to get student_pair id"),
     };
@@ -269,4 +269,103 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
 
 // 管理者パスワード照合API
 
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct UserSearchResult {
+    pub locker_id : String,
+    pub floor : i8,
+    pub main_user : UserInfo,
+    pub co_user : UserInfo,
+    pub year : i32,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize, ToSchema)]
+pub struct UserSearchResponce {
+    pub data: Vec<UserSearchResult>,
+}
+
 // ロッカー利用者検索API
+// 名前は申請者の名前のみ受け付ける
+#[utoipa::path(context_path = "/api/locker")]
+#[get("/user-search/<year>?<floor>&<familyname>&<givenname>")]
+pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String>, givenname: Option<String>, app: &State<App>) -> Result<Json<UserSearchResponce>, Status> {
+    let family_name_val = match familyname {
+        None => String::from(""),
+        Some(x) => String::from(RawStr::new(&x).url_decode().unwrap()),
+    };
+    let given_name_val = match givenname {
+        None => String::from(""),
+        Some(x) => String::from(RawStr::new(&x).url_decode().unwrap()),
+    };
+
+    let match_user = match app.student.get_by_name(&family_name_val, &given_name_val).await {
+        Ok(student) => student,
+        Err(_) => return Err(Status::NotFound),
+    };
+
+    let mut user_pairs= Vec::new();
+    for element in match_user {
+        let user_pair = match app.student_pair.get_by_id(&element.student_id).await {
+            Ok(student_pair) => student_pair,
+            Err(_) => return Err(Status::NotFound),
+        };
+        user_pairs.push(user_pair)
+    }
+
+    let unique_user_pair: HashSet<StudentPair> = user_pairs.into_iter().collect();
+
+    let mut matched_record: Vec<AssignmentRecord> = Vec::new();
+    for element in unique_user_pair {
+        let mut get_result = match app.assignment_record.get(&year, floor, &element.pair_id).await {
+            Ok(res) => res,
+            Err(_) => return Err(Status::NotFound),
+        };
+        matched_record.append(&mut get_result);
+    }
+
+    let mut result: Vec<UserSearchResult> = Vec::new();
+
+    for element in matched_record {
+        let pair = match app.student_pair.get_by_pair_id(&element.pair_id).await {
+            Ok(studentpair) => studentpair,
+            Err(_) => return Err(Status::NotFound),
+        };
+
+        let main_user = match app.student.get_by_id(&pair.student_id1).await {
+            Ok(student) => student,
+            Err(_) => return Err(Status::NotFound),
+        };
+
+        let co_user = match app.student.get_by_id(&pair.student_id2).await {
+            Ok(student) => student,
+            Err(_) => return Err(Status::NotFound),
+        };
+
+        let main_user_info = UserInfo {
+            student_id: main_user.student_id.clone(),
+            family_name: main_user.family_name.clone(),
+            given_name: main_user.given_name.clone(),
+        };
+
+        let co_user_info = UserInfo {
+            student_id: co_user.student_id,
+            family_name: co_user.family_name,
+            given_name: co_user.given_name,
+        };
+
+        let locker_id_borrow = element.locker_id.clone();
+
+        let num = UserSearchResult {
+            locker_id: element.locker_id,
+            floor: locker_id_borrow.chars().nth(0).unwrap().to_digit(10).unwrap() as i8,
+            main_user: main_user_info,
+            co_user: co_user_info,
+            year: year,
+        };
+
+        result.push(num);
+    }
+
+    Ok(Json(UserSearchResponce{
+        data: result,
+    }))
+}

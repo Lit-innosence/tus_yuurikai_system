@@ -15,7 +15,7 @@ async fn get_healthcheck_test() {
     let client = Client::tracked(rocket()).await.unwrap();
 
     // Act
-    let response = client.get(uri!(controller::get_healthcheck)).dispatch().await;
+    let response = client.get(uri!("/api", controller::get_healthcheck)).dispatch().await;
 
     // Assert
     assert_eq!(response.status(), Status::Ok);
@@ -31,7 +31,7 @@ async fn post_healthcheck_test() {
     };
 
     // Act
-    let response = client.post(uri!(controller::post_healthcheck))
+    let response = client.post(uri!("/api", controller::post_healthcheck))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;

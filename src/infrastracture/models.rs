@@ -21,7 +21,7 @@ pub struct NewStudent<'a> {
 
 // student_pair
 
-#[derive(Queryable)]
+#[derive(PartialEq, Eq, Hash, Queryable)]
 pub struct StudentPair {
     pub pair_id: uuid::Uuid,
     pub student_id1: String,
@@ -101,4 +101,14 @@ pub struct NewAuth<'a> {
     pub co_student_id: &'a String,
     pub co_family_name: &'a String,
     pub co_given_name: &'a String,
+}
+
+#[derive(Queryable)]
+pub struct AssignmentRecordGetResult {
+    pub pair_id: uuid::Uuid,
+    pub student_id1: String,
+    pub student_id2: String,
+    pub record_id: uuid::Uuid,
+    pub locker_id: String,
+    pub year: i32,
 }

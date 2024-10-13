@@ -1,3 +1,4 @@
+#[macro_use]
 extern crate rocket;
 extern crate tus_yuurikai_system;
 
@@ -6,6 +7,7 @@ mod utils;
 use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType};
+use tus_yuurikai_system::adapters::controller;
 use tus_yuurikai_system::adapters::controller::LockerResisterRequest;
 use tus_yuurikai_system::domain::{assignment::AssignmentInfo, student_pair::PairInfo, student::UserInfo};
 use tus_yuurikai_system::usecase::{student_pair::StudentPairUsecase, student::StudentUsecase};
@@ -61,7 +63,7 @@ async fn normal() {
 
 
     // Act
-    let response = client.post("/locker/locker-register")
+    let response = client.post(uri!("/api/locker", controller::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -121,7 +123,7 @@ async fn student_id_allow_a_b() {
 
 
     // Act
-    let response = client.post("/locker/locker-register")
+    let response = client.post(uri!("/api/locker", controller::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -181,7 +183,7 @@ async fn student_id_do_not_match() {
 
 
     // Act
-    let response = client.post("/locker/locker-register")
+    let response = client.post(uri!("/api/locker", controller::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -239,7 +241,7 @@ async fn year_do_not_match() {
 
 
     // Act
-    let response = client.post("/locker/locker-register")
+    let response = client.post(uri!("/api/locker", controller::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -305,12 +307,12 @@ async fn locker_status_unavailable() {
 
 
     // Act
-    let response = client.post("/locker/locker-register")
+    let response = client.post(uri!("/api/locker", controller::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
 
     // Assert
-    // assert_eq!(response.status(), Status::BadRequest);
+    assert_eq!(response.status(), Status::BadRequest);
     assert_eq!(response.into_string().await.unwrap(), "This locker is not vacant");
 }

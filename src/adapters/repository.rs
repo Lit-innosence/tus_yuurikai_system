@@ -19,6 +19,17 @@ pub trait StudentRepository: Send + Sync {
         given_name: &String,
     ) -> Result<Student, Error>;
 
+    async fn get_by_id(
+        &self,
+        student_id: &String,
+    ) -> Result<Student, Error>;
+
+    async fn get_by_name(
+        &self,
+        family_name: &String,
+        given_name: &String,
+    ) -> Result<Vec<Student>, Error>;
+
     async fn delete_all(
         &self
     ) -> Result<usize, Error>;
@@ -55,6 +66,30 @@ impl StudentRepository for StudentRepositorySqlImpl{
             .get_result(&mut conn)
     }
 
+    async fn get_by_id(
+            &self,
+            student_id: &String,
+        ) -> Result<Student, Error> {
+        let mut conn = self.pool.get().unwrap();
+        student::table
+            .filter(student::student_id.eq(student_id))
+            .get_result(&mut conn)
+    }
+
+    async fn get_by_name(
+        &self,
+        family_name: &String,
+        given_name: &String,
+    ) -> Result<Vec<Student>, Error> {
+        let mut conn = self.pool.get().unwrap();
+        let family_name_ex = format!("{}%", family_name);
+        let given_name_ex = format!("{}%", given_name);
+
+        student::table
+            .filter(student::family_name.like(family_name_ex).and(student::given_name.like(given_name_ex)))
+            .get_results(&mut conn)
+    }
+
     async fn delete_all(
         &self
     ) -> Result<usize, Error> {
@@ -77,6 +112,16 @@ pub trait StudentPairRepository: Send + Sync {
     async fn get_by_student_id_and_year(
         &self,
         student_id: &String,
+        year: &i32,
+    ) -> Result<StudentPair, Error>;
+    async fn get_by_main_id_and_year(
+        &self,
+        student_id: &String,
+        year: &i32,
+    ) -> Result<StudentPair, Error>;
+    async fn get_by_pair_id_and_year(
+        &self,
+        pair_id : &Uuid,
         year: &i32,
     ) -> Result<StudentPair, Error>;
     async fn delete_all(
@@ -123,9 +168,39 @@ impl StudentPairRepository for StudentPairRepositorySqlImpl{
             .filter(
                 student_pair::student_id1
                     .eq(student_id)
-                    .and(student_pair::year.eq(year)),
+                    .or(student_pair::student_id2.eq(student_id))
+                    .and(student_pair::year.eq(year))
             )
             .first(&mut conn)
+    }
+
+    async fn get_by_main_id_and_year(
+        &self,
+        student_id: &String,
+        year: &i32,
+    ) -> Result<StudentPair, Error> {
+        let mut conn = self.pool.get().unwrap();
+        student_pair::table
+            .filter(
+                student_pair::student_id1
+                    .eq(student_id)
+                    .and(student_pair::year.eq(year))
+            )
+            .first(&mut conn)
+    }
+
+    async fn get_by_pair_id_and_year(
+        &self,
+        pair_id: &Uuid,
+        year: &i32,
+    ) -> Result<StudentPair, Error> {
+        let mut conn = self.pool.get().unwrap();
+        student_pair::table
+            .filter(
+                student_pair::pair_id
+                    .eq(pair_id)
+                    .and(student_pair::year.eq(year))
+            ).get_result(&mut conn)
     }
 
     async fn delete_all(
@@ -337,6 +412,13 @@ pub trait AssignmentRecordRepository: Send + Sync {
         year: &i32,
     ) -> Result<AssignmentRecord, Error>;
 
+    async fn get(
+        &self,
+        year: &i32,
+        floor: &String,
+        pair_id: &Uuid,
+    ) -> Result<Vec<AssignmentRecord>, Error>;
+
     async fn delete_all(
         &self
     ) -> Result<usize, Error>;
@@ -369,6 +451,23 @@ impl AssignmentRecordRepository for AssignmentRecordRepositorySqlImpl {
         diesel::insert_into(assignment_record::table)
             .values(&new_assignmentrecord)
             .get_result(&mut conn)
+    }
+
+    async fn get (
+        &self,
+        year: &i32,
+        floor: &String,
+        pair_id: &Uuid,
+    ) -> Result<Vec<AssignmentRecord>, Error> {
+        let mut conn = self.pool.get().unwrap();
+
+        let floor_ex = format!("{}%", floor);
+
+        assignment_record::table
+        .filter(assignment_record::locker_id
+            .like(floor_ex)
+        ).filter(assignment_record::pair_id.eq(pair_id).and(assignment_record::year.eq(year))
+        ).get_results(&mut conn)
     }
 
     async fn delete_all(

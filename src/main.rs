@@ -6,7 +6,9 @@ use tus_yuurikai_system::adapters::controller::{
                                 main_auth,
                                 co_auth,
                                 auth_check,
-                                locker_register};
+                                locker_register,
+                                user_search
+                            };
 use rocket::routes;
 use utoipa_swagger_ui::SwaggerUi;
 use utoipa::OpenApi;
@@ -17,24 +19,25 @@ async fn main() -> Result<(), rocket::Error> {
     let _rocket = rocket::build()
         .manage(app)
         .mount(
-            "/",
+            "/api",
             routes![
                 get_healthcheck,
                 post_healthcheck,
             ]
         )
         .mount(
-            "/locker",
+            "/api/locker",
             routes![
                 token_generator,
                 main_auth,
                 co_auth,
                 auth_check,
-                locker_register
+                locker_register,
+                user_search
             ],
         )
         .mount(
-            "/circle",
+            "/api/circle",
             routes![]
         )
         .mount(
