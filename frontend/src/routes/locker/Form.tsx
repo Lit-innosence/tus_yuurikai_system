@@ -11,7 +11,7 @@ const LockerForm: React.FC = () => {
 
     const onFinish = (values: any) => {
         // 入力内容を確認ページに渡す
-        navigate('/locker/confirm', { state: { formData: values } });
+        navigate('/locker/form/confirm', { state: { formData: values } });
     };
 
     return (

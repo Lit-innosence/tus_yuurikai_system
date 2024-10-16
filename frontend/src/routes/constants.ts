@@ -1,4 +1,4 @@
 const constants = {
-    backendApiEndpoint: 'https://localhost:3000',
+    backendApiEndpoint: 'https://localhost:8000',
 };
 export default constants;
