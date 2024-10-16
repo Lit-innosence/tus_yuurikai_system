@@ -3,11 +3,8 @@ use std::env;
 use diesel::{PgConnection, r2d2::ConnectionManager};
 use dotenv::dotenv;
 use crate::adapters::repository::{
-                                StudentRepositorySqlImpl,
-                                StudentPairRepositorySqlImpl,
-                                LockerRepositorySqlImpl,
-                                AuthRepositorySqlImpl,
-                                AssignmentRecordRepositorySqlImpl};
+                                AdminRepositorySqlImpl, AssignmentRecordRepositorySqlImpl, AuthRepositorySqlImpl, LockerRepositorySqlImpl, StudentPairRepositorySqlImpl, StudentRepositorySqlImpl};
+use crate::usecase::admin::AdminUsecaseImpl;
 use crate::usecase::{
                     student::StudentUsecaseImpl,
                     student_pair::StudentPairUsecaseImpl,
@@ -22,7 +19,8 @@ pub struct App{
     pub student_pair: StudentPairUsecaseImpl,
     pub auth: AuthUsecaseImpl,
     pub locker: LockerUsecaseImpl,
-    pub assignment_record: AssignmentRecordUsecaseImpl
+    pub assignment_record: AssignmentRecordUsecaseImpl,
+    pub admin: AdminUsecaseImpl
 }
 
 impl App{
@@ -38,13 +36,15 @@ impl App{
         let auth_repository = AuthUsecaseImpl::new(Arc::new(AuthRepositorySqlImpl::new(pool.clone())));
         let locker_repository = LockerUsecaseImpl::new(Arc::new(LockerRepositorySqlImpl::new(pool.clone())));
         let assignment_record_repository = AssignmentRecordUsecaseImpl::new(Arc::new(AssignmentRecordRepositorySqlImpl::new(pool.clone())));
+        let admin_repository = AdminUsecaseImpl::new(Arc::new(AdminRepositorySqlImpl::new(pool.clone())));
 
         App {
             student: student_repository,
             student_pair: student_pair_repository,
             auth: auth_repository,
             locker: locker_repository,
-            assignment_record: assignment_record_repository
+            assignment_record: assignment_record_repository,
+            admin: admin_repository
         }
     }
 }

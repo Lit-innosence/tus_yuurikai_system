@@ -1,4 +1,4 @@
-use tus_yuurikai_system::{infrastracture::router::App, adapters::controller::ApiDoc};
+use tus_yuurikai_system::{infrastructure::router::App, adapters::controller::ApiDoc};
 use tus_yuurikai_system::adapters::controller::{
                                 get_healthcheck,
                                 post_healthcheck,
@@ -7,7 +7,8 @@ use tus_yuurikai_system::adapters::controller::{
                                 co_auth,
                                 auth_check,
                                 locker_register,
-                                user_search
+                                user_search,
+                                login,
                             };
 use rocket::routes;
 use utoipa_swagger_ui::SwaggerUi;
@@ -23,7 +24,12 @@ async fn main() -> Result<(), rocket::Error> {
             routes![
                 get_healthcheck,
                 post_healthcheck,
+                login,
             ]
+        )
+        .mount(
+            "/api/admin",
+            routes![],
         )
         .mount(
             "/api/locker",

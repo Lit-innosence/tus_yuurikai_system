@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use crate::domain::student::UserInfo;
 use crate::adapters::repository::StudentRepository;
-use crate::infrastracture::models::Student;
+use crate::infrastructure::models::Student;
 use diesel::result::Error;
 use async_trait::async_trait;
 

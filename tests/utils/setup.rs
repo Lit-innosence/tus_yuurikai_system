@@ -1,4 +1,4 @@
-use tus_yuurikai_system::infrastracture::router::App;
+use tus_yuurikai_system::infrastructure::router::App;
 
 pub async fn setup_db(app: &App) {
     match app.assignment_record.assignment_record_repository.delete_all().await {

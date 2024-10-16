@@ -1,6 +1,6 @@
 extern crate tus_yuurikai_system;
 
-use tus_yuurikai_system::{infrastracture::router::App, adapters::controller::ApiDoc};
+use tus_yuurikai_system::{infrastructure::router::App, adapters::controller::ApiDoc};
 use tus_yuurikai_system::adapters::controller::{
                                 get_healthcheck,
                                 post_healthcheck,

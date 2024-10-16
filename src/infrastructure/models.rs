@@ -1,5 +1,5 @@
 use diesel::{Insertable, Queryable};
-use crate::infrastracture::schema::{student, student_pair, locker, assignment_record, auth};
+use crate::infrastructure::schema::{student, student_pair, locker, assignment_record, auth, admin};
 // student
 
 #[derive(Queryable)]
@@ -111,4 +111,17 @@ pub struct AssignmentRecordGetResult {
     pub record_id: uuid::Uuid,
     pub locker_id: String,
     pub year: i32,
+}
+
+#[derive(Queryable)]
+pub struct Admin{
+    pub username: String,
+    pub password: String,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = admin)]
+pub struct NewAdmin<'a> {
+    pub username: &'a String,
+    pub password: &'a String,
 }

@@ -9,7 +9,7 @@ use rocket::http::Status;
 use tus_yuurikai_system::adapters::controller::{UserSearchResult, UserSearchResponce};
 use tus_yuurikai_system::domain::{assignment::AssignmentInfo, student_pair::PairInfo, student::UserInfo};
 use tus_yuurikai_system::usecase::{assignment_record::AssignmentRecordUsecase, student_pair::StudentPairUsecase, student::StudentUsecase};
-use tus_yuurikai_system::infrastracture::router::App;
+use tus_yuurikai_system::infrastructure::router::App;
 use chrono::{Datelike, Local};
 
 // 正常系
