@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use crate::domain::student_pair::PairInfo;
 use crate::adapters::repository::StudentPairRepository;
-use crate::infrastracture::models::StudentPair;
+use crate::infrastructure::models::StudentPair;
 use diesel::result::Error;
 use async_trait::async_trait;
 use chrono::{Datelike, Local};

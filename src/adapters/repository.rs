@@ -4,9 +4,9 @@ use diesel::result::Error;
 use uuid::Uuid;
 use async_trait::async_trait;
 
-use crate::infrastracture::schema::{student, student_pair, locker, assignment_record, auth};
-use crate::infrastracture::models::{Student, NewStudent, StudentPair, NewStudentPair, Auth, NewAuth, Locker, NewLocker ,AssignmentRecord, NewAssignmentRecord};
-use crate::infrastracture::router::Pool;
+use crate::infrastructure::schema::{student, student_pair, locker, assignment_record, auth, admin};
+use crate::infrastructure::models::{Student, NewStudent, StudentPair, NewStudentPair, Auth, NewAuth, Locker, NewLocker ,AssignmentRecord, NewAssignmentRecord, Admin, NewAdmin};
+use crate::infrastructure::router::Pool;
 
 // student
 
@@ -475,6 +475,71 @@ impl AssignmentRecordRepository for AssignmentRecordRepositorySqlImpl {
     ) -> Result<usize, Error> {
         let mut conn = self.pool.get().unwrap();
         diesel::delete(assignment_record::table)
+            .execute(&mut conn)
+    }
+}
+
+// admin
+
+#[async_trait]
+pub trait AdminRepository: Send + Sync {
+    async fn insert(
+        &self,
+        username: &String,
+        password: &String
+    ) -> Result<Admin, Error>;
+
+    async fn get_by_name(
+        &self,
+        username: &String,
+    ) -> Result<Admin, Error>;
+
+    async fn delete_all(
+        &self
+    ) -> Result<usize, Error>;
+}
+
+pub struct AdminRepositorySqlImpl {
+    pool : Pool<PgConnection>
+}
+
+impl AdminRepositorySqlImpl {
+    pub fn new(pool: Pool<PgConnection>) -> Self {
+        AdminRepositorySqlImpl { pool }
+    }
+}
+
+#[async_trait]
+impl AdminRepository for AdminRepositorySqlImpl {
+    async fn insert (
+        &self,
+        username: &String,
+        password: &String,
+    ) -> Result<Admin, Error> {
+        let new_admin = NewAdmin {
+            username,
+            password,
+        };
+        let mut conn = self.pool.get().unwrap();
+        diesel::insert_into(admin::table)
+            .values(&new_admin)
+            .get_result(&mut conn)
+    }
+
+    async fn get_by_name (
+            &self,
+            username: &String,
+    ) -> Result<Admin, Error> {
+        let mut conn = self.pool.get().unwrap();
+        admin::table.filter(admin::username.eq(username))
+            .first(&mut conn)
+    }
+
+    async fn delete_all(
+        &self
+    ) -> Result<usize, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::delete(admin::table)
             .execute(&mut conn)
     }
 }

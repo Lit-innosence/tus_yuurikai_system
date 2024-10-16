@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::env;
 use crate::domain::student::UserInfo;
 use crate::adapters::repository::AuthRepository;
-use crate::infrastracture::models::Auth;
+use crate::infrastructure::models::Auth;
 use crate::utils::token::generate_token;
 
 use dotenv::dotenv;

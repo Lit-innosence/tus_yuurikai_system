@@ -11,7 +11,7 @@ use tus_yuurikai_system::adapters::controller;
 use tus_yuurikai_system::adapters::controller::LockerResisterRequest;
 use tus_yuurikai_system::domain::{assignment::AssignmentInfo, student_pair::PairInfo, student::UserInfo};
 use tus_yuurikai_system::usecase::{student_pair::StudentPairUsecase, student::StudentUsecase};
-use tus_yuurikai_system::infrastracture::router::App;
+use tus_yuurikai_system::infrastructure::router::App;
 
 // 正常系
 #[rocket::async_test]

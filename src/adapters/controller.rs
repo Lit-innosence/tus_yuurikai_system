@@ -1,17 +1,20 @@
 use crate::domain::{student::UserInfo, student_pair::PairInfo, assignment::AssignmentInfo};
-use crate::infrastracture::{router::App, models::{AssignmentRecord, StudentPair}};
+use crate::infrastructure::{router::App, models::{AssignmentRecord, StudentPair}};
 use crate::usecase::{
                     student::StudentUsecase,
                     student_pair::StudentPairUsecase,
                     assignment_record::AssignmentRecordUsecase,
                     auth::AuthUsecase,
-                    locker::LockerUsecase};
+                    locker::LockerUsecase,
+                    admin::AdminUsecase};
 
 use std::{env, collections::HashSet};
 use dotenv::dotenv;
-use rocket::{get, http::{Status, RawStr}, post, serde::json::Json, State};
+use rocket::{get, http::{Status, RawStr, Cookie, CookieJar}, post, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
+use chrono::{Utc, Duration};
+use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, DecodingKey};
 
 #[derive(OpenApi)]
 #[openapi(
@@ -23,6 +26,7 @@ use utoipa::{OpenApi, ToSchema};
         co_auth,
         auth_check,
         locker_register,
+        login,
     ),
     components(schemas(
         HealthCheckRequest,
@@ -32,6 +36,7 @@ use utoipa::{OpenApi, ToSchema};
         AuthCheckResponse,
         AssignmentInfo,
         LockerResisterRequest,
+        LoginFormRequest,
     ))
 )]
 pub struct ApiDoc;
@@ -259,7 +264,7 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     }
 
     // ロッカーのステータス更新
-    let status = String::from("unavailable");
+    let status = String::from("occupied");
     if app.locker.update_status(&assignment.locker_id, &status).await.is_err() {
         return (Status::InternalServerError, "failed to update locker status");
     }
@@ -267,7 +272,87 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     (Status::Created, "success create assignment")
 }
 
-// 管理者パスワード照合API
+/// ### 管理者パスワード照合APIのリクエストデータ
+///
+/// username    : ユーザ名
+///
+/// password    : パスワード
+#[derive(Serialize, Deserialize, ToSchema)]
+pub struct LoginFormRequest{
+    #[schema(example = "user000")]
+    pub username : String,
+    #[schema(example = "0000")]
+    pub password : String,
+}
+
+/// ### JWTペイロードに指定する構造体
+///
+/// subject     : tokenの持ち主
+///
+/// expire      : tokenの持続時間
+///
+/// issued at   : tokenの発行時刻
+#[derive(Serialize, Deserialize)]
+pub struct Claims{
+    sub: String,
+    exp: usize,
+    iat: usize,
+}
+
+/// ### 管理者パスワード照合API
+#[utoipa::path(context_path = "/api")]
+#[post("/login", data = "<request>")]
+pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &State<App>) -> Status {
+
+    // usernameが一致するレコードをadminテーブルから取得
+    let credential = match app.admin.get_by_name(&request.username).await {
+        Ok(admin) => admin,
+        Err(_) => return Status::InternalServerError,
+    };
+
+    // 環境変数TOKEN_KEYを取得
+    dotenv().ok();
+    let key = env::var("TOKEN_KEY").expect("token key must be set.");
+
+    // passwordの検証
+    if request.password != credential.password {
+        return Status::InternalServerError
+    }
+
+    // jwtの発行
+
+    // headerの宣言
+    let mut header = Header::default();
+
+    // 使用するトークンはjwt
+    header.typ = Some("JWT".to_string());
+
+    // 使用するアルゴリズムはHMAC SHA-256
+    header.alg = Algorithm::HS256;
+
+    // 現在時刻を取得
+    let now = Utc::now();
+
+    // claimsを設定
+    let admin_claims = Claims{
+        sub: request.username.clone(),
+        exp: (now + Duration::hours(1)).timestamp() as usize,
+        iat: now.timestamp() as usize,
+    };
+
+    // jwtを発行
+    let token = encode(&header, &admin_claims, &EncodingKey::from_secret(key.as_ref())).unwrap();
+
+    // cookieを作成
+    let cookie = Cookie::build(("token", token))
+        .path("/")
+        .secure(false)
+        .http_only(true);
+
+    jar.add(cookie);
+
+    return Status::Created
+}
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct UserSearchResult {
@@ -283,8 +368,9 @@ pub struct UserSearchResponce {
     pub data: Vec<UserSearchResult>,
 }
 
-// ロッカー利用者検索API
-// 名前は申請者の名前のみ受け付ける
+/// ロッカー利用者検索API
+///
+/// nameは申請者の名前のみ受け付ける
 #[utoipa::path(context_path = "/api/locker")]
 #[get("/user-search/<year>?<floor>&<familyname>&<givenname>")]
 pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String>, givenname: Option<String>, app: &State<App>) -> Result<Json<UserSearchResponce>, Status> {
