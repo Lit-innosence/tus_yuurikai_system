@@ -272,8 +272,11 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     (Status::Created, "success create assignment")
 }
 
-// 管理者パスワード照合API
-
+/// ### 管理者パスワード照合APIのリクエストデータ
+///
+/// username    : ユーザ名
+///
+/// password    : パスワード
 #[derive(Serialize, Deserialize, ToSchema)]
 pub struct LoginFormRequest{
     #[schema(example = "user000")]
@@ -282,6 +285,13 @@ pub struct LoginFormRequest{
     pub password : String,
 }
 
+/// ### JWTペイロードに指定する構造体
+///
+/// subject     : tokenの持ち主
+///
+/// expire      : tokenの持続時間
+///
+/// issued at   : tokenの発行時刻
 #[derive(Serialize, Deserialize)]
 pub struct Claims{
     sub: String,
@@ -289,6 +299,7 @@ pub struct Claims{
     iat: usize,
 }
 
+/// ### 管理者パスワード照合API
 #[utoipa::path(context_path = "/api")]
 #[post("/login", data = "<request>")]
 pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &State<App>) -> Status {
@@ -304,48 +315,43 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
     let key = env::var("TOKEN_KEY").expect("token key must be set.");
 
     // passwordの検証
-    if request.password == credential.password {
-        // jwtの発行
+    if request.password != credential.password {
+        return Status::InternalServerError
+    }
 
-        // headerの宣言
-        let mut header = jsonwebtoken::Header::default();
+    // jwtの発行
 
-        // 使用するトークンはjwt
-        header.typ = Some("JWT".to_string());
+    // headerの宣言
+    let mut header = Header::default();
 
-        // 使用するアルゴリズムはHMAC SHA-256
-        header.alg = Algorithm::HS256;
+    // 使用するトークンはjwt
+    header.typ = Some("JWT".to_string());
 
-        // 現在時刻を取得
-        let now = Utc::now();
+    // 使用するアルゴリズムはHMAC SHA-256
+    header.alg = Algorithm::HS256;
 
-        // issued atを設定
-        let iat = now.timestamp() as usize;
+    // 現在時刻を取得
+    let now = Utc::now();
 
-        // expireを設定
-        let exp = (now + Duration::hours(1)).timestamp() as usize;
+    // claimsを設定
+    let admin_claims = Claims{
+        sub: request.username.clone(),
+        exp: (now + Duration::hours(1)).timestamp() as usize,
+        iat: now.timestamp() as usize,
+    };
 
-        // claimsを設定
-        let admin_claims = Claims{
-            sub: request.username.clone(),
-            exp: exp,
-            iat: iat,
-        };
+    // jwtを発行
+    let token = encode(&header, &admin_claims, &EncodingKey::from_secret(key.as_ref())).unwrap();
 
-        // jwtを発行
-        let token = encode(&header, &admin_claims, &EncodingKey::from_secret(key.as_ref())).unwrap();
+    // cookieを作成
+    let cookie = Cookie::build(("token", token))
+        .path("/")
+        .secure(false)
+        .http_only(true);
 
-        // cookieを作成
-        let cookie = Cookie::build(("token", token))
-            .path("/")
-            .secure(true)
-            .http_only(true);
+    jar.add(cookie);
 
-        jar.add(cookie);
-
-        return Status::Created
-
-    } else { return Status::InternalServerError }
+    return Status::Created
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
@@ -362,8 +368,9 @@ pub struct UserSearchResponce {
     pub data: Vec<UserSearchResult>,
 }
 
-// ロッカー利用者検索API
-// 名前は申請者の名前のみ受け付ける
+/// ロッカー利用者検索API
+///
+/// nameは申請者の名前のみ受け付ける
 #[utoipa::path(context_path = "/api/locker")]
 #[get("/user-search/<year>?<floor>&<familyname>&<givenname>")]
 pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String>, givenname: Option<String>, app: &State<App>) -> Result<Json<UserSearchResponce>, Status> {
