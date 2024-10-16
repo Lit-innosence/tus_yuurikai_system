@@ -10,7 +10,7 @@ const RegisterComp: React.FC = () => {
       <Result
         status="success"
         title="ロッカー登録に成功しました！"
-        subTitle="ロッカー申請が許可されました。"
+        subTitle="ロッカー番号はXXXXです"
       />
     </div>
   );

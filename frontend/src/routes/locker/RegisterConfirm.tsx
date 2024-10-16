@@ -10,16 +10,30 @@ const { Content } = Layout;
 const LockerRegisterConfirm: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { lockerId, pairInfo } = location.state || {};
+    const { lockerId, pairInfo: initialPairInfo } = location.state || {};
 
     const [isChecked, setIsChecked] = useState(false);
+    const [pairInfo, setPairInfo] = useState(initialPairInfo);
 
-    // pairInfoがundefinedの場合に/nopageにリダイレクト
+    const mockPairInfo = {
+        main_user: {
+            student_id: '9999999',
+            family_name: '山田',
+            given_name: '太郎',
+        },
+        co_user: {
+            student_id: '8888888',
+            family_name: '佐藤',
+            given_name: '次郎',
+        },
+    };
+
+    // pairInfoがundefinedの場合にモックデータをセット
     useEffect(() => {
-        if (!pairInfo) {
-            navigate('/nopage');
+        if (!initialPairInfo) {
+            setPairInfo(mockPairInfo);
         }
-    }, [pairInfo, navigate]);
+    }, [initialPairInfo]);
 
     const handleCheckboxChange = (e: any) => {
         setIsChecked(e.target.checked);
@@ -56,10 +70,14 @@ const LockerRegisterConfirm: React.FC = () => {
                 >
                     {pairInfo && (
                         <>
+                            <h3>ロッカー情報</h3>
+                            <p><strong>ロッカーID:</strong> {lockerId}</p>
+
+                            <hr style={{ width: '100%', border: 'none', borderTop: '1px solid #e8e8e8', margin: '20px 0' }} />
+
                             <h3>申請者</h3>
                             <p><strong>学籍番号:</strong> {pairInfo.main_user.student_id}</p>
                             <p><strong>氏名:</strong> {pairInfo.main_user.family_name} {pairInfo.main_user.given_name}</p>
-                            <p><strong>ロッカーID:</strong> {lockerId}</p>
                             
                             <hr style={{ width: '100%', border: 'none', borderTop: '1px solid #e8e8e8', margin: '20px 0' }} />
 
