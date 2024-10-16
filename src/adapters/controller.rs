@@ -337,7 +337,6 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
 
         // cookieを作成
         let cookie = Cookie::build(("token", token))
-            .domain("http://127.0.0.1:8000")
             .path("/")
             .secure(true)
             .http_only(true);
