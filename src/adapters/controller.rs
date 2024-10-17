@@ -1,4 +1,5 @@
 use crate::domain::{student::UserInfo, student_pair::PairInfo, assignment::AssignmentInfo};
+use crate::infrastructure::models::Locker;
 use crate::infrastructure::{router::App, models::{AssignmentRecord, StudentPair}};
 use crate::usecase::{
                     student::StudentUsecase,
@@ -7,6 +8,7 @@ use crate::usecase::{
                     auth::AuthUsecase,
                     locker::LockerUsecase,
                     admin::AdminUsecase};
+use crate::utils::decode_jwt::decode_jwt;
 
 use std::{env, collections::HashSet};
 use dotenv::dotenv;
@@ -14,7 +16,7 @@ use rocket::{get, http::{Status, RawStr, Cookie, CookieJar}, post, serde::json::
 use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
 use chrono::{Utc, Duration};
-use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, DecodingKey};
+use jsonwebtoken::{encode, Header, Algorithm, EncodingKey};
 
 #[derive(OpenApi)]
 #[openapi(
@@ -27,6 +29,7 @@ use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, D
         auth_check,
         locker_register,
         login,
+        locker_availability,
     ),
     components(schemas(
         HealthCheckRequest,
@@ -37,6 +40,7 @@ use jsonwebtoken::{encode, decode, Header, Algorithm, Validation, EncodingKey, D
         AssignmentInfo,
         LockerResisterRequest,
         LoginFormRequest,
+        LockerStatusResponse,
     ))
 )]
 pub struct ApiDoc;
@@ -227,15 +231,39 @@ pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthChec
 
 }
 
-// ロッカー空き状態確認API
+/// ### ロッカー空き状態確認APIのレスポンスデータ
+#[derive(Serialize, ToSchema)]
+pub struct LockerStatusResponse{
+    pub data: Vec<Locker>,
+}
 
-// ロッカー登録API
+/// ### ロッカー空き状態確認API
+#[utoipa::path(context_path = "/api/admin")]
+#[post("/locker-availability?<floor>")]
+pub async fn locker_availability(floor: Option<i8>, jar: &CookieJar<'_>, app: &State<App>) -> Result<Json<LockerStatusResponse>, Status> {
+    let jwt = match jar.get("token").map(|c| c.value()) {
+        None => return Err(Status::BadRequest),
+        Some(t) => String::from(t),
+    };
+
+    match decode_jwt(&jwt) {
+        None => return Err(Status::InternalServerError),
+        Some(_) => {
+            let result = app.locker.get_by_floor(&floor).await.unwrap();
+            Ok(Json(LockerStatusResponse{
+                data: result,
+            }))
+        }
+    }
+}
+
 #[derive(Deserialize, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct LockerResisterRequest {
     pub data: AssignmentInfo,
 }
 
+/// ### ロッカー登録API
 #[utoipa::path(context_path = "/api/locker")]
 #[post("/locker-register", data = "<request>")]
 pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<App>) -> (Status, &'static str) {

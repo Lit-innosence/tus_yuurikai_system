@@ -9,6 +9,7 @@ use tus_yuurikai_system::adapters::controller::{
                                 locker_register,
                                 user_search,
                                 login,
+                                locker_availability,
                             };
 use rocket::routes;
 use utoipa_swagger_ui::SwaggerUi;
@@ -29,7 +30,9 @@ async fn main() -> Result<(), rocket::Error> {
         )
         .mount(
             "/api/admin",
-            routes![],
+            routes![
+                locker_availability,
+            ],
         )
         .mount(
             "/api/locker",

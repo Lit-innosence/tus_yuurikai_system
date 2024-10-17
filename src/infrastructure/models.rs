@@ -1,4 +1,5 @@
 use diesel::{Insertable, Queryable};
+use serde::Serialize;
 use crate::infrastructure::schema::{student, student_pair, locker, assignment_record, auth, admin};
 // student
 
@@ -40,7 +41,7 @@ pub struct NewStudentPair<'a> {
 
 // locker
 
-#[derive(Queryable)]
+#[derive(Queryable, Serialize)]
 pub struct Locker {
     pub locker_id: String,
     pub location: String,
