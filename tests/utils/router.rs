@@ -8,7 +8,9 @@ use tus_yuurikai_system::adapters::controller::{
                                 main_auth,
                                 co_auth,
                                 locker_register,
-                                user_search
+                                user_search,
+                                login,
+                                availability
                             };
 
 use rocket::{routes, Rocket, Build};
@@ -23,7 +25,14 @@ pub fn rocket() -> Rocket<Build> {
             "/api",
             routes![
                 get_healthcheck,
-                post_healthcheck
+                post_healthcheck,
+                login
+            ]
+        )
+        .mount(
+            "/api/admin",
+            routes![
+                user_search,
             ]
         )
         .mount(
@@ -33,7 +42,7 @@ pub fn rocket() -> Rocket<Build> {
                 main_auth,
                 co_auth,
                 locker_register,
-                user_search
+                availability
             ],
         )
         .mount(

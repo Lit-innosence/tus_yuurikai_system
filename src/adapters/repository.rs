@@ -325,6 +325,11 @@ pub trait LockerRepository: Send + Sync {
         locker_id: &String,
     ) -> Result<Locker, Error>;
 
+    async fn get_by_floor(
+        &self,
+        floor: &String,
+    ) -> Result<Vec<Locker>, Error>;
+
     async fn delete_all(
         &self
     ) -> Result<usize, Error>;
@@ -390,6 +395,19 @@ impl LockerRepository for LockerRepositorySqlImpl {
                 locker::locker_id
                 .eq(locker_id)
             ).first(&mut conn)
+    }
+
+    async fn get_by_floor(
+            &self,
+            floor: &String,
+        ) -> Result<Vec<Locker>, Error> {
+        let mut conn = self.pool.get().unwrap();
+        let floor_ex = format!("{}%", floor);
+        locker::table
+            .filter(
+                locker::locker_id
+                .like(floor_ex)
+            ).get_results(&mut conn)
     }
 
     async fn delete_all(
