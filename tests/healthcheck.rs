@@ -8,6 +8,7 @@ use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType};
 use tus_yuurikai_system::adapters::controller::{self, HealthCheckRequest};
+use tus_yuurikai_system::infrastructure::router::App;
 
 #[rocket::async_test]
 async fn get_healthcheck_test() {
@@ -29,6 +30,10 @@ async fn post_healthcheck_test() {
     let request = HealthCheckRequest{
         text: String::from("Hello world from json!")
     };
+
+    let app = App::new();
+
+    setup_db(&app).await;
 
     // Act
     let response = client.post(uri!("/api", controller::post_healthcheck))

@@ -26,7 +26,7 @@ pub fn rocket() -> Rocket<Build> {
             routes![
                 get_healthcheck,
                 post_healthcheck,
-                login
+                login,
             ]
         )
         .mount(
@@ -42,7 +42,7 @@ pub fn rocket() -> Rocket<Build> {
                 main_auth,
                 co_auth,
                 locker_register,
-                availability
+                availability,
             ],
         )
         .mount(

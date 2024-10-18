@@ -7,15 +7,14 @@ use crate::usecase::{
                     auth::AuthUsecase,
                     locker::LockerUsecase,
                     admin::AdminUsecase};
-use crate::utils::decode_jwt::decode_jwt;
+use crate::utils::{decode_jwt::decode_jwt, encode_jwt::encode_jwt};
 
 use std::{env, collections::HashSet};
 use dotenv::dotenv;
 use rocket::{get, http::{Status, RawStr, Cookie, CookieJar}, post, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use utoipa::{OpenApi, ToSchema};
-use chrono::{Utc, Duration};
-use jsonwebtoken::{encode, Header, Algorithm, EncodingKey};
+use chrono::Duration;
 
 #[derive(OpenApi)]
 #[openapi(
@@ -234,7 +233,7 @@ pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthChec
 /// ### ロッカー状態
 ///
 /// ロッカー空き状態確認APIのレスポンスデータに使用
-#[derive(Clone, Serialize, ToSchema)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, ToSchema)]
 pub struct LockerStatus{
     pub locker_id: String,
     pub floor: i8,
@@ -242,14 +241,14 @@ pub struct LockerStatus{
 }
 
 /// ### ロッカー空き状態確認APIのレスポンスデータ
-#[derive(Serialize, ToSchema)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
 pub struct LockerStatusResponse{
     pub data: Vec<LockerStatus>,
 }
 
 /// ### ロッカー空き状態確認API
 #[utoipa::path(context_path = "/api/locker")]
-#[post("/availability?<floor>")]
+#[get("/availability?<floor>")]
 pub async fn availability(floor: Option<i8>, app: &State<App>) -> Result<Json<LockerStatusResponse>, Status> {
     // 指定階数のlockerレコードの取得
     let result = app.locker.get_by_floor(&floor).await.unwrap();
@@ -334,9 +333,9 @@ pub struct LoginFormRequest{
 /// issued at   : tokenの発行時刻
 #[derive(Serialize, Deserialize)]
 pub struct Claims{
-    sub: String,
-    exp: usize,
-    iat: usize,
+    pub sub: String,
+    pub exp: usize,
+    pub iat: usize,
 }
 
 /// ### 管理者パスワード照合API
@@ -359,29 +358,7 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
         return Status::InternalServerError
     }
 
-    // jwtの発行
-
-    // headerの宣言
-    let mut header = Header::default();
-
-    // 使用するトークンはjwt
-    header.typ = Some("JWT".to_string());
-
-    // 使用するアルゴリズムはHMAC SHA-256
-    header.alg = Algorithm::HS256;
-
-    // 現在時刻を取得
-    let now = Utc::now();
-
-    // claimsを設定
-    let admin_claims = Claims{
-        sub: request.username.clone(),
-        exp: (now + Duration::hours(1)).timestamp() as usize,
-        iat: now.timestamp() as usize,
-    };
-
-    // jwtを発行
-    let token = encode(&header, &admin_claims, &EncodingKey::from_secret(key.as_ref())).unwrap();
+    let token = encode_jwt(&request.username, Duration::hours(1), &key);
 
     // cookieを作成
     let cookie = Cookie::build(("token", token))
