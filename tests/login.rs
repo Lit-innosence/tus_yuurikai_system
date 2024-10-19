@@ -4,9 +4,11 @@ extern crate tus_yuurikai_system;
 
 mod utils;
 
+use std::env;
 use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType};
+use dotenv::dotenv;
 use tus_yuurikai_system::adapters::controller::{self, LoginFormRequest};
 use tus_yuurikai_system::infrastructure::router::App;
 
@@ -17,9 +19,11 @@ pub async fn normal() {
     let client = Client::tracked(rocket()).await.unwrap();
     let app = App::new();
 
+    dotenv().ok();
+
     let request = LoginFormRequest{
-        username: String::from("user000"),
-        password: String::from("0000"),
+        username: env::var("ADMIN_USER_NAME").expect("admin username must be set"),
+        password: env::var("ADMIN_PASSWORD").expect("admin password must be set"),
     };
 
     setup_db(&app).await;
@@ -42,9 +46,11 @@ pub async fn username_does_not_exist() {
     let client = Client::tracked(rocket()).await.unwrap();
     let app = App::new();
 
+    dotenv().ok();
+
     let request = LoginFormRequest{
         username: String::from("user111"),
-        password: String::from("0000"),
+        password: env::var("ADMIN_PASSWORD").expect("admin password must be set"),
     };
 
     setup_db(&app).await;
@@ -67,8 +73,10 @@ pub async fn password_is_wrong() {
     let client = Client::tracked(rocket()).await.unwrap();
     let app = App::new();
 
+    dotenv().ok();
+
     let request = LoginFormRequest{
-        username: String::from("user000"),
+        username: env::var("ADMIN_USER_NAME").expect("admin username must be set"),
         password: String::from("1111"),
     };
 
