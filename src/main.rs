@@ -11,7 +11,7 @@ use tus_yuurikai_system::adapters::controller::{
                                 login,
                                 availability,
                             };
-use rocket::routes;
+use rocket::{routes, fs::{FileServer, relative}};
 use utoipa_swagger_ui::SwaggerUi;
 use utoipa::OpenApi;
 
@@ -20,6 +20,7 @@ async fn main() -> Result<(), rocket::Error> {
     let app = App::new();
     let _rocket = rocket::build()
         .manage(app)
+        .mount("/", FileServer::from(relative!("frontend/build")))
         .mount(
             "/api",
             routes![
