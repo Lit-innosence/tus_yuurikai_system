@@ -83,7 +83,7 @@ const Register: React.FC = () => {
                         onChange={handleFloorChange}
                         style={{ width: 200, marginBottom: 20 }}
                     >
-                        <Option value="all">全部</Option>
+                        <Option value="all">全フロア</Option>
                         <Option value="2">2階</Option>
                         <Option value="3">3階</Option>
                         <Option value="4">4階</Option>
