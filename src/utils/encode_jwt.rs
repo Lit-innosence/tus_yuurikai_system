@@ -1,7 +1,20 @@
 use jsonwebtoken::{encode, Header, Algorithm, EncodingKey};
 use chrono::{Utc, TimeDelta};
-use crate::adapters::controller::Claims;
+use serde::{Deserialize, Serialize};
 
+/// ### JWTペイロードに指定する構造体
+///
+/// subject     : tokenの持ち主
+///
+/// expire      : tokenの持続時間
+///
+/// issued at   : tokenの発行時刻
+#[derive(Serialize, Deserialize)]
+pub struct Claims{
+    pub sub: String,
+    pub exp: usize,
+    pub iat: usize,
+}
 
 pub fn encode_jwt(username: &String, exp: TimeDelta, key: &String) -> String {
     // jwtの発行

@@ -1,3 +1,14 @@
+use crate::adapters::httpmodels::{
+                                  HealthCheckRequest,
+                                  TokenGenRequest,
+                                  AuthCheckResponse,
+                                  LockerResisterRequest,
+                                  LoginFormRequest,
+                                  LockerStatus,
+                                  LockerStatusResponse,
+                                  UserSearchResponse,
+                                  UserSearchResult
+                                };
 use crate::domain::{student::UserInfo, student_pair::PairInfo, assignment::AssignmentInfo};
 use crate::infrastructure::{router::App, models::{AssignmentRecord, StudentPair}};
 use crate::usecase::{
@@ -12,8 +23,7 @@ use crate::utils::{decode_jwt::decode_jwt, encode_jwt::encode_jwt};
 use std::{env, collections::HashSet};
 use dotenv::dotenv;
 use rocket::{get, http::{Status, RawStr, Cookie, CookieJar}, post, serde::json::Json, State};
-use serde::{Deserialize, Serialize};
-use utoipa::{OpenApi, ToSchema};
+use utoipa::OpenApi;
 use chrono::Duration;
 
 #[derive(OpenApi)]
@@ -52,13 +62,6 @@ pub fn get_healthcheck() -> &'static str {
 }
 
 // POSTヘルスチェック
-#[derive(Deserialize, Serialize, ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct HealthCheckRequest {
-    #[schema(example = "Hello world from json!")]
-    pub text: String,
-}
-
 #[utoipa::path(context_path = "/api")]
 #[post("/post-healthcheck", data = "<data>")]
 pub fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
@@ -66,11 +69,6 @@ pub fn post_healthcheck(data: Json<HealthCheckRequest>) -> String {
 }
 
 // token生成、メール送信API
-#[derive(Deserialize, ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct TokenGenRequest {
-    pub data: PairInfo,
-}
 #[utoipa::path(context_path = "/api/locker")]
 #[post("/token-gen", data = "<request>")]
 pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -> Status {
@@ -193,11 +191,6 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     Status::Created
 }
 
-#[derive(Serialize, ToSchema)]
-pub struct AuthCheckResponse {
-    pub data: PairInfo,
-}
-
 // 認証検証API
 #[utoipa::path(context_path = "/api/locker")]
 #[get("/auth-check?<token>")]
@@ -230,22 +223,6 @@ pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthChec
 
 }
 
-/// ### ロッカー状態
-///
-/// ロッカー空き状態確認APIのレスポンスデータに使用
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, ToSchema)]
-pub struct LockerStatus{
-    pub locker_id: String,
-    pub floor: i8,
-    pub status: String,
-}
-
-/// ### ロッカー空き状態確認APIのレスポンスデータ
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
-pub struct LockerStatusResponse{
-    pub data: Vec<LockerStatus>,
-}
-
 /// ### ロッカー空き状態確認API
 #[utoipa::path(context_path = "/api/locker")]
 #[get("/availability?<floor>")]
@@ -266,12 +243,6 @@ pub async fn availability(floor: Option<i8>, app: &State<App>) -> Result<Json<Lo
     Ok(Json(LockerStatusResponse{
         data: response,
     }))
-}
-
-#[derive(Deserialize, Serialize, ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct LockerResisterRequest {
-    pub data: AssignmentInfo,
 }
 
 /// ### ロッカー登録API
@@ -311,33 +282,6 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     (Status::Created, "success create assignment")
 }
 
-/// ### 管理者パスワード照合APIのリクエストデータ
-///
-/// username    : ユーザ名
-///
-/// password    : パスワード
-#[derive(Serialize, Deserialize, ToSchema)]
-pub struct LoginFormRequest{
-    #[schema(example = "user000")]
-    pub username : String,
-    #[schema(example = "0000")]
-    pub password : String,
-}
-
-/// ### JWTペイロードに指定する構造体
-///
-/// subject     : tokenの持ち主
-///
-/// expire      : tokenの持続時間
-///
-/// issued at   : tokenの発行時刻
-#[derive(Serialize, Deserialize)]
-pub struct Claims{
-    pub sub: String,
-    pub exp: usize,
-    pub iat: usize,
-}
-
 /// ### 管理者パスワード照合API
 #[utoipa::path(context_path = "/api")]
 #[post("/login", data = "<request>")]
@@ -371,26 +315,12 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
     return Status::Created
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
-pub struct UserSearchResult {
-    pub locker_id : String,
-    pub floor : i8,
-    pub main_user : UserInfo,
-    pub co_user : UserInfo,
-    pub year : i32,
-}
-
-#[derive(Debug, PartialEq, Serialize, Deserialize, ToSchema)]
-pub struct UserSearchResponce {
-    pub data: Vec<UserSearchResult>,
-}
-
 /// ロッカー利用者検索API
 ///
 /// nameは申請者の名前のみ受け付ける
 #[utoipa::path(context_path = "/api/admin")]
 #[get("/user-search/<year>?<floor>&<familyname>&<givenname>")]
-pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String>, givenname: Option<String>, jar: &CookieJar<'_>, app: &State<App>) -> Result<Json<UserSearchResponce>, Status> {
+pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String>, givenname: Option<String>, jar: &CookieJar<'_>, app: &State<App>) -> Result<Json<UserSearchResponse>, Status> {
 
     // Cookieからjwtの取得
     let jwt = match jar.get("token").map(|c| c.value()) {
@@ -479,7 +409,7 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
                 result.push(num);
             }
 
-            Ok(Json(UserSearchResponce{
+            Ok(Json(UserSearchResponse{
                 data: result,
             }))
         }

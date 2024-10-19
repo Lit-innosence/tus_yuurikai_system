@@ -9,7 +9,7 @@ use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType};
 use dotenv::dotenv;
-use tus_yuurikai_system::adapters::controller::{self, LoginFormRequest};
+use tus_yuurikai_system::adapters::{controller, httpmodels::LoginFormRequest};
 use tus_yuurikai_system::infrastructure::router::App;
 
 // 正常系
