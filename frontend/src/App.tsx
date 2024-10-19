@@ -53,6 +53,7 @@ function App() {
             {/* <Route path='/admin/' element={<PrivateRoute><Admin /></PrivateRoute>} /> */}
             <Route path='/admin/' element={<Admin />} />
             <Route path='/admin/locker/search' element={<LockerSearch />} />
+            <Route path='/locker/nopage' element={<Page404 />} />
             <Route path='*' element={<Page404 />} />
           </Routes>
         </Suspense>

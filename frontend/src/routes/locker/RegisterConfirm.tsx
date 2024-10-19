@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Button, Layout, Card, Checkbox, message } from 'antd';
 import CustomHeader from '../component/CustomHeader';
 import CustomFooter from '../component/CustomFooter';
+import constants from '../constants';
 
 const { Content } = Layout;
 
@@ -16,15 +17,15 @@ const LockerRegisterConfirm: React.FC = () => {
     const [pairInfo, setPairInfo] = useState(initialPairInfo);
 
     const mockPairInfo = {
-        main_user: {
-            student_id: '9999999',
-            family_name: '山田',
-            given_name: '太郎',
+        mainUser: {
+            studentId: '9999999',
+            familyName: '山田',
+            givenName: '太郎',
         },
-        co_user: {
-            student_id: '8888888',
-            family_name: '佐藤',
-            given_name: '次郎',
+        coUser: {
+            studentId: '8888888',
+            familyName: '佐藤',
+            givenName: '次郎',
         },
     };
 
@@ -42,16 +43,16 @@ const LockerRegisterConfirm: React.FC = () => {
     const handleConfirm = async () => {
         const postData = {
             data: {
-                student_id: pairInfo.main_user.student_id,
-                locker_id: lockerId,
+                studentId: pairInfo.mainUser.studentId,
+                lockerId: lockerId,
             },
         };
 
         try {
             // POSTリクエストを実行
-            await axios.post('/locker/locker-register', postData);
+            await axios.post(`${constants.backendApiEndpoint}/api/locker/locker-register`, postData);
             message.success('ロッカーが正常に登録されました');
-            navigate('/locker/register/complete');
+            navigate('/locker/register/complete', { state: { lockerId } }); 
         } catch (error) {
             console.error('エラー:', error);
             message.error('ロッカーの登録に失敗しました');
@@ -76,14 +77,14 @@ const LockerRegisterConfirm: React.FC = () => {
                             <hr style={{ width: '100%', border: 'none', borderTop: '1px solid #e8e8e8', margin: '20px 0' }} />
 
                             <h3>申請者</h3>
-                            <p><strong>学籍番号:</strong> {pairInfo.main_user.student_id}</p>
-                            <p><strong>氏名:</strong> {pairInfo.main_user.family_name} {pairInfo.main_user.given_name}</p>
+                            <p><strong>学籍番号:</strong> {pairInfo.mainUser.studentId}</p>
+                            <p><strong>氏名:</strong> {pairInfo.mainUser.familyName} {pairInfo.mainUser.givenName}</p>
                             
                             <hr style={{ width: '100%', border: 'none', borderTop: '1px solid #e8e8e8', margin: '20px 0' }} />
 
                             <h3>共同利用者</h3>
-                            <p><strong>学籍番号:</strong> {pairInfo.co_user.student_id}</p>
-                            <p><strong>氏名:</strong> {pairInfo.co_user.family_name} {pairInfo.co_user.given_name}</p>
+                            <p><strong>学籍番号:</strong> {pairInfo.coUser.studentId}</p>
+                            <p><strong>氏名:</strong> {pairInfo.coUser.familyName} {pairInfo.coUser.givenName}</p>
 
                             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
                                 <Checkbox onChange={handleCheckboxChange}>

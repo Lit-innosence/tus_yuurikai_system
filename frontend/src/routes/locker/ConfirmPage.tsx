@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Button, Layout, Card, Checkbox, message } from 'antd';
 import CustomHeader from '../component/CustomHeader';
 import CustomFooter from '../component/CustomFooter';
+import constants from '../constants';
 
 const { Content } = Layout;
 
@@ -22,22 +23,22 @@ const ConfirmPage: React.FC = () => {
     const handleConfirm = async () => {
         const formattedData = {
             data: {
-                main_user: {
-                    student_id: formData.studentId,
-                    family_name: formData.lastName,
-                    given_name: formData.firstName,
+                mainUser: {
+                    studentId: formData.studentId,
+                    familyName: formData.lastName,
+                    givenName: formData.firstName,
                 },
-                co_user: {
-                    student_id: formData.coUserStudentId,
-                    family_name: formData.coUserLastName,
-                    given_name: formData.coUserFirstName,
+                coUser: {
+                    studentId: formData.coUserStudentId,
+                    familyName: formData.coUserLastName,
+                    givenName: formData.coUserFirstName,
                 },
             },
         };
 
         try {
-            // const response = await axios.post('https://your-backend-server.com/api/endpoint', formattedData);
-            // console.log('成功:', response.data);
+            const response = await axios.post(`${constants.backendApiEndpoint}/api/locker/token-gen`, formattedData);
+            console.log('成功:', response.data);
             message.success('フォームが正常に送信されました');
             navigate('/locker/form/complete');
         } catch (error) {
