@@ -32,10 +32,10 @@ const Register: React.FC = () => {
                 let response;
                 if (floor === 'all') {
                     // floorパラメータなしでリクエスト
-                    response = await axios.post(`${constants.backendApiEndpoint}/api/locker/availability`);
+                    response = await axios.get(`${constants.backendApiEndpoint}/api/locker/availability`);
                 } else {
                     // floorパラメータを指定してリクエスト
-                    response = await axios.post(`${constants.backendApiEndpoint}/api/locker/availability?floor=${floor}`);
+                    response = await axios.get(`${constants.backendApiEndpoint}/api/locker/availability?floor=${floor}`);
                 }
                 
                 // レスポンスのデータをフロントエンドの形式に変換
