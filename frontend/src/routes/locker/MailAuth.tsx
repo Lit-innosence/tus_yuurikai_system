@@ -7,9 +7,6 @@ import constants from '../constants';
 const MailAuth = () => {
     const navigate = useNavigate();
 
-    // 認証部分作成後削除
-    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
     useEffect(() => {
         const queryParams = new URLSearchParams(window.location.search);
         const token = queryParams.get('token');
@@ -23,32 +20,30 @@ const MailAuth = () => {
 
         const fetchData = async () => {
             try {
-                // 認証部分作成後削除
-                await wait(5000);
 
                 let apiUrl = '';
                 let redirectUrl = '';
 
                 switch (method) {
                     case '0':
-                        apiUrl = '/api/locker/co-auth';
+                        apiUrl = constants.backendApiEndpoint + '/api/locker/co-auth?token=' + token;
                         redirectUrl = '/locker/auth/complete';
                         break;
                     case '1':
-                        apiUrl = '/api/locker/main-auth';
+                        apiUrl = constants.backendApiEndpoint + '/api/locker/main-auth?token=' + token;
                         redirectUrl = '/locker/auth/complete';
                         break;
                     case '2':
-                        apiUrl = '/api/locker/auth-check';
+                        apiUrl = constants.backendApiEndpoint + '/api/locker/auth-check?token=' + token;
                         break;
                     default:
                         navigate('/locker/nopage');
                         return;
                 }
 
-                const response = await axios.post(apiUrl, { token });
+                const response = await axios.get(apiUrl);
 
-                if (response.status === 201) {
+                if (response.status === 200 || response.status === 201) {
                     if (method === '2') {
                         const pairInfo = response.data.data;
                         navigate('/locker/register', { state: { pairInfo } });

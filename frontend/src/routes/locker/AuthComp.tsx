@@ -12,7 +12,7 @@ const AuthComp: React.FC = () => {
         title="認証に成功しました！"
         subTitle="ロッカー登録をするには、申込みした者と共同使用者、両方のメール認証が必要になります。"
         extra={[
-          <Button type="primary" key="dashboard" onClick={() => navigate('/locker-process')}>
+          <Button type="primary" key="dashboard" onClick={() => navigate('/locker/process')}>
             今後のステップを確認する
           </Button>,
         ]}
