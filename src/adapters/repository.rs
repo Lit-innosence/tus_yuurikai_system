@@ -437,6 +437,12 @@ pub trait AssignmentRecordRepository: Send + Sync {
         pair_id: &Uuid,
     ) -> Result<Vec<AssignmentRecord>, Error>;
 
+    async fn get_by_pair_id(
+        &self,
+        year: &i32,
+        pair_id: &Uuid,
+    ) -> Result<AssignmentRecord, Error>;
+
     async fn delete_all(
         &self
     ) -> Result<usize, Error>;
@@ -486,6 +492,18 @@ impl AssignmentRecordRepository for AssignmentRecordRepositorySqlImpl {
             .like(floor_ex)
         ).filter(assignment_record::pair_id.eq(pair_id).and(assignment_record::year.eq(year))
         ).get_results(&mut conn)
+    }
+
+    async  fn get_by_pair_id(
+            &self,
+            year: &i32,
+            pair_id: &Uuid,
+        ) -> Result<AssignmentRecord, Error> {
+        let mut conn = self.pool.get().unwrap();
+
+        assignment_record::table
+            .filter(assignment_record::pair_id.eq(pair_id).and(assignment_record::year.eq(year)))
+            .get_result(&mut conn)
     }
 
     async fn delete_all(

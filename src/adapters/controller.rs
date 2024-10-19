@@ -258,6 +258,13 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
         Err(_) => return (Status::InternalServerError, "failed to get student_pair id"),
     };
 
+    // 既に登録されていないかの確認
+    match app.assignment_record.get_by_pair_id(&user_pair.pair_id).await {
+        Ok(_) => {return (Status::InternalServerError, "same pair already exists")},
+        Err(diesel::NotFound) => {},
+        Err(_) => {return (Status::InternalServerError, "failed to get assignment_record")},
+    }
+
     // 対象ロッカーの空き確認
     let locker = match app.locker.get_by_id(&assignment.locker_id).await {
         Ok(locker) => locker,
