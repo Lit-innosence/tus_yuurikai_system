@@ -1,17 +1,19 @@
-#[macro_use]
 extern crate rocket;
 extern crate tus_yuurikai_system;
 
 mod utils;
 
+use std::env;
 use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
-use rocket::http::{Status, ContentType};
-use tus_yuurikai_system::adapters::controller::{self, UserSearchResult, UserSearchResponce, LoginFormRequest};
+use rocket::http::{Status, Cookie};
+use dotenv::dotenv;
+use tus_yuurikai_system::adapters::controller::{UserSearchResult, UserSearchResponce};
 use tus_yuurikai_system::domain::{assignment::AssignmentInfo, student_pair::PairInfo, student::UserInfo};
 use tus_yuurikai_system::usecase::{assignment_record::AssignmentRecordUsecase, student_pair::StudentPairUsecase, student::StudentUsecase};
 use tus_yuurikai_system::infrastructure::router::App;
-use chrono::{Datelike, Local};
+use tus_yuurikai_system::utils::encode_jwt::encode_jwt;
+use chrono::{Datelike, Local, Duration};
 
 // 正常系
 #[rocket::async_test]
@@ -41,11 +43,6 @@ async fn normal() {
         locker_id: String::from("2001"),
     };
 
-    let form = &LoginFormRequest{
-        username: String::from("user000"),
-        password: String::from("0000"),
-    };
-
     // dbの初期化
     setup_db(&app).await;
 
@@ -69,14 +66,20 @@ async fn normal() {
         Err(err) => {panic!("{}", err);},
     }
 
-    let _response = client.post(uri!("/api", controller::login))
-            .header(ContentType::JSON)
-            .json(&form)
-            .dispatch()
-            .await;
+    dotenv().ok();
+
+    let username = env::var("ADMIN_USER_NAME").expect("admin username must be set");
+    let key = env::var("TOKEN_KEY").expect("token key must be set");
+    let token = encode_jwt(&username, Duration::hours(1), &key);
+    let cookie = Cookie::build(("token", token))
+        .path("/")
+        .secure(true)
+        .http_only(true);
 
     // Act
-    let response = client.get("/api/admin/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E").dispatch().await;
+    let response = client.get("/api/admin/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E")
+        .cookie(cookie)
+        .dispatch().await;
 
     let expected_data = UserSearchResponce{
         data : vec![
@@ -122,12 +125,6 @@ async fn given_name_is_not_requested() {
         locker_id: String::from("2001"),
     };
 
-    let form = &LoginFormRequest{
-        username: String::from("user000"),
-        password: String::from("0000"),
-    };
-
-
     // dbの初期化
     setup_db(&app).await;
 
@@ -151,15 +148,20 @@ async fn given_name_is_not_requested() {
         Err(err) => {panic!("{}", err);},
     }
 
-    let _response = client.post(uri!("/api", controller::login))
-            .header(ContentType::JSON)
-            .json(&form)
-            .dispatch()
-            .await;
+    dotenv().ok();
 
+    let username = env::var("ADMIN_USER_NAME").expect("admin username must be set");
+    let key = env::var("TOKEN_KEY").expect("token key must be set");
+    let token = encode_jwt(&username, Duration::hours(1), &key);
+    let cookie = Cookie::build(("token", token))
+        .path("/")
+        .secure(true)
+        .http_only(true);
 
     // Act
-    let response = client.get("/api/admin/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88").dispatch().await;
+    let response = client.get("/api/admin/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E")
+        .cookie(cookie)
+        .dispatch().await;
 
     let expected_data = UserSearchResponce{
         data : vec![
@@ -205,12 +207,6 @@ async fn family_name_is_not_requested() {
         locker_id: String::from("2001"),
     };
 
-    let form = &LoginFormRequest{
-        username: String::from("user000"),
-        password: String::from("0000"),
-    };
-
-
     // dbの初期化
     setup_db(&app).await;
 
@@ -234,15 +230,20 @@ async fn family_name_is_not_requested() {
         Err(err) => {panic!("{}", err);},
     }
 
-    let _response = client.post(uri!("/api", controller::login))
-            .header(ContentType::JSON)
-            .json(&form)
-            .dispatch()
-            .await;
+    dotenv().ok();
 
+    let username = env::var("ADMIN_USER_NAME").expect("admin username must be set");
+    let key = env::var("TOKEN_KEY").expect("token key must be set");
+    let token = encode_jwt(&username, Duration::hours(1), &key);
+    let cookie = Cookie::build(("token", token))
+        .path("/")
+        .secure(true)
+        .http_only(true);
 
     // Act
-    let response = client.get("/api/admin/user-search/2024?givenname=%E5%A4%AA%E9%83%8E").dispatch().await;
+    let response = client.get("/api/admin/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E")
+        .cookie(cookie)
+        .dispatch().await;
 
     let expected_data = UserSearchResponce{
         data : vec![
@@ -288,11 +289,87 @@ async fn name_is_not_requested() {
         locker_id: String::from("2001"),
     };
 
-    let form = &LoginFormRequest{
-        username: String::from("user000"),
-        password: String::from("0000"),
+    // dbの初期化
+    setup_db(&app).await;
+
+    // student2人をdbに保存
+    match app.student.register(mainuser).await {
+        Ok(_) => {},
+        Err(err) => {panic!("{}", err);},
+    };
+    match app.student.register(couser).await {
+        Ok(_) => {},
+        Err(err) => {panic!("{}", err);},
+    };
+    // studentpairをdbに保存
+    let student_pair = match app.student_pair.register(studentpair).await {
+        Ok(student_pair) => student_pair,
+        Err(err) => {panic!("{}", err);},
     };
 
+    match app.assignment_record.register(&student_pair, assignment).await {
+        Ok(_) => {},
+        Err(err) => {panic!("{}", err);},
+    }
+
+    dotenv().ok();
+
+    let username = env::var("ADMIN_USER_NAME").expect("admin username must be set");
+    let key = env::var("TOKEN_KEY").expect("token key must be set");
+    let token = encode_jwt(&username, Duration::hours(1), &key);
+    let cookie = Cookie::build(("token", token))
+        .path("/")
+        .secure(true)
+        .http_only(true);
+
+    // Act
+    let response = client.get("/api/admin/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E")
+        .cookie(cookie)
+        .dispatch().await;
+
+    let expected_data = UserSearchResponce{
+        data : vec![
+        UserSearchResult {
+            locker_id: String::from("2001"),
+            floor: 2,
+            main_user: mainuser.clone(),
+            co_user: couser.clone(),
+            year: Local::now().year(),
+        }]
+    };
+
+    // Assert
+    assert_eq!(response.status(), Status::Ok);
+    assert_eq!(response.into_json::<UserSearchResponce>().await.unwrap(), expected_data);
+}
+
+// 異常系:jwtを所持していない
+#[rocket::async_test]
+async fn jwt_does_not_exist() {
+    //Arrange
+    let client = Client::tracked(rocket()).await.unwrap();
+    let app = App::new();
+
+    let mainuser = &UserInfo{
+            student_id: String::from("4622999"),
+            family_name: String::from("テスト"),
+            given_name: String::from("太郎")
+        };
+    let couser = &UserInfo{
+            student_id: String::from("4622000"),
+            family_name: String::from("テスト"),
+            given_name: String::from("次郎")
+        };
+
+    let studentpair = &PairInfo{
+        main_user: mainuser.clone(),
+        co_user: couser.clone()
+    };
+
+    let assignment = &AssignmentInfo{
+        student_id: String::from("4622999"),
+        locker_id: String::from("2001"),
+    };
 
     // dbの初期化
     setup_db(&app).await;
@@ -317,28 +394,12 @@ async fn name_is_not_requested() {
         Err(err) => {panic!("{}", err);},
     }
 
-    let _response = client.post(uri!("/api", controller::login))
-            .header(ContentType::JSON)
-            .json(&form)
-            .dispatch()
-            .await;
+    dotenv().ok();
 
 
     // Act
-    let response = client.get("/api/admin/user-search/2024").dispatch().await;
-
-    let expected_data = UserSearchResponce{
-        data : vec![
-        UserSearchResult {
-            locker_id: String::from("2001"),
-            floor: 2,
-            main_user: mainuser.clone(),
-            co_user: couser.clone(),
-            year: Local::now().year(),
-        }]
-    };
+    let response = client.get("/api/admin/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E").dispatch().await;
 
     // Assert
-    assert_eq!(response.status(), Status::Ok);
-    assert_eq!(response.into_json::<UserSearchResponce>().await.unwrap(), expected_data);
+    assert_eq!(response.status(), Status::BadRequest);
 }
