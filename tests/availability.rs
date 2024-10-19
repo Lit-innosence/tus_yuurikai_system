@@ -6,7 +6,7 @@ mod utils;
 use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::Status;
-use tus_yuurikai_system::adapters::controller::{LockerStatus, LockerStatusResponse};
+use tus_yuurikai_system::adapters::httpmodels::{LockerStatus, LockerStatusResponse};
 use tus_yuurikai_system::infrastructure::router::App;
 
 // 正常系

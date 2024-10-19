@@ -8,7 +8,7 @@ use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, Cookie};
 use dotenv::dotenv;
-use tus_yuurikai_system::adapters::controller::{UserSearchResult, UserSearchResponce};
+use tus_yuurikai_system::adapters::httpmodels::{UserSearchResponse, UserSearchResult};
 use tus_yuurikai_system::domain::{assignment::AssignmentInfo, student_pair::PairInfo, student::UserInfo};
 use tus_yuurikai_system::usecase::{assignment_record::AssignmentRecordUsecase, student_pair::StudentPairUsecase, student::StudentUsecase};
 use tus_yuurikai_system::infrastructure::router::App;
@@ -81,7 +81,7 @@ async fn normal() {
         .cookie(cookie)
         .dispatch().await;
 
-    let expected_data = UserSearchResponce{
+    let expected_data = UserSearchResponse{
         data : vec![
         UserSearchResult {
             locker_id: String::from("2001"),
@@ -94,7 +94,7 @@ async fn normal() {
 
     // Assert
     assert_eq!(response.status(), Status::Ok);
-    assert_eq!(response.into_json::<UserSearchResponce>().await.unwrap(), expected_data);
+    assert_eq!(response.into_json::<UserSearchResponse>().await.unwrap(), expected_data);
 }
 
 // 正常系:given_nameが指定されていない
@@ -163,7 +163,7 @@ async fn given_name_is_not_requested() {
         .cookie(cookie)
         .dispatch().await;
 
-    let expected_data = UserSearchResponce{
+    let expected_data = UserSearchResponse{
         data : vec![
         UserSearchResult {
             locker_id: String::from("2001"),
@@ -176,7 +176,7 @@ async fn given_name_is_not_requested() {
 
     // Assert
     assert_eq!(response.status(), Status::Ok);
-    assert_eq!(response.into_json::<UserSearchResponce>().await.unwrap(), expected_data);
+    assert_eq!(response.into_json::<UserSearchResponse>().await.unwrap(), expected_data);
 }
 
 // 正常系:family_nameが指定されていない
@@ -245,7 +245,7 @@ async fn family_name_is_not_requested() {
         .cookie(cookie)
         .dispatch().await;
 
-    let expected_data = UserSearchResponce{
+    let expected_data = UserSearchResponse{
         data : vec![
         UserSearchResult {
             locker_id: String::from("2001"),
@@ -258,7 +258,7 @@ async fn family_name_is_not_requested() {
 
     // Assert
     assert_eq!(response.status(), Status::Ok);
-    assert_eq!(response.into_json::<UserSearchResponce>().await.unwrap(), expected_data);
+    assert_eq!(response.into_json::<UserSearchResponse>().await.unwrap(), expected_data);
 }
 
 // 正常系:nameが指定されていない
@@ -327,7 +327,7 @@ async fn name_is_not_requested() {
         .cookie(cookie)
         .dispatch().await;
 
-    let expected_data = UserSearchResponce{
+    let expected_data = UserSearchResponse{
         data : vec![
         UserSearchResult {
             locker_id: String::from("2001"),
@@ -340,7 +340,7 @@ async fn name_is_not_requested() {
 
     // Assert
     assert_eq!(response.status(), Status::Ok);
-    assert_eq!(response.into_json::<UserSearchResponce>().await.unwrap(), expected_data);
+    assert_eq!(response.into_json::<UserSearchResponse>().await.unwrap(), expected_data);
 }
 
 // 異常系:jwtを所持していない

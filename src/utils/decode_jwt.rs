@@ -1,4 +1,4 @@
-use crate::adapters::controller::Claims;
+use crate::utils::encode_jwt::Claims;
 use jsonwebtoken::{decode, Validation, DecodingKey};
 use std::env;
 use dotenv::dotenv;
