@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, Layout } from 'antd';
+import { Form, Input, Button, Layout, message } from 'antd';
+import { useAuth } from './component/AuthContext';
 import CustomHeader from './component/CustomHeader';
 import CustomFooter from './component/CustomFooter';
 
@@ -8,12 +9,19 @@ const { Content } = Layout;
 
 const LoginForm: React.FC = () => {
     const navigate = useNavigate();
+    const { handleLogin } = useAuth(); 
 
-    const onFinish = (values: any) => {
-        // ログインの処理を実装
-        console.log('ログイン情報:', values);
-        navigate('/admin'); 
+    const onFinish = async (values: any) => {
+        try {
+            await handleLogin(values);
+            message.success('ログインに成功しました');
+            navigate('/admin'); 
+        } catch (error: any) {
+            console.error('ログインに失敗しました:', error);
+            message.error(error.message);
+        }
     };
+    
 
     return (
         <Layout style={{ minHeight: '100vh' }}>

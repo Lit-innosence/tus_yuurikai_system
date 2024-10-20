@@ -50,9 +50,8 @@ function App() {
             <Route path='/locker/register/confirm' element={<LockerRegisterConfirm />} />
             <Route path='/locker/register/complete' element={<LockerRegisterComplete />} />
             <Route path='/login' element={<Login />} />
-            {/* <Route path='/admin/' element={<PrivateRoute><Admin /></PrivateRoute>} /> */}
-            <Route path='/admin/' element={<Admin />} />
-            <Route path='/admin/locker/search' element={<LockerSearch />} />
+            <Route path='/admin' element={<PrivateRoute><Admin /></PrivateRoute>} />
+            <Route path='/admin/locker/search' element={<PrivateRoute><LockerSearch /></PrivateRoute>} />
             <Route path='/locker/nopage' element={<Page404 />} />
             <Route path='*' element={<Page404 />} />
           </Routes>
