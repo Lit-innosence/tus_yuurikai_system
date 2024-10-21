@@ -22,7 +22,7 @@ use crate::utils::{decode_jwt::decode_jwt, encode_jwt::encode_jwt};
 
 use std::{env, collections::HashSet};
 use dotenv::dotenv;
-use rocket::{get, http::{Status, RawStr, Cookie, CookieJar}, post, serde::json::Json, State};
+use rocket::{get, http::{Status, RawStr, Cookie, CookieJar, SameSite}, post, serde::json::Json, State};
 use utoipa::OpenApi;
 use chrono::Duration;
 
@@ -314,7 +314,8 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
     // cookieを作成
     let cookie = Cookie::build(("token", token))
         .path("/")
-        .secure(false)
+        .secure(true)
+        .same_site(SameSite::None)
         .http_only(true);
 
     jar.add(cookie);
