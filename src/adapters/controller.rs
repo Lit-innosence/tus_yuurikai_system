@@ -22,7 +22,7 @@ use crate::utils::{decode_jwt::decode_jwt, encode_jwt::encode_jwt};
 
 use std::{env, collections::HashSet};
 use dotenv::dotenv;
-use rocket::{get, http::{Status, RawStr, Cookie, CookieJar}, post, serde::json::Json, State};
+use rocket::{get, http::{Status, RawStr, Cookie, CookieJar, SameSite}, post, serde::json::Json, State};
 use utoipa::OpenApi;
 use chrono::Duration;
 
@@ -258,6 +258,13 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
         Err(_) => return (Status::InternalServerError, "failed to get student_pair id"),
     };
 
+    // 既に登録されていないかの確認
+    match app.assignment_record.get_by_pair_id(&user_pair.pair_id).await {
+        Ok(_) => {return (Status::InternalServerError, "same pair already exists")},
+        Err(diesel::NotFound) => {},
+        Err(_) => {return (Status::InternalServerError, "failed to get assignment_record")},
+    }
+
     // 対象ロッカーの空き確認
     let locker = match app.locker.get_by_id(&assignment.locker_id).await {
         Ok(locker) => locker,
@@ -307,7 +314,8 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
     // cookieを作成
     let cookie = Cookie::build(("token", token))
         .path("/")
-        .secure(false)
+        .secure(true)
+        .same_site(SameSite::None)
         .http_only(true);
 
     jar.add(cookie);

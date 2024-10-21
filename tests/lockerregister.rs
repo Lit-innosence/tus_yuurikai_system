@@ -315,3 +315,69 @@ async fn locker_status_unavailable() {
     assert_eq!(response.status(), Status::BadRequest);
     assert_eq!(response.into_string().await.unwrap(), "This locker is not vacant");
 }
+
+// 異常系:既に登録されたペアである
+#[rocket::async_test]
+async fn same_pair_arleady_registered() {
+
+    // Arrange
+    let client = Client::tracked(rocket()).await.unwrap();
+    let app = App::new();
+    let request = LockerResisterRequest{
+        data: AssignmentInfo{
+            student_id: String::from("4622999"),
+            locker_id: String::from("2001"),
+        }
+    };
+
+    let mainuser = &UserInfo{
+            student_id: String::from("4622999"),
+            family_name: String::from("テスト太郎"),
+            given_name: String::from("てすと太郎")
+        };
+    let couser = &UserInfo{
+            student_id: String::from("4622000"),
+            family_name: String::from("テスト太郎"),
+            given_name: String::from("てすと太郎")
+        };
+
+    let studentpair = &PairInfo{
+        main_user: mainuser.clone(),
+        co_user: couser.clone()
+    };
+
+    // dbの初期化
+    setup_db(&app).await;
+
+    // student2人をdbに保存
+    match app.student.register(mainuser).await {
+        Ok(_) => {},
+        Err(err) => {panic!("{}", err);},
+    };
+    match app.student.register(couser).await {
+        Ok(_) => {},
+        Err(err) => {panic!("{}", err);},
+    };
+    // studentpairをdbに保存
+    match app.student_pair.register(studentpair).await {
+        Ok(_) => {},
+        Err(err) => {panic!("{}", err);},
+    };
+
+
+    // Act
+    let _response = client.post(uri!("/api/locker", controller::locker_register))
+        .header(ContentType::JSON)
+        .json(&request)
+        .dispatch().await;
+
+    let response = client.post(uri!("/api/locker", controller::locker_register))
+        .header(ContentType::JSON)
+        .json(&request)
+        .dispatch().await;
+
+
+    // Assert
+    assert_eq!(response.status(), Status::InternalServerError);
+    assert_eq!(response.into_string().await.unwrap(), "same pair already exists");
+}

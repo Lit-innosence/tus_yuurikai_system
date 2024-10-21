@@ -15,6 +15,7 @@ pub struct AssignmentRecordUsecaseImpl {
 pub trait AssignmentRecordUsecase: Sync + Send {
     async fn register(&self, student_pair: &StudentPair, assignment: &AssignmentInfo) -> Result<AssignmentRecord, Error>;
     async fn get(&self, year: &i32, floor: Option<i8>, pair_id: &Uuid) -> Result<Vec<AssignmentRecord>, Error>;
+    async fn get_by_pair_id(&self, pair_id: &Uuid) -> Result<AssignmentRecord, Error>;
 }
 
 impl AssignmentRecordUsecaseImpl {
@@ -36,5 +37,10 @@ impl AssignmentRecordUsecase for AssignmentRecordUsecaseImpl {
             Some(x) => format!("{}", x),
         };
         self.assignment_record_repository.get(year, &floor_val, pair_id).await
+    }
+
+    async fn get_by_pair_id(&self, pair_id: &Uuid) -> Result<AssignmentRecord, Error> {
+        let year = Local::now().year();
+        self.assignment_record_repository.get_by_pair_id(&year, pair_id).await
     }
 }
