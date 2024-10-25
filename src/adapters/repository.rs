@@ -232,6 +232,15 @@ pub trait AuthRepository: Send + Sync {
         &self,
         auth_token: &String,
     ) -> Result<Auth, Error>;
+    async fn update_phase(
+        &self,
+        main_auth_token: &String,
+        phase: &i32,
+    ) -> Result<usize, Error>;
+    async fn delete(
+        &self,
+        main_auth_token: &String,
+    ) -> Result<usize, Error>;
     async fn delete_all(
         &self
     ) -> Result<usize, Error>;
@@ -269,12 +278,14 @@ impl AuthRepository for AuthRepositorySqlImpl {
             co_student_id,
             co_family_name,
             co_given_name,
+            phase: &0,
         };
         let mut conn = self.pool.get().unwrap();
         diesel::insert_into(auth::table)
             .values(&new_auth)
             .get_result(&mut conn)
     }
+
     async fn get_by_token(
         &self,
         auth_token: &String,
@@ -287,6 +298,26 @@ impl AuthRepository for AuthRepositorySqlImpl {
                     .or(auth::co_auth_token.eq(auth_token)),
             )
             .first(&mut conn)
+    }
+
+    async fn update_phase(
+            &self,
+            main_auth_token: &String,
+            phase: &i32,
+        ) -> Result<usize, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::update(auth::table.find(main_auth_token))
+            .set(auth::phase.eq(phase))
+            .execute(&mut conn)
+    }
+
+    async fn delete(
+            &self,
+            main_auth_token: &String,
+        ) -> Result<usize, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::delete(auth::table.find(main_auth_token))
+            .execute(&mut conn)
     }
 
     async fn delete_all(

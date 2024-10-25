@@ -8,5 +8,6 @@ CREATE TABLE auth(
     co_student_id TEXT NOT NULL,
     co_family_name TEXT NOT NULL,
     co_given_name TEXT NOT NULL,
+    phase INT NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

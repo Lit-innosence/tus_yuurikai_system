@@ -22,6 +22,8 @@ pub trait AuthUsecase: Sync + Send {
     async fn register(&self, main_user: &UserInfo, co_user: &UserInfo, is_same: bool) -> Result<Auth, Error>;
     async fn mail_sender(&self, user_address: String, content: String, subject: &str) -> Result<(), Status>;
     async fn token_check(&self, token: String, is_main: bool) -> Result<Auth, Status>;
+    async fn update_phase(&self, token: String, phase: i32) -> Result<usize, Status>;
+    async fn delete(&self, token: String) -> Result<usize, Status>;
 }
 
 impl AuthUsecaseImpl {
@@ -83,6 +85,18 @@ impl AuthUsecase for AuthUsecaseImpl {
             Ok(auth)
         } else {
             Err(Status::Unauthorized)
+        }
+    }
+    async  fn update_phase(&self, token: String, phase: i32) -> Result<usize, Status> {
+        match self.auth_repository.update_phase(&token, &phase).await {
+            Ok(ok) => Ok(ok),
+            Err(_) => return Err(Status::InternalServerError),
+        }
+    }
+    async  fn delete(&self, token: String) -> Result<usize, Status> {
+        match self.auth_repository.delete(&token).await {
+            Ok(ok) => Ok(ok),
+            Err(_) => return Err(Status::InternalServerError),
         }
     }
 }
