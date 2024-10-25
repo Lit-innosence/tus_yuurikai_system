@@ -474,6 +474,8 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
                 result.push(num);
             }
 
+            result.sort_by(|lt, rt| lt.locker_id.cmp(&rt.locker_id));
+
             Ok(Json(UserSearchResponse{
                 data: result,
             }))

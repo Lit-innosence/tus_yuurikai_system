@@ -63,6 +63,7 @@ pub struct LockerResisterRequest {
 ///
 /// password    : パスワード
 #[derive(Serialize, Deserialize, ToSchema)]
+// #[serde(rename_all = "camelCase")]
 pub struct LoginFormRequest{
     #[schema(example = "user000")]
     pub username : String,
@@ -74,6 +75,7 @@ pub struct LoginFormRequest{
 ///
 /// UserSearchResponseに使用する構造体
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
+// #[serde(rename_all = "camelCase")]
 pub struct UserSearchResult {
     pub locker_id : String,
     pub floor : i8,
