@@ -50,21 +50,6 @@ const AuthProvider: React.FC<AuthProviderProps> = (props) => {
     }
 };
 
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const response = await axios.get(`${constants.backendApiEndpoint}/api/check-auth`);
-        setLoggedIn(response.data.loggedIn);
-      } catch (error) {
-        console.error('Failed to check auth status:', error);
-        setLoggedIn(false);
-      }
-    };
-
-    checkAuthStatus();
-  }, []);
-
-
   const authState: AuthState = {
     loggedIn,
     handleLogin,
