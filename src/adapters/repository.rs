@@ -227,6 +227,7 @@ pub trait AuthRepository: Send + Sync {
     co_student_id: &String,
     co_family_name: &String,
     co_given_name: &String,
+    phase: &String,
     ) -> Result<Auth, Error>;
     async fn get_by_token(
         &self,
@@ -235,7 +236,7 @@ pub trait AuthRepository: Send + Sync {
     async fn update_phase(
         &self,
         main_auth_token: &String,
-        phase: &i32,
+        phase: &String,
     ) -> Result<usize, Error>;
     async fn delete(
         &self,
@@ -268,6 +269,7 @@ impl AuthRepository for AuthRepositorySqlImpl {
         co_student_id: &String,
         co_family_name: &String,
         co_given_name: &String,
+        phase: &String,
     ) -> Result<Auth, Error> {
         let new_auth = NewAuth {
             main_auth_token,
@@ -278,7 +280,7 @@ impl AuthRepository for AuthRepositorySqlImpl {
             co_student_id,
             co_family_name,
             co_given_name,
-            phase: &0,
+            phase,
         };
         let mut conn = self.pool.get().unwrap();
         diesel::insert_into(auth::table)
@@ -303,7 +305,7 @@ impl AuthRepository for AuthRepositorySqlImpl {
     async fn update_phase(
             &self,
             main_auth_token: &String,
-            phase: &i32,
+            phase: &String,
         ) -> Result<usize, Error> {
         let mut conn = self.pool.get().unwrap();
         diesel::update(auth::table.find(main_auth_token))

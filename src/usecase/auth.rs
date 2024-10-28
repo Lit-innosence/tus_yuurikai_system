@@ -19,10 +19,10 @@ pub struct AuthUsecaseImpl {
 
 #[async_trait]
 pub trait AuthUsecase: Sync + Send {
-    async fn register(&self, main_user: &UserInfo, co_user: &UserInfo, is_same: bool) -> Result<Auth, Error>;
+    async fn register(&self, main_user: &UserInfo, co_user: &UserInfo, phase: &String, is_same: bool) -> Result<Auth, Error>;
     async fn mail_sender(&self, user_address: String, content: String, subject: &str) -> Result<(), Status>;
     async fn token_check(&self, token: String, is_main: bool) -> Result<Auth, Status>;
-    async fn update_phase(&self, token: String, phase: i32) -> Result<usize, Status>;
+    async fn update_phase(&self, token: String, phase: String) -> Result<usize, Status>;
     async fn delete(&self, token: String) -> Result<usize, Status>;
 }
 
@@ -35,13 +35,13 @@ impl AuthUsecaseImpl {
 #[async_trait]
 impl AuthUsecase for AuthUsecaseImpl {
     // tokenの生成、DBへの登録
-    async fn register(&self, main_user: &UserInfo, co_user: &UserInfo, is_same: bool) -> Result<Auth, Error> {
+    async fn register(&self, main_user: &UserInfo, co_user: &UserInfo, phase: &String, is_same: bool) -> Result<Auth, Error> {
         let main_token = generate_token();
         let mut co_token = generate_token();
         if is_same {
             co_token.clone_from(&main_token);
         }
-        self.auth_repository.insert(&main_token, &main_user.student_id, &main_user.family_name, &main_user.given_name, &co_token, &co_user.student_id, &co_user.family_name, &co_user.given_name).await
+        self.auth_repository.insert(&main_token, &main_user.student_id, &main_user.family_name, &main_user.given_name, &co_token, &co_user.student_id, &co_user.family_name, &co_user.given_name, phase).await
     }
     async fn mail_sender(&self, user_address: String, content: String, subject: &str) -> Result<(), Status> {
         // 環境変数の読み取り
@@ -87,7 +87,7 @@ impl AuthUsecase for AuthUsecaseImpl {
             Err(Status::Unauthorized)
         }
     }
-    async  fn update_phase(&self, token: String, phase: i32) -> Result<usize, Status> {
+    async  fn update_phase(&self, token: String, phase: String) -> Result<usize, Status> {
         match self.auth_repository.update_phase(&token, &phase).await {
             Ok(ok) => Ok(ok),
             Err(_) => return Err(Status::InternalServerError),

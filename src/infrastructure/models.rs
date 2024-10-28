@@ -88,7 +88,7 @@ pub struct Auth {
     pub co_student_id: String,
     pub co_family_name: String,
     pub co_given_name: String,
-    pub phase: i32,
+    pub phase: String,
     pub created_at: chrono::NaiveDateTime,
 }
 
@@ -103,7 +103,7 @@ pub struct NewAuth<'a> {
     pub co_student_id: &'a String,
     pub co_family_name: &'a String,
     pub co_given_name: &'a String,
-    pub phase: &'a i32,
+    pub phase: &'a String,
 }
 
 #[derive(Queryable)]

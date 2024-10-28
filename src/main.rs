@@ -56,7 +56,7 @@ async fn main() -> Result<(), rocket::Error> {
             ]
         )
         .mount(
-            "/api/admin",
+            "/api/admin/locker",
             routes![
                 user_search,
             ],

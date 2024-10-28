@@ -76,7 +76,7 @@ pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -
 
     let data = &request.data;
 
-    let token = match app.auth.register(&data.main_user.clone(), &data.co_user.clone(), false).await{
+    let token = match app.auth.register(&data.main_user.clone(), &data.co_user.clone(), &String::from("main_auth"), false).await{
         Ok(auth) => auth.main_auth_token,
         Err(_) => return Status::InternalServerError,
     };
@@ -110,11 +110,8 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
     };
 
     // authのphaseを確認
-    match auth.phase {
-        0 => {},
-
-        // 状態が進んでいたら終了
-        _ => {return Status::BadRequest},
+    if auth.phase != String::from("main_auth") {
+        return Status::BadRequest
     }
 
     // mainuserの情報を格納
@@ -150,7 +147,7 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
     }
 
     // phaseの更新
-    if app.auth.update_phase(auth.main_auth_token.clone(), 1).await.is_err() {
+    if app.auth.update_phase(auth.main_auth_token.clone(), String::from("co_auth")).await.is_err() {
         return Status::InternalServerError;
     }
 
@@ -168,11 +165,8 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     };
 
     // authのphaseを確認
-    match auth.phase {
-        1 => {},
-
-        // 状態が進んでいたら終了
-        _ => {return Status::BadRequest},
+    if auth.phase != String::from("co_auth") {
+        return Status::BadRequest
     }
 
     // couserの情報を格納
@@ -206,7 +200,7 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     }
 
     // 認証完了用のレコードを保存
-    let token = match app.auth.register(&main_user.clone(), &co_user.clone(), true).await{
+    let token = match app.auth.register(&main_user.clone(), &co_user.clone(), &String::from("auth_check"), true).await{
         Ok(auth) => auth.main_auth_token,
         Err(_) => return Status::InternalServerError,
     };
@@ -243,11 +237,8 @@ pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthChec
     };
 
     // authのphaseを確認
-    match auth.phase {
-        0 => {},
-
-        // 状態が異なるなら終了
-        _ => {return Err(Status::BadRequest)},
+    if auth.phase != String::from("auth_check") {
+        return Err(Status::BadRequest)
     }
 
     // mainuserの情報を格納
