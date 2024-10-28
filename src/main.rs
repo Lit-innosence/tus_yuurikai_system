@@ -62,6 +62,10 @@ async fn main() -> Result<(), rocket::Error> {
             ],
         )
         .mount(
+            "/api/admin/circle",
+            routes![],
+        )
+        .mount(
             "/api/locker",
             routes![
                 token_generator,
