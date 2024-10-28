@@ -28,7 +28,7 @@ const LockerReset: React.FC = () => {
 
         setLoading(true);
         try {
-            await axios.post('/api/locker/reset', { password }, { withCredentials: true });
+            await axios.post('/api/admin/locker/reset', { password }, { withCredentials: true });
             message.success('リセットが成功しました');
         } catch (error) {
             message.error('リセットに失敗しました');
