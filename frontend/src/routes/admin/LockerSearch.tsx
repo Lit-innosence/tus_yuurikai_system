@@ -15,7 +15,7 @@ const LockerUserSearch: React.FC = () => {
     const handleSearch = async (values: { family_name?: string; given_name?: string; floor?: number; year?: number }) => {
         // クエリパラメータを生成
         const year = values.year || new Date().getFullYear();
-        let query = `${constants.backendApiEndpoint}/api/admin/user-search/${year}`;
+        let query = `${constants.backendApiEndpoint}/api/admin/locker/user-search/${year}`;
         const params = new URLSearchParams();
 
         if (values.family_name) params.append('familyname', values.family_name);
