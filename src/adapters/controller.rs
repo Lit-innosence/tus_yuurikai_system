@@ -22,7 +22,7 @@ use crate::utils::{decode_jwt::decode_jwt, encode_jwt::encode_jwt};
 
 use std::{env, collections::HashSet};
 use dotenv::dotenv;
-use rocket::{get, http::{Status, RawStr, Cookie, CookieJar}, post, serde::json::Json, State};
+use rocket::{get, http::{Status, RawStr, Cookie, CookieJar, SameSite}, post, serde::json::Json, State};
 use utoipa::OpenApi;
 use chrono::Duration;
 
@@ -50,6 +50,7 @@ use chrono::Duration;
         LockerResisterRequest,
         LoginFormRequest,
         LockerStatusResponse,
+        UserSearchResponse,
     ))
 )]
 pub struct ApiDoc;
@@ -75,7 +76,7 @@ pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -
 
     let data = &request.data;
 
-    let token = match app.auth.register(&data.main_user.clone(), &data.co_user.clone(), false).await{
+    let token = match app.auth.register(&data.main_user.clone(), &data.co_user.clone(), &String::from("main_auth"), false).await{
         Ok(auth) => auth.main_auth_token,
         Err(_) => return Status::InternalServerError,
     };
@@ -101,22 +102,31 @@ pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -
 #[utoipa::path(context_path = "/api/locker")]
 #[get("/main-auth?<token>")]
 pub async fn main_auth(token: String, app: &State<App>) -> Status {
-
+    // tokenが一致するレコードを取得
     let auth = match app.auth.token_check(token, true).await{
         Ok(auth) => auth,
+        // 存在しなかったら終了
         Err(status) => return status,
     };
 
+    // authのphaseを確認
+    if auth.phase != String::from("main_auth") {
+        return Status::BadRequest
+    }
+
+    // mainuserの情報を格納
     let main_user = &UserInfo{
         student_id: auth.main_student_id.clone(),
         family_name: auth.main_family_name.clone(),
         given_name: auth.main_given_name.clone(),
     };
 
+    // mainuserの情報をstudentテーブルに保存
     if app.student.register(&main_user.clone()).await.is_err(){
         return Status::InternalServerError;
     }
 
+    // couserの情報を格納
     let co_user = &UserInfo{
         student_id: auth.co_student_id.clone(),
         family_name: auth.co_family_name.clone(),
@@ -131,7 +141,13 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
     let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?method=0&token={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token);
     let subject = "ロッカーシステム メール認証";
 
+    // メールの送信
     if app.auth.mail_sender(user_address, content, subject).await.is_err(){
+        return Status::InternalServerError;
+    }
+
+    // phaseの更新
+    if app.auth.update_phase(auth.main_auth_token.clone(), String::from("co_auth")).await.is_err() {
         return Status::InternalServerError;
     }
 
@@ -142,41 +158,54 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
 #[utoipa::path(context_path = "/api/locker")]
 #[get("/co-auth?<token>")]
 pub async fn co_auth(token: String, app: &State<App>) -> Status {
+    // tokenが一致するレコードを取得
     let auth = match app.auth.token_check(token, false).await{
         Ok(auth) => auth,
         Err(status) => return status,
     };
 
+    // authのphaseを確認
+    if auth.phase != String::from("co_auth") {
+        return Status::BadRequest
+    }
+
+    // couserの情報を格納
     let co_user = &UserInfo{
         student_id: auth.co_student_id.clone(),
         family_name: auth.co_family_name.clone(),
         given_name: auth.co_given_name.clone(),
     };
 
+    // couserの情報をstudentテーブルに保存
     if app.student.register(&co_user.clone()).await.is_err(){
         return Status::InternalServerError;
     }
 
+    // mainuserの情報を格納
     let main_user = &UserInfo{
         student_id: auth.main_student_id.clone(),
         family_name: auth.main_family_name.clone(),
         given_name: auth.main_given_name.clone(),
     };
 
+    // studentpairの情報を作成
     let student_pair = &PairInfo{
         main_user: main_user.clone(),
         co_user: co_user.clone(),
     };
 
+    // studentpairの情報をstudent_pairテーブルに保存
     if app.student_pair.register(student_pair).await.is_err(){
         return Status::InternalServerError;
     }
 
-    let token = match app.auth.register(&main_user.clone(), &co_user.clone(), true).await{
+    // 認証完了用のレコードを保存
+    let token = match app.auth.register(&main_user.clone(), &co_user.clone(), &String::from("auth_check"), true).await{
         Ok(auth) => auth.main_auth_token,
         Err(_) => return Status::InternalServerError,
     };
 
+    // メールの作成
     dotenv().ok();
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
 
@@ -184,7 +213,13 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     let content = format!("認証が完了しました。\n以下のリンクから使用するロッカー番号を選択してください。\n\n{}/locker/user-register/?method=2&token={}", app_url, token);
     let subject = "ロッカーシステム 認証完了通知";
 
+    // メールの送信
     if app.auth.mail_sender(user_address, content, subject).await.is_err(){
+        return Status::InternalServerError;
+    }
+
+    // レコードを削除
+    if app.auth.delete(auth.main_auth_token).await.is_err() {
         return Status::InternalServerError;
     }
 
@@ -195,32 +230,45 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
 #[utoipa::path(context_path = "/api/locker")]
 #[get("/auth-check?<token>")]
 pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthCheckResponse>, Status> {
+    // tokenを取得
     let auth = match app.auth.token_check(token, true).await{
         Ok(auth) => auth,
         Err(status) => return Err(status),
     };
 
+    // authのphaseを確認
+    if auth.phase != String::from("auth_check") {
+        return Err(Status::BadRequest)
+    }
+
+    // mainuserの情報を格納
     let main_user = &UserInfo{
         student_id: auth.main_student_id.clone(),
         family_name: auth.main_family_name.clone(),
         given_name: auth.main_given_name.clone(),
     };
 
+    // couserの情報を格納
     let co_user = &UserInfo{
         student_id: auth.co_student_id.clone(),
         family_name: auth.co_family_name.clone(),
         given_name: auth.co_given_name.clone(),
     };
 
+    // studentpairの情報を作成
     let student_pair = &PairInfo{
         main_user: main_user.clone(),
         co_user: co_user.clone(),
     };
 
+    // レコードを削除
+    if app.auth.delete(auth.main_auth_token).await.is_err() {
+        return Err(Status::InternalServerError);
+    }
+
     Ok(Json(AuthCheckResponse{
         data: student_pair.clone(),
     }))
-
 }
 
 /// ### ロッカー空き状態確認API
@@ -257,6 +305,13 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
         Ok(student_pair) => student_pair,
         Err(_) => return (Status::InternalServerError, "failed to get student_pair id"),
     };
+
+    // 既に登録されていないかの確認
+    match app.assignment_record.get_by_pair_id(&user_pair.pair_id).await {
+        Ok(_) => {return (Status::InternalServerError, "same pair already exists")},
+        Err(diesel::NotFound) => {},
+        Err(_) => {return (Status::InternalServerError, "failed to get assignment_record")},
+    }
 
     // 対象ロッカーの空き確認
     let locker = match app.locker.get_by_id(&assignment.locker_id).await {
@@ -307,7 +362,8 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
     // cookieを作成
     let cookie = Cookie::build(("token", token))
         .path("/")
-        .secure(false)
+        .secure(true)
+        .same_site(SameSite::None)
         .http_only(true);
 
     jar.add(cookie);
@@ -408,6 +464,8 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
 
                 result.push(num);
             }
+
+            result.sort_by(|lt, rt| lt.locker_id.cmp(&rt.locker_id));
 
             Ok(Json(UserSearchResponse{
                 data: result,
