@@ -1,7 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Suspense, lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import Loading from './routes/Loading';
 import Page404 from './routes/Page404';
 import AuthProvider from './routes/component/AuthContext';
@@ -30,9 +29,14 @@ const LockerProcess = lazy(() => import('./routes/locker/Process'));
 const LockerRegister = lazy(() => import('./routes/locker/Register'));
 const LockerRegisterConfirm = lazy(() => import('./routes/locker/RegisterConfirm'));
 const LockerRegisterComplete = lazy(() => import('./routes/locker/RegisterComp'));
+
+const CircleSelect = lazy(() => import('./routes/circle/CircleSelect'));
+const Redirect = lazy(() => import('./routes/component/Redirect'));
+
 const LockerSearch = lazy(() => import('./routes/admin/LockerSearch'));
 const LockerSelect = lazy(() => import('./routes/admin/LockerSelect'));
 const LockerReset = lazy(() => import('./routes/admin/LockerReset'));
+const AdminCircleSelect = lazy(() => import('./routes/admin/CircleSelect'));
 
 function App() {
   return (
@@ -51,9 +55,12 @@ function App() {
             <Route path='/locker/register' element={<LockerRegister />} />
             <Route path='/locker/register/confirm' element={<LockerRegisterConfirm />} />
             <Route path='/locker/register/complete' element={<LockerRegisterComplete />} />
+            <Route path='/circle' element={<CircleSelect />} />
+            <Route path='/redirect/*' element={<Redirect />} />
             <Route path='/login' element={<Login />} />
             <Route path='/admin' element={<PrivateRoute><Admin /></PrivateRoute>} />
             <Route path='/admin/locker' element={<PrivateRoute><LockerSelect/></PrivateRoute>} />
+            <Route path='/admin/circle' element={<PrivateRoute><AdminCircleSelect/></PrivateRoute>} />
             <Route path='/admin/locker/reset' element={<PrivateRoute><LockerReset /></PrivateRoute>} />
             <Route path='/admin/locker/search' element={<PrivateRoute><LockerSearch /></PrivateRoute>} />
             <Route path='/locker/nopage' element={<Page404 />} />
@@ -61,8 +68,6 @@ function App() {
           </Routes>
         </Suspense>
       </AuthProvider>
-      {/* React Query Devtools の追加 */}
-      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }
