@@ -37,10 +37,10 @@ const Register: React.FC = () => {
                     // floorパラメータを指定してリクエスト
                     response = await axios.get(`${constants.backendApiEndpoint}/api/locker/availability?floor=${floor}`);
                 }
-                
+
                 // レスポンスのデータをフロントエンドの形式に変換
                 const filteredLockers = response.data.data.map((locker: any) => ({
-                    lockerId: locker.locker_id,
+                    lockerId: locker.lockerId,
                     floor: locker.floor.toString(),
                     status: locker.status.toLowerCase(),
                 }));
@@ -52,9 +52,9 @@ const Register: React.FC = () => {
                 setLoading(false);
             }
         };
-    
+
         fetchData(selectedFloor);
-    }, [selectedFloor]);    
+    }, [selectedFloor]);
 
     const handleFloorChange = (floor: string) => {
         setSelectedFloor(floor);

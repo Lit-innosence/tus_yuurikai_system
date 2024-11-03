@@ -30,9 +30,14 @@ pub fn rocket() -> Rocket<Build> {
             ]
         )
         .mount(
-            "/api/admin",
+            "/api/admin/locker",
             routes![
                 user_search,
+            ]
+        )
+        .mount(
+            "/api/admin/circle",
+            routes![
             ]
         )
         .mount(

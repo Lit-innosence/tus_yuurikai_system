@@ -374,7 +374,7 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
 /// ロッカー利用者検索API
 ///
 /// nameは申請者の名前のみ受け付ける
-#[utoipa::path(context_path = "/api/admin")]
+#[utoipa::path(context_path = "/api/admin/locker")]
 #[get("/user-search/<year>?<floor>&<familyname>&<givenname>")]
 pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String>, givenname: Option<String>, jar: &CookieJar<'_>, app: &State<App>) -> Result<Json<UserSearchResponse>, Status> {
 
