@@ -261,12 +261,6 @@ pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthChec
         co_user: co_user.clone(),
     };
 
-    /*
-    // レコードを削除
-    if app.auth.delete(auth.main_auth_token.clone()).await.is_err() {
-        return Err(Status::InternalServerError);
-    }*/
-
     Ok(Json(AuthCheckResponse{
         data: student_pair.clone(),
         auth_token: auth.main_auth_token.clone(),
