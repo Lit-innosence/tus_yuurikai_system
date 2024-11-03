@@ -261,13 +261,15 @@ pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthChec
         co_user: co_user.clone(),
     };
 
+    /*
     // レコードを削除
-    if app.auth.delete(auth.main_auth_token).await.is_err() {
+    if app.auth.delete(auth.main_auth_token.clone()).await.is_err() {
         return Err(Status::InternalServerError);
-    }
+    }*/
 
     Ok(Json(AuthCheckResponse{
         data: student_pair.clone(),
+        auth_token: auth.main_auth_token.clone(),
     }))
 }
 
@@ -287,6 +289,8 @@ pub async fn availability(floor: Option<i8>, app: &State<App>) -> Result<Json<Lo
         };
         response.push(data);
     }
+
+    response.sort_by(|lt, rt| lt.locker_id.partial_cmp(&rt.locker_id).unwrap());
 
     Ok(Json(LockerStatusResponse{
         data: response,
@@ -332,6 +336,11 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     let status = String::from("occupied");
     if app.locker.update_status(&assignment.locker_id, &status).await.is_err() {
         return (Status::InternalServerError, "failed to update locker status");
+    }
+
+    // レコードを削除
+    if app.auth.delete(request.auth_token.clone()).await.is_err() {
+        return (Status::InternalServerError, "failed to delete auth table");
     }
 
     (Status::Created, "success create assignment")
