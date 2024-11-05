@@ -51,8 +51,8 @@ const LockerUserSearch: React.FC = () => {
     const columns = [
         {
             title: 'ロッカーID',
-            dataIndex: 'locker_id',
-            key: 'locker_id',
+            dataIndex: 'lockerId',
+            key: 'lockerId',
         },
         {
             title: '階数',
@@ -66,17 +66,17 @@ const LockerUserSearch: React.FC = () => {
         },
         {
             title: '主利用者 [学籍番号, 名前]',
-            key: 'main_user',
+            key: 'mainUser',
             render: (_: any, record: any) => {
-                const mainUser = record.main_user;
+                const mainUser = record.mainUser;
                 return `[${mainUser.studentId}, ${mainUser.familyName} ${mainUser.givenName}]`;
             },
         },
         {
             title: '共同利用者 [学籍番号, 名前]',
-            key: 'co_user',
+            key: 'coUser',
             render: (_: any, record: any) => {
-                const coUser = record.co_user;
+                const coUser = record.coUser;
                 return `[${coUser.studentId}, ${coUser.familyName} ${coUser.givenName}]`;
             },
         },
@@ -113,7 +113,7 @@ const LockerUserSearch: React.FC = () => {
                         <Table
                             columns={columns}
                             dataSource={searchResults}
-                            rowKey="locker_id"
+                            rowKey="lockerId"
                             pagination={false}
                             bordered
                         />

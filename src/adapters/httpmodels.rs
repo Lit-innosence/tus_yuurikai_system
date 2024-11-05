@@ -26,14 +26,17 @@ pub struct TokenGenRequest {
 ///
 /// 認証検証APIのレスポンスに使用
 #[derive(Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct AuthCheckResponse {
     pub data: PairInfo,
+    pub auth_token: String,
 }
 
 /// ### LockerStatus
 ///
 /// LockerStatusResponseに使用
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct LockerStatus{
     pub locker_id: String,
     pub floor: i8,
@@ -55,6 +58,7 @@ pub struct LockerStatusResponse{
 #[serde(rename_all = "camelCase")]
 pub struct LockerResisterRequest {
     pub data: AssignmentInfo,
+    pub auth_token: String,
 }
 
 /// ### 管理者パスワード照合APIのリクエストデータ
@@ -63,7 +67,7 @@ pub struct LockerResisterRequest {
 ///
 /// password    : パスワード
 #[derive(Serialize, Deserialize, ToSchema)]
-// #[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 pub struct LoginFormRequest{
     #[schema(example = "user000")]
     pub username : String,
@@ -75,7 +79,7 @@ pub struct LoginFormRequest{
 ///
 /// UserSearchResponseに使用する構造体
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
-// #[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 pub struct UserSearchResult {
     pub locker_id : String,
     pub floor : i8,
@@ -88,6 +92,7 @@ pub struct UserSearchResult {
 ///
 /// ロッカー利用者検索のレスポンスに使用
 #[derive(Debug, PartialEq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct UserSearchResponse {
     pub data: Vec<UserSearchResult>,
 }

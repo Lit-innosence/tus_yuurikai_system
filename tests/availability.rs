@@ -29,6 +29,8 @@ pub async fn normal() {
         results.push(data);
     }
 
+    results.sort_by(|lt, rt| lt.locker_id.partial_cmp(&rt.locker_id).unwrap());
+
     let expected_result = LockerStatusResponse{
         data: results
     };
@@ -60,6 +62,8 @@ pub async fn floor_is_not_requested() {
         };
         results.push(data);
     }
+
+    results.sort_by(|lt, rt| lt.locker_id.partial_cmp(&rt.locker_id).unwrap());
 
     let expected_result = LockerStatusResponse{
         data: results

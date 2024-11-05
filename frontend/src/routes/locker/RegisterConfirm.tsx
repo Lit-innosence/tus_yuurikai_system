@@ -11,7 +11,7 @@ const { Content } = Layout;
 const LockerRegisterConfirm: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { lockerId, pairInfo: initialPairInfo } = location.state || {};
+    const { lockerId, pairInfo: initialPairInfo, authToken } = location.state || {};
 
     const [isChecked, setIsChecked] = useState(false);
     const [pairInfo, setPairInfo] = useState(initialPairInfo);
@@ -46,13 +46,14 @@ const LockerRegisterConfirm: React.FC = () => {
                 studentId: pairInfo.mainUser.studentId,
                 lockerId: lockerId,
             },
+            authToken: authToken,
         };
 
         try {
             // POSTリクエストを実行
             await axios.post(`${constants.backendApiEndpoint}/api/locker/locker-register`, postData);
             message.success('ロッカーが正常に登録されました');
-            navigate('/locker/register/complete', { state: { lockerId } }); 
+            navigate('/locker/register/complete', { state: { lockerId } });
         } catch (error) {
             console.error('エラー:', error);
             message.error('ロッカーの登録に失敗しました');
@@ -79,7 +80,7 @@ const LockerRegisterConfirm: React.FC = () => {
                             <h3>申請者</h3>
                             <p><strong>学籍番号:</strong> {pairInfo.mainUser.studentId}</p>
                             <p><strong>氏名:</strong> {pairInfo.mainUser.familyName} {pairInfo.mainUser.givenName}</p>
-                            
+
                             <hr style={{ width: '100%', border: 'none', borderTop: '1px solid #e8e8e8', margin: '20px 0' }} />
 
                             <h3>共同利用者</h3>

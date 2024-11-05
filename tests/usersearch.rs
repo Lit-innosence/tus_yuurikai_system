@@ -77,7 +77,7 @@ async fn normal() {
         .http_only(true);
 
     // Act
-    let response = client.get("/api/admin/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E")
+    let response = client.get("/api/admin/locker/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E")
         .cookie(cookie)
         .dispatch().await;
 
@@ -159,7 +159,7 @@ async fn given_name_is_not_requested() {
         .http_only(true);
 
     // Act
-    let response = client.get("/api/admin/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E")
+    let response = client.get("/api/admin/locker/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E")
         .cookie(cookie)
         .dispatch().await;
 
@@ -241,7 +241,7 @@ async fn family_name_is_not_requested() {
         .http_only(true);
 
     // Act
-    let response = client.get("/api/admin/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E")
+    let response = client.get("/api/admin/locker/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E")
         .cookie(cookie)
         .dispatch().await;
 
@@ -323,7 +323,7 @@ async fn name_is_not_requested() {
         .http_only(true);
 
     // Act
-    let response = client.get("/api/admin/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E")
+    let response = client.get("/api/admin/locker/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E")
         .cookie(cookie)
         .dispatch().await;
 
@@ -398,7 +398,7 @@ async fn jwt_does_not_exist() {
 
 
     // Act
-    let response = client.get("/api/admin/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E").dispatch().await;
+    let response = client.get("/api/admin/locker/user-search/2024?familyname=%E3%83%86%E3%82%B9%E3%83%88&givenname=%E5%A4%AA%E9%83%8E").dispatch().await;
 
     // Assert
     assert_eq!(response.status(), Status::BadRequest);

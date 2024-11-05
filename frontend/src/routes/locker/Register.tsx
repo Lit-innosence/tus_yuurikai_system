@@ -25,6 +25,7 @@ const Register: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const pairInfo = location.state?.pairInfo;
+    const authToken = location.state?.authToken;
 
     useEffect(() => {
         const fetchData = async (floor: string) => {
@@ -37,10 +38,10 @@ const Register: React.FC = () => {
                     // floorパラメータを指定してリクエスト
                     response = await axios.get(`${constants.backendApiEndpoint}/api/locker/availability?floor=${floor}`);
                 }
-                
+
                 // レスポンスのデータをフロントエンドの形式に変換
                 const filteredLockers = response.data.data.map((locker: any) => ({
-                    lockerId: locker.locker_id,
+                    lockerId: locker.lockerId,
                     floor: locker.floor.toString(),
                     status: locker.status.toLowerCase(),
                 }));
@@ -52,9 +53,9 @@ const Register: React.FC = () => {
                 setLoading(false);
             }
         };
-    
+
         fetchData(selectedFloor);
-    }, [selectedFloor]);    
+    }, [selectedFloor]);
 
     const handleFloorChange = (floor: string) => {
         setSelectedFloor(floor);
@@ -67,7 +68,7 @@ const Register: React.FC = () => {
 
     const handleRegister = () => {
         if (selectedLocker) {
-            navigate('/locker/register/confirm', { state: { lockerId: selectedLocker, pairInfo } });
+            navigate('/locker/register/confirm', { state: { lockerId: selectedLocker, pairInfo, authToken } });
         }
     };
 

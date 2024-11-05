@@ -9,7 +9,7 @@ use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType};
 use tus_yuurikai_system::adapters::{controller, httpmodels::LockerResisterRequest};
 use tus_yuurikai_system::domain::{assignment::AssignmentInfo, student_pair::PairInfo, student::UserInfo};
-use tus_yuurikai_system::usecase::{student_pair::StudentPairUsecase, student::StudentUsecase};
+use tus_yuurikai_system::usecase::{student_pair::StudentPairUsecase, student::StudentUsecase, auth::AuthUsecase};
 use tus_yuurikai_system::infrastructure::router::App;
 
 // 正常系
@@ -19,12 +19,6 @@ async fn normal() {
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
     let app = App::new();
-    let request = LockerResisterRequest{
-        data: AssignmentInfo{
-            student_id: String::from("4622999"),
-            locker_id: String::from("2001"),
-        }
-    };
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
@@ -60,6 +54,20 @@ async fn normal() {
         Err(err) => {panic!("{}", err);},
     };
 
+    // 認証完了用のレコードを保存
+    let token = match app.auth.register(mainuser, couser, &String::from("auth_check"), true).await{
+        Ok(auth) => auth.main_auth_token,
+        Err(err) => {panic!("{}", err)},
+    };
+
+    let request = LockerResisterRequest{
+        data: AssignmentInfo{
+            student_id: String::from("4622999"),
+            locker_id: String::from("2001"),
+        },
+        auth_token: token,
+    };
+
 
     // Act
     let response = client.post(uri!("/api/locker", controller::locker_register))
@@ -79,12 +87,6 @@ async fn student_id_allow_a_b() {
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
     let app = App::new();
-    let request = LockerResisterRequest{
-        data: AssignmentInfo{
-            student_id: String::from("3A22999"),
-            locker_id: String::from("2001"),
-        }
-    };
 
     let mainuser = &UserInfo{
             student_id: String::from("3A22999"),
@@ -120,6 +122,20 @@ async fn student_id_allow_a_b() {
         Err(err) => {panic!("{}", err);},
     };
 
+    // 認証完了用のレコードを保存
+    let token = match app.auth.register(mainuser, couser, &String::from("auth_check"), true).await{
+        Ok(auth) => auth.main_auth_token,
+        Err(err) => {panic!("{}", err)},
+    };
+
+    let request = LockerResisterRequest{
+        data: AssignmentInfo{
+            student_id: String::from("3A22999"),
+            locker_id: String::from("2001"),
+        },
+        auth_token: token,
+    };
+
 
     // Act
     let response = client.post(uri!("/api/locker", controller::locker_register))
@@ -139,12 +155,6 @@ async fn student_id_do_not_match() {
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
     let app = App::new();
-    let request = LockerResisterRequest{
-        data: AssignmentInfo{
-            student_id: String::from("4622000"),
-            locker_id: String::from("2001"),
-        }
-    };
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
@@ -180,6 +190,19 @@ async fn student_id_do_not_match() {
         Err(err) => {panic!("{}", err);},
     };
 
+    // 認証完了用のレコードを保存
+    let token = match app.auth.register(mainuser, couser, &String::from("auth_check"), true).await{
+        Ok(auth) => auth.main_auth_token,
+        Err(err) => {panic!("{}", err)},
+    };
+
+    let request = LockerResisterRequest{
+        data: AssignmentInfo{
+            student_id: String::from("4622000"),
+            locker_id: String::from("2001"),
+        },
+        auth_token: token,
+    };
 
     // Act
     let response = client.post(uri!("/api/locker", controller::locker_register))
@@ -200,12 +223,6 @@ async fn year_do_not_match() {
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
     let app = App::new();
-    let request = LockerResisterRequest{
-        data: AssignmentInfo{
-            student_id: String::from("4622999"),
-            locker_id: String::from("2001"),
-        }
-    };
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
@@ -238,6 +255,19 @@ async fn year_do_not_match() {
         Err(err) => {panic!("{}", err);},
     };
 
+    // 認証完了用のレコードを保存
+    let token = match app.auth.register(mainuser, couser, &String::from("auth_check"), true).await{
+        Ok(auth) => auth.main_auth_token,
+        Err(err) => {panic!("{}", err)},
+    };
+
+    let request = LockerResisterRequest{
+        data: AssignmentInfo{
+            student_id: String::from("4622999"),
+            locker_id: String::from("2001"),
+        },
+        auth_token: token,
+    };
 
     // Act
     let response = client.post(uri!("/api/locker", controller::locker_register))
@@ -257,12 +287,6 @@ async fn locker_status_unavailable() {
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
     let app = App::new();
-    let request = LockerResisterRequest{
-        data: AssignmentInfo{
-            student_id: String::from("4622999"),
-            locker_id: String::from("2001"),
-        }
-    };
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
@@ -296,6 +320,20 @@ async fn locker_status_unavailable() {
     match app.student_pair.register(studentpair).await {
         Ok(_) => {},
         Err(err) => {panic!("{}", err);},
+    };
+
+    // 認証完了用のレコードを保存
+    let token = match app.auth.register(mainuser, couser, &String::from("auth_check"), true).await{
+        Ok(auth) => auth.main_auth_token,
+        Err(err) => {panic!("{}", err)},
+    };
+
+    let request = LockerResisterRequest{
+        data: AssignmentInfo{
+            student_id: String::from("4622999"),
+            locker_id: String::from("2001"),
+        },
+        auth_token: token,
     };
 
     // 該当lockerのstatusをunavailableに変更
@@ -323,12 +361,6 @@ async fn same_pair_arleady_registered() {
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
     let app = App::new();
-    let request = LockerResisterRequest{
-        data: AssignmentInfo{
-            student_id: String::from("4622999"),
-            locker_id: String::from("2001"),
-        }
-    };
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
@@ -364,6 +396,19 @@ async fn same_pair_arleady_registered() {
         Err(err) => {panic!("{}", err);},
     };
 
+    // 認証完了用のレコードを保存
+    let token = match app.auth.register(mainuser, couser, &String::from("auth_check"), true).await{
+        Ok(auth) => auth.main_auth_token,
+        Err(err) => {panic!("{}", err)},
+    };
+
+    let request = LockerResisterRequest{
+        data: AssignmentInfo{
+            student_id: String::from("4622999"),
+            locker_id: String::from("2001"),
+        },
+        auth_token: token,
+    };
 
     // Act
     let _response = client.post(uri!("/api/locker", controller::locker_register))
