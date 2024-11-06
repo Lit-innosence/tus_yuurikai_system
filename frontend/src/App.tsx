@@ -31,6 +31,7 @@ const LockerRegisterConfirm = lazy(() => import('./routes/locker/RegisterConfirm
 const LockerRegisterComplete = lazy(() => import('./routes/locker/RegisterComp'));
 
 const CircleSelect = lazy(() => import('./routes/circle/CircleSelect'));
+const CircleRegister = lazy(() => import('./routes/circle/CircleRegister'));
 const Redirect = lazy(() => import('./routes/component/Redirect'));
 
 const LockerSearch = lazy(() => import('./routes/admin/LockerSearch'));
@@ -56,6 +57,7 @@ function App() {
             <Route path='/locker/register/confirm' element={<LockerRegisterConfirm />} />
             <Route path='/locker/register/complete' element={<LockerRegisterComplete />} />
             <Route path='/circle' element={<CircleSelect />} />
+            <Route path='/circle/register/status' element={<CircleRegister />} />
             <Route path='/redirect/*' element={<Redirect />} />
             <Route path='/login' element={<Login />} />
             <Route path='/admin' element={<PrivateRoute><Admin /></PrivateRoute>} />
