@@ -4,9 +4,7 @@ extern crate tus_yuurikai_system;
 
 mod utils;
 
-use core::time;
 use std::env;
-use std::thread::sleep;
 use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType, Cookie};
@@ -198,13 +196,11 @@ async fn jwt_is_not_valid() {
     // jwtをCookieに保存
     let username = env::var("ADMIN_USER_NAME").expect("admin username must be set");
     let key = env::var("TOKEN_KEY").expect("token key must be set");
-    let token = encode_jwt(&username, Duration::seconds(1), &key);
+    let token = encode_jwt(&username, Duration::minutes(-2), &key);
     let cookie = Cookie::build(("token", token))
         .path("/")
         .secure(true)
         .http_only(true);
-
-    sleep(time::Duration::from_secs(62));
 
     match app.locker.locker_repository.update_status(&String::from("2001"), &String::from("occupied")).await {
         Ok(_) => {},
