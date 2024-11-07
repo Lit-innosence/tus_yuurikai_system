@@ -363,6 +363,11 @@ pub trait LockerRepository: Send + Sync {
         floor: &String,
     ) -> Result<Vec<Locker>, Error>;
 
+    async fn get_by_status(
+        &self,
+        status: &String,
+    ) -> Result<Vec<Locker>, Error>;
+
     async fn delete_all(
         &self
     ) -> Result<usize, Error>;
@@ -440,6 +445,17 @@ impl LockerRepository for LockerRepositorySqlImpl {
             .filter(
                 locker::locker_id
                 .like(floor_ex)
+            ).get_results(&mut conn)
+    }
+
+    async fn get_by_status(
+            &self,
+            status: &String,
+        ) -> Result<Vec<Locker>, Error> {
+        let mut conn = self.pool.get().unwrap();
+        locker::table
+            .filter(
+                locker::status.like(status)
             ).get_results(&mut conn)
     }
 

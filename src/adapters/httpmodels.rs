@@ -96,3 +96,12 @@ pub struct UserSearchResult {
 pub struct UserSearchResponse {
     pub data: Vec<UserSearchResult>,
 }
+
+/// ### LockerResetRequest
+///
+/// ロッカーリセットのリクエストデータ
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct LockerResetRequest {
+    pub password: String,
+}

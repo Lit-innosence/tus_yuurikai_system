@@ -10,6 +10,7 @@ use tus_yuurikai_system::adapters::controller::{
                                 user_search,
                                 login,
                                 availability,
+                                reset,
                             };
 use rocket::{routes, fs::{FileServer, relative, NamedFile}};
 use rocket_cors::{CorsOptions, AllowedOrigins};
@@ -59,6 +60,7 @@ async fn main() -> Result<(), rocket::Error> {
             "/api/admin/locker",
             routes![
                 user_search,
+                reset,
             ],
         )
         .mount(
