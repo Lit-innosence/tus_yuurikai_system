@@ -70,22 +70,22 @@ const mockData: Organization[] = [
 
 const pageSize = 5;
 
-const statusMapping: Record<string, Record<string, { label: string; color: string }>> = {
+const statusMapping: Record<string, Record<string, { label: string; color: string; backgroundColor: string }>> = {
     statusAcceptance: {
-        accepted: { label: '承認済み', color: 'green' },
-        pending: { label: '承認待ち', color: 'red' },
+        accepted: { label: '承認済み', color: 'green', backgroundColor: '#e6f7e6' },
+        pending: { label: '承認待ち', color: 'red', backgroundColor: '#fbeaea' },
     },
     statusAuthentication: {
-        authenticated: { label: '認証済み', color: 'green' },
-        not_authenticated: { label: '未認証', color: 'red' },
+        authenticated: { label: '認証済み', color: 'green', backgroundColor: '#e6f7e6' },
+        not_authenticated: { label: '未認証', color: 'red', backgroundColor: '#fbeaea' },
     },
     statusFormConfirmation: {
-        confirmed: { label: '確認済み', color: 'green' },
-        not_confirmed: { label: '未確認', color: 'red' },
+        confirmed: { label: '確認済み', color: 'green', backgroundColor: '#e6f7e6' },
+        not_confirmed: { label: '未確認', color: 'red', backgroundColor: '#fbeaea' },
     },
     statusRegistrationComplete: {
-        completed: { label: '完了', color: 'green' },
-        incomplete: { label: '未完了', color: 'red' },
+        completed: { label: '完了', color: 'green', backgroundColor: '#e6f7e6' },
+        incomplete: { label: '未完了', color: 'red', backgroundColor: '#fbeaea' },
     },
 };
 
@@ -124,10 +124,14 @@ const CircleRegister: React.FC = () => {
     const getStatusLabel = (status: string, statusType: string) => {
         const statusInfo = statusMapping[statusType]?.[status];
         if (statusInfo) {
-            return <span style={{ color: statusInfo.color }}>{statusInfo.label}</span>;
+            return (
+                <span style={{ color: statusInfo.color, backgroundColor: statusInfo.backgroundColor, padding: '2px 5px', borderRadius: '3px' }}>
+                    {statusInfo.label}
+                </span>
+            );
         }
         // もしステータスが定義されていない場合
-        return <span style={{ color: 'grey' }}>不明</span>;
+        return <span style={{ color: 'grey', backgroundColor: '#f0f0f0', padding: '2px 5px', borderRadius: '3px' }}>不明</span>;
     };
 
     const handleSearch = (value: string) => {
@@ -168,13 +172,13 @@ const CircleRegister: React.FC = () => {
             render: (status: string) => getStatusLabel(status, 'statusAuthentication'),
         },
         {
-            title: 'フォーム確認状況',
+            title: 'フォーム状況',
             dataIndex: 'statusFormConfirmation',
             key: 'statusFormConfirmation',
             render: (status: string) => getStatusLabel(status, 'statusFormConfirmation'),
         },
         {
-            title: '登録完了状況',
+            title: '登録状況',
             dataIndex: 'statusRegistrationComplete',
             key: 'statusRegistrationComplete',
             render: (status: string) => getStatusLabel(status, 'statusRegistrationComplete'),
@@ -194,7 +198,7 @@ const CircleRegister: React.FC = () => {
                 }}
             >
                 <div style={{ width: '100%', maxWidth: '800px' }}>
-                    <Title level={2}>団体情報</Title>
+                    <Title level={2}>団体登録状況</Title>
                     <Search
                         placeholder="団体名で検索"
                         value={searchTerm}
