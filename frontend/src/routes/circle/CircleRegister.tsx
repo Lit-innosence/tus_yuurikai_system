@@ -34,6 +34,38 @@ const mockData: Organization[] = [
         statusFormConfirmation: "not_confirmed",
         statusRegistrationComplete: "incomplete"
     },
+    {
+        organizationId: "550e8400-e29b-41d4-a716-446655440002",
+        organizationName: "団体C",
+        statusAcceptance: "accepted",
+        statusAuthentication: "authenticated",
+        statusFormConfirmation: "confirmed",
+        statusRegistrationComplete: "completed"
+    },
+    {
+        organizationId: "550e8400-e29b-41d4-a716-446655440003",
+        organizationName: "団体D",
+        statusAcceptance: "pending",
+        statusAuthentication: "not_authenticated",
+        statusFormConfirmation: "not_confirmed",
+        statusRegistrationComplete: "incomplete"
+    },
+    {
+        organizationId: "550e8400-e29b-41d4-a716-446655440004",
+        organizationName: "団体E",
+        statusAcceptance: "accepted",
+        statusAuthentication: "authenticated",
+        statusFormConfirmation: "confirmed",
+        statusRegistrationComplete: "completed"
+    },
+    {
+        organizationId: "550e8400-e29b-41d4-a716-446655440005",
+        organizationName: "団体F",
+        statusAcceptance: "pending",
+        statusAuthentication: "not_authenticated",
+        statusFormConfirmation: "not_confirmed",
+        statusRegistrationComplete: "incomplete"
+    },
 ];
 
 const pageSize = 5;
@@ -62,6 +94,7 @@ const CircleRegister: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [filteredData, setFilteredData] = useState<Organization[]>([]);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [currentPage, setCurrentPage] = useState<number>(1);
 
     useEffect(() => {
         // モックデータを使用
@@ -93,7 +126,7 @@ const CircleRegister: React.FC = () => {
         if (statusInfo) {
             return <span style={{ color: statusInfo.color }}>{statusInfo.label}</span>;
         }
-        // もしステータスが存在しない場合
+        // もしステータスが定義されていない場合
         return <span style={{ color: 'grey' }}>不明</span>;
     };
 
@@ -103,6 +136,11 @@ const CircleRegister: React.FC = () => {
             org.organizationName.toLowerCase().includes(value.toLowerCase())
         );
         setFilteredData(filtered);
+        setCurrentPage(1);
+    };
+
+    const handleTableChange = (pagination: any) => {
+        setCurrentPage(pagination.current);
     };
 
     const columns = [
@@ -169,7 +207,13 @@ const CircleRegister: React.FC = () => {
                         dataSource={filteredData}
                         rowKey="organizationId"
                         loading={loading}
-                        pagination={{ pageSize }}
+                        pagination={{
+                            current: currentPage,
+                            pageSize: pageSize,
+                            total: filteredData.length,
+                            onChange: (page) => setCurrentPage(page),
+                        }}
+                        onChange={handleTableChange}
                     />
                 </div>
             </Content>
