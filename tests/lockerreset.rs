@@ -41,7 +41,12 @@ async fn normal() {
         .secure(true)
         .http_only(true);
 
-    match app.locker.locker_repository.update_status(&String::from("2001"), &String::from("occupied")).await {
+    match app.locker.locker_repository.update_status_by_id(&String::from("2001"), &String::from("occupied")).await {
+        Ok(_) => {},
+        Err(err) => {panic!("{}", err)}
+    }
+
+    match app.locker.locker_repository.update_status_by_id(&String::from("2002"), &String::from("out-of-work")).await {
         Ok(_) => {},
         Err(err) => {panic!("{}", err)}
     }
@@ -59,11 +64,24 @@ async fn normal() {
         Err(err) => {panic!("{}", err)}
     };
     assert_eq!(status, String::from("vacant"));
+
+    let status = match app.locker.locker_repository.get_by_id(&String::from("2002")).await {
+        Ok(locker) => {locker.status},
+        Err(err) => {panic!("{}", err)}
+    };
+    assert_eq!(status, String::from("out-of-work"));
+
+    let status = match app.locker.locker_repository.get_by_id(&String::from("2003")).await {
+        Ok(locker) => {locker.status},
+        Err(err) => {panic!("{}", err)},
+    };
+    assert_eq!(status, String::from("vacant"));
+
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.into_string().await.unwrap(), "successfully reset locker");
 }
 
-// 正常系:out-of-workのロッカーが存在する
+// 正常系:モンキーテスト
 #[rocket::async_test]
 async fn out_of_work_locker_exists() {
 
@@ -89,9 +107,18 @@ async fn out_of_work_locker_exists() {
         .secure(true)
         .http_only(true);
 
-    match app.locker.locker_repository.update_status(&String::from("2001"), &String::from("out-of-work")).await {
-        Ok(_) => {},
-        Err(err) => {panic!("{}", err)}
+    const VCT: &str = "vacant";
+    const OCP: &str = "occupied";
+    const OOW: &str = "out-of-work";
+
+    let target_locker = vec!["2001", "3100", "4013", "5031", "6003"];
+    let target_status = vec![OCP, OOW, VCT, OCP, OOW];
+
+    for _i in 0..target_locker.len() {
+        match app.locker.locker_repository.update_status_by_id(&String::from(target_locker[_i]), &String::from(target_status[_i])).await {
+            Ok(_) => {},
+            Err(err) => {panic!("{}", err)},
+        }
     }
 
     // Act
@@ -102,11 +129,19 @@ async fn out_of_work_locker_exists() {
         .dispatch().await;
 
     // Assert
-    let status = match app.locker.locker_repository.get_by_id(&String::from("2001")).await {
-        Ok(locker) => {locker.status},
-        Err(err) => {panic!("{}", err)}
-    };
-    assert_eq!(status, String::from("out-of-work"));
+
+    for _i in 0..target_locker.len() {
+        let status = match app.locker.locker_repository.get_by_id(&String::from(target_locker[_i])).await {
+            Ok(locker) => {locker.status},
+            Err(err) => {panic!("{}", err)},
+        };
+        if target_status[_i] == OOW {
+            assert_eq!(status, String::from(OOW));
+        } else {
+            assert_eq!(status, String::from(VCT));
+        }
+    }
+
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.into_string().await.unwrap(), "successfully reset locker");
 }
@@ -135,7 +170,7 @@ async fn request_password_is_not_valid() {
         .secure(true)
         .http_only(true);
 
-    match app.locker.locker_repository.update_status(&String::from("2001"), &String::from("occupied")).await {
+    match app.locker.locker_repository.update_status_by_id(&String::from("2001"), &String::from("occupied")).await {
         Ok(_) => {},
         Err(err) => {panic!("{}", err)}
     }
@@ -202,7 +237,7 @@ async fn jwt_is_not_valid() {
         .secure(true)
         .http_only(true);
 
-    match app.locker.locker_repository.update_status(&String::from("2001"), &String::from("occupied")).await {
+    match app.locker.locker_repository.update_status_by_id(&String::from("2001"), &String::from("occupied")).await {
         Ok(_) => {},
         Err(err) => {panic!("{}", err)}
     }

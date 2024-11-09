@@ -38,30 +38,16 @@ impl LockerUsecase for LockerUsecaseImpl {
     }
 
     async  fn update_status(&self, locker_id: &String, status: &String) -> Result<usize, Error> {
-        self.locker_repository.update_status(locker_id, status).await
+        self.locker_repository.update_status_by_id(locker_id, status).await
     }
 
     async fn reset_status(&self) -> Result<Status, Error> {
 
-        // out-of-workのロッカーを取得
-        let not_worked = match self.locker_repository.get_by_status(&String::from("out-of-work")).await {
-            Ok(locker) => locker,
-            Err(err) => {return Err(err)},
-        };
-
         // statusを更新
-        match self.locker_repository.update_all_status(&String::from("vacant")).await {
+        match self.locker_repository.update_status(&String::from(""), &String::from("occupied"), &String::from("vacant")).await {
             Ok(_) => {},
             Err(err) => {return Err(err)},
         };
-
-        // out-of-workのロッカーのstatusを修正
-        for locker in not_worked {
-            match self.locker_repository.update_status(&locker.locker_id, &locker.status).await {
-                Ok(_) => {},
-                Err(err) => {return Err(err)},
-            }
-        }
 
         Ok(Status::Ok)
     }

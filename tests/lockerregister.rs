@@ -337,7 +337,7 @@ async fn locker_status_unavailable() {
     };
 
     // 該当lockerのstatusをunavailableに変更
-    match app.locker.locker_repository.update_status(&request.data.locker_id, &String::from("unavailable")).await {
+    match app.locker.locker_repository.update_status_by_id(&request.data.locker_id, &String::from("unavailable")).await {
         Ok(_) => {},
         Err(err) => {panic!("{}", err);},
     };
