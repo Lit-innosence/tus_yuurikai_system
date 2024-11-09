@@ -7,7 +7,8 @@ use crate::adapters::httpmodels::{
                                   LockerStatus,
                                   LockerStatusResponse,
                                   UserSearchResponse,
-                                  UserSearchResult
+                                  UserSearchResult,
+                                  LockerResetRequest,
                                 };
 use crate::domain::{student::UserInfo, student_pair::PairInfo, assignment::AssignmentInfo};
 use crate::infrastructure::{router::App, models::{AssignmentRecord, StudentPair}};
@@ -39,6 +40,7 @@ use chrono::Duration;
         login,
         user_search,
         availability,
+        reset,
     ),
     components(schemas(
         HealthCheckRequest,
@@ -51,6 +53,7 @@ use chrono::Duration;
         LoginFormRequest,
         LockerStatusResponse,
         UserSearchResponse,
+        LockerResetRequest,
     ))
 )]
 pub struct ApiDoc;
@@ -475,4 +478,35 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
             }))
         }
     }
+}
+
+/// ロッカーリセットAPI
+#[utoipa::path(context_path = "/api/admin/locker")]
+#[post("/reset", data = "<request>")]
+pub async fn reset(request: Json<LockerResetRequest>, jar: &CookieJar<'_>, app: &State<App>) -> (Status, &'static str) {
+
+    // Cookieからjwtの取得
+    let jwt = match jar.get("token").map(|c| c.value()) {
+        None => return (Status::Unauthorized, "request is unauthorized"),
+        Some(t) => String::from(t),
+    };
+
+    // jwtの検証
+    match decode_jwt(&jwt) {
+        None => return (Status::Unauthorized, "request token is not valid"),
+        Some(_) => {
+            // passwordの検証
+            dotenv().ok();
+            let password = env::var("LOCKER_RESET_PASSWORD").expect("locker reset password must be set");
+            if password != request.password {
+                return (Status::Unauthorized, "request password does not match")
+            }
+
+            if app.locker.reset_status().await.is_err() {
+                return (Status::InternalServerError, "failed to reset locker status")
+            };
+        }
+    }
+
+    (Status::Ok, "successfully reset locker")
 }

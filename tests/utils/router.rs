@@ -10,7 +10,8 @@ use tus_yuurikai_system::adapters::controller::{
                                 locker_register,
                                 user_search,
                                 login,
-                                availability
+                                availability,
+                                reset,
                             };
 
 use rocket::{routes, Rocket, Build};
@@ -33,6 +34,7 @@ pub fn rocket() -> Rocket<Build> {
             "/api/admin/locker",
             routes![
                 user_search,
+                reset,
             ]
         )
         .mount(
