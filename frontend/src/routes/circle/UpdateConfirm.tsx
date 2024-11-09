@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
 import { Button, Layout, Card, Checkbox, message } from 'antd';
+import axios from 'axios';
 import CustomHeader from '../component/CustomHeader';
 import CustomFooter from '../component/CustomFooter';
-import constants from '../constants';
 
 const { Content } = Layout;
 
-const ConfirmPage: React.FC = () => {
+const CircleUpdateConfirm: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { formData } = location.state as { formData: any };
 
-    // チェックボックスの状態を管理
     const [isChecked, setIsChecked] = useState(false);
 
     const handleCheckboxChange = (e: any) => {
@@ -21,29 +19,14 @@ const ConfirmPage: React.FC = () => {
     };
 
     const handleConfirm = async () => {
-        const formattedData = {
-            data: {
-                mainUser: {
-                    studentId: formData.studentId,
-                    familyName: formData.lastName,
-                    givenName: formData.firstName,
-                },
-                coUser: {
-                    studentId: formData.coUserStudentId,
-                    familyName: formData.coUserLastName,
-                    givenName: formData.coUserFirstName,
-                },
-            },
-        };
-
         try {
-            const response = await axios.post(`${constants.backendApiEndpoint}/api/locker/token-gen`, formattedData);
-            console.log('成功:', response.data);
-            message.success('フォームが正常に送信されました');
-            navigate('/locker/form/complete');
+            const response = await axios.post('/api/circle/update', formData);
+            if (response.status === 200) {
+                message.success('団体情報が正常に更新されました');
+                navigate('/circle/update/complete');
+            }
         } catch (error) {
-            console.error('エラー:', error);
-            message.error('送信に失敗しました');
+            message.error('団体情報の更新に失敗しました');
         }
     };
 
@@ -57,15 +40,16 @@ const ConfirmPage: React.FC = () => {
                     style={{ width: '100%', maxWidth: '600px', textAlign: 'left' }}
                     headStyle={{ fontSize: '1.5em', textAlign: 'center' }}
                 >
-                    <h3>申請者</h3>
-                    <p><strong>学籍番号:</strong> {formData.studentId}</p>
-                    <p><strong>氏名:</strong> {formData.lastName} {formData.firstName}</p>
+                    <h3>団体情報</h3>
+                    <p><strong>団体ID:</strong> {formData.organizationId}</p>
+                    <p><strong>団体名:</strong> {formData.organizationName}</p>
                     
                     <hr style={{ width: '100%', border: 'none', borderTop: '1px solid #e8e8e8', margin: '20px 0' }} />
 
-                    <h3>共同利用者</h3>
-                    <p><strong>学籍番号:</strong> {formData.coUserStudentId}</p>
-                    <p><strong>氏名:</strong> {formData.coUserLastName} {formData.coUserFirstName}</p>
+                    <h3>旧代表者情報</h3>
+                    <p><strong>代表者名:</strong> {formData.familyName} {formData.givenName}</p>
+                    <p><strong>代表者の学籍番号:</strong> {formData.studentId}</p>
+                    <p><strong>代表者のメールアドレス:</strong> {formData.email}</p>
                     
                     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
                         <Checkbox onChange={handleCheckboxChange}>
@@ -75,7 +59,7 @@ const ConfirmPage: React.FC = () => {
 
                     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px' }}>
                         <Button type="primary" onClick={handleConfirm} disabled={!isChecked}>
-                            確認して登録
+                            確認して更新
                         </Button>
                     </div>
                 </Card>
@@ -85,4 +69,4 @@ const ConfirmPage: React.FC = () => {
     );
 };
 
-export default ConfirmPage;
+export default CircleUpdateConfirm;

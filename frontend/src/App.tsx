@@ -31,7 +31,11 @@ const LockerRegisterConfirm = lazy(() => import('./routes/locker/RegisterConfirm
 const LockerRegisterComplete = lazy(() => import('./routes/locker/RegisterComp'));
 
 const CircleSelect = lazy(() => import('./routes/circle/CircleSelect'));
-const CircleRegister = lazy(() => import('./routes/circle/CircleRegister'));
+const CircleRegister = lazy(() => import('./routes/circle/Status'));
+const CircleUpdate = lazy(() => import('./routes/circle/Update'));
+const CircleUpdateConfirm = lazy(() => import('./routes/circle/UpdateConfirm'));
+const CircleUpdateComplete = lazy(() => import('./routes/circle/UpdateComp'));
+const CircleProcess = lazy(() => import('./routes/circle/UpdateProcess'));
 const Redirect = lazy(() => import('./routes/component/Redirect'));
 
 const LockerSearch = lazy(() => import('./routes/admin/LockerSearch'));
@@ -46,6 +50,7 @@ function App() {
         <Suspense fallback={<Loading />}>
           <Routes>
             <Route path='/' element={<Toppage />} />
+
             <Route path='/locker/terms' element={<LockerTerms />} />
             <Route path='/locker/form' element={<LockerForm />} />
             <Route path='/locker/form/confirm' element={<LockerFormConfirm />} />
@@ -56,9 +61,16 @@ function App() {
             <Route path='/locker/register' element={<LockerRegister />} />
             <Route path='/locker/register/confirm' element={<LockerRegisterConfirm />} />
             <Route path='/locker/register/complete' element={<LockerRegisterComplete />} />
+
             <Route path='/circle' element={<CircleSelect />} />
             <Route path='/circle/register/status' element={<CircleRegister />} />
+            <Route path='/circle/update' element={<CircleUpdate />} />
+            <Route path='/circle/update/confirm' element={<CircleUpdateConfirm />} />
+            <Route path='/circle/update/complete' element={<CircleUpdateComplete />} />
+            <Route path='/circle/update/process' element={<CircleProcess />} />
+            
             <Route path='/redirect/*' element={<Redirect />} />
+
             <Route path='/login' element={<Login />} />
             <Route path='/admin' element={<PrivateRoute><Admin /></PrivateRoute>} />
             <Route path='/admin/locker' element={<PrivateRoute><LockerSelect/></PrivateRoute>} />
