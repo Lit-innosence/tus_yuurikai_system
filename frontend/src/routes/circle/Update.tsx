@@ -46,13 +46,13 @@ const CircleUpdate: React.FC = () => {
                         <Input placeholder="団体名を入力" />
                     </Form.Item>
 
-                    <Form.Item label="代表者名">
+                    <Form.Item label="旧代表者名">
                         <Input.Group compact>
                             <Form.Item
                                 name="familyName"
                                 noStyle
                                 rules={[
-                                    { required: true, message: '代表者の名字を入力してください' }
+                                    { required: true, message: '旧代表者の名字を入力してください' }
                                 ]}
                             >
                                 <Input style={{ width: '50%' }} placeholder="名字" />
@@ -61,7 +61,7 @@ const CircleUpdate: React.FC = () => {
                                 name="givenName"
                                 noStyle
                                 rules={[
-                                    { required: true, message: '代表者の名前を入力してください' }
+                                    { required: true, message: '旧代表者の名前を入力してください' }
                                 ]}
                             >
                                 <Input style={{ width: '50%' }} placeholder="名前" />
@@ -70,25 +70,25 @@ const CircleUpdate: React.FC = () => {
                     </Form.Item>
 
                     <Form.Item
-                        label="代表者の学生ID"
+                        label="旧代表者の学籍番号"
                         name="studentId"
                         rules={[
-                            { required: true, message: '代表者の学生IDを入力してください' },
+                            { required: true, message: '旧代表者の学籍番号を入力してください' },
                             { pattern: /^[0-9AB]+$/, message: '学籍番号は0~9, A, Bの文字のみで入力してください。' }
                         ]}
                     >
-                        <Input placeholder="代表者の学生IDを入力" />
+                        <Input placeholder="旧代表者の学籍番号を入力" />
                     </Form.Item>
 
                     <Form.Item
-                        label="代表者のメールアドレス"
+                        label="旧代表者のメールアドレス"
                         name="email"
                         rules={[
-                            { required: true, message: '代表者のメールアドレスを入力してください' },
+                            { required: true, message: '旧代表者のメールアドレスを入力してください' },
                             { type: 'email', message: '有効なメールアドレスを入力してください' }
                         ]}
                     >
-                        <Input placeholder="代表者のメールアドレスを入力" />
+                        <Input placeholder="旧代表者のメールアドレスを入力" />
                     </Form.Item>
 
                     <Form.Item>

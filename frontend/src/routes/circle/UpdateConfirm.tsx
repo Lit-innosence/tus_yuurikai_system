@@ -46,9 +46,9 @@ const CircleUpdateConfirm: React.FC = () => {
                     
                     <hr style={{ width: '100%', border: 'none', borderTop: '1px solid #e8e8e8', margin: '20px 0' }} />
 
-                    <h3>代表者情報</h3>
+                    <h3>旧代表者情報</h3>
                     <p><strong>代表者名:</strong> {formData.familyName} {formData.givenName}</p>
-                    <p><strong>代表者の学生ID:</strong> {formData.studentId}</p>
+                    <p><strong>代表者の学籍番号:</strong> {formData.studentId}</p>
                     <p><strong>代表者のメールアドレス:</strong> {formData.email}</p>
                     
                     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>

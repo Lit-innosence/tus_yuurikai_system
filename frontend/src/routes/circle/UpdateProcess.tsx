@@ -21,7 +21,7 @@ const Process: React.FC = () => {
                     }}
                 >
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: '20px' }}>
-                        <h2 style={{ textAlign: 'center', width: '100%', marginBottom: '10px' }}>ロッカー登録の流れ</h2>
+                        <h2 style={{ textAlign: 'center', width: '100%', marginBottom: '10px' }}>団体更新の流れ</h2>
                         <hr style={{ width: '100%', marginBottom: '30px', marginTop: '0', border: 'none', borderTop: '2px solid #e8e8e8' }} />
                         <Timeline
                             style={{ width: '100%' }}
@@ -30,10 +30,10 @@ const Process: React.FC = () => {
                                     children: 'システムフォームの入力',
                                 },
                                 {
-                                    children: '現在の代表のメール認証',
+                                    children: '旧代表のメール認証',
                                 },
                                 {
-                                    children: 'GoogleFormの入力',
+                                    children: 'GoogleFormの回答',
                                 },
                                 {
                                     children: '新代表者のメール認証',
