@@ -3,20 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Form, Input, Button, Layout, message } from 'antd';
 import CustomHeader from '../component/CustomHeader';
 import CustomFooter from '../component/CustomFooter';
-import axios from 'axios';
 
 const { Content } = Layout;
 
 const CircleUpdate: React.FC = () => {
     const navigate = useNavigate();
 
-    const onFinish = async (values: any) => {
-        try {
-            // 確認ページに入力内容を渡す
-            navigate('/circle/register/confirm', { state: { formData: values } });
-        } catch (error) {
-            message.error('団体情報の更新に失敗しました');
-        }
+    const onFinish = (values: any) => {
+        navigate('/circle/update/confirm', { state: { formData: values } });
     };
 
     return (
@@ -35,7 +29,8 @@ const CircleUpdate: React.FC = () => {
                         label="団体ID"
                         name="organizationId"
                         rules={[
-                            { required: true, message: '団体IDを入力してください' }
+                            { required: true, message: '団体IDを入力してください' },
+                            { pattern: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, message: '有効なIDを入力してください。'}
                         ]}
                     >
                         <Input placeholder="団体IDを入力" />
@@ -51,25 +46,35 @@ const CircleUpdate: React.FC = () => {
                         <Input placeholder="団体名を入力" />
                     </Form.Item>
 
-                    <Form.Item
-                        label="代表者名"
-                        name="representativeName"
-                        rules={[
-                            { required: true, message: '代表者名を入力してください' }
-                        ]}
-                    >
-                        <Input placeholder="代表者名を入力" />
+                    <Form.Item label="代表者名">
+                        <Input.Group compact>
+                            <Form.Item
+                                name="familyName"
+                                noStyle
+                                rules={[
+                                    { required: true, message: '代表者の名字を入力してください' }
+                                ]}
+                            >
+                                <Input style={{ width: '50%' }} placeholder="名字" />
+                            </Form.Item>
+                            <Form.Item
+                                name="givenName"
+                                noStyle
+                                rules={[
+                                    { required: true, message: '代表者の名前を入力してください' }
+                                ]}
+                            >
+                                <Input style={{ width: '50%' }} placeholder="名前" />
+                            </Form.Item>
+                        </Input.Group>
                     </Form.Item>
 
                     <Form.Item
                         label="代表者の学生ID"
-                        name="representativeStudentId"
+                        name="studentId"
                         rules={[
                             { required: true, message: '代表者の学生IDを入力してください' },
-                            {
-                                pattern: /^[0-9]+$/,
-                                message: '学生IDは数字のみで入力してください'
-                            }
+                            { pattern: /^[0-9AB]+$/, message: '学籍番号は0~9, A, Bの文字のみで入力してください。' }
                         ]}
                     >
                         <Input placeholder="代表者の学生IDを入力" />
@@ -77,7 +82,7 @@ const CircleUpdate: React.FC = () => {
 
                     <Form.Item
                         label="代表者のメールアドレス"
-                        name="representativeEmail"
+                        name="email"
                         rules={[
                             { required: true, message: '代表者のメールアドレスを入力してください' },
                             { type: 'email', message: '有効なメールアドレスを入力してください' }
