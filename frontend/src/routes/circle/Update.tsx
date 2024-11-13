@@ -30,7 +30,7 @@ const CircleUpdate: React.FC = () => {
                         name="organizationId"
                         rules={[
                             { required: true, message: '団体IDを入力してください' },
-                            { pattern: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, message: '有効なIDを入力してください。'}
+                            { pattern: /^C\d{5}$/, message: '有効なIDを入力してください。' }
                         ]}
                     >
                         <Input placeholder="団体IDを入力" />
