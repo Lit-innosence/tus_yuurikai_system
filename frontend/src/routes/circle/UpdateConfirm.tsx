@@ -20,7 +20,7 @@ const CircleUpdateConfirm: React.FC = () => {
 
     const handleConfirm = async () => {
         try {
-            const response = await axios.post('/api/circle/update', formData);
+            const response = await axios.post('/api/circle/update/entry', formData);
             if (response.status === 200) {
                 message.success('団体情報が正常に更新されました');
                 navigate('/circle/update/complete');
