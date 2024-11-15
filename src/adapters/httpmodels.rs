@@ -105,3 +105,16 @@ pub struct UserSearchResponse {
 pub struct LockerResetRequest {
     pub password: String,
 }
+
+/// ### CircleUpdateRequest
+///
+/// 団体情報更新のリクエストデータ
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct CircleUpdateRequest {
+    pub organization_name: String,
+    pub family_name: String,
+    pub given_name: String,
+    pub student_id: String,
+    pub email: String,
+}

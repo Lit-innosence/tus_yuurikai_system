@@ -9,7 +9,7 @@ use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType, Cookie};
 use dotenv::dotenv;
-use tus_yuurikai_system::adapters::{controller, httpmodels::LockerResetRequest};
+use tus_yuurikai_system::adapters::{controller::locker, httpmodels::LockerResetRequest};
 use tus_yuurikai_system::utils::encode_jwt::encode_jwt;
 use tus_yuurikai_system::infrastructure::router::App;
 use chrono::Duration;
@@ -52,7 +52,7 @@ async fn normal() {
     }
 
     // Act
-    let response = client.post(uri!("/api/admin/locker", controller::reset))
+    let response = client.post(uri!("/api/admin/locker", locker::reset))
         .header(ContentType::JSON)
         .json(&request)
         .cookie(cookie)
@@ -122,7 +122,7 @@ async fn out_of_work_locker_exists() {
     }
 
     // Act
-    let response = client.post(uri!("/api/admin/locker", controller::reset))
+    let response = client.post(uri!("/api/admin/locker", locker::reset))
         .header(ContentType::JSON)
         .json(&request)
         .cookie(cookie)
@@ -176,7 +176,7 @@ async fn request_password_is_not_valid() {
     }
 
     // Act
-    let response = client.post(uri!("/api/admin/locker", controller::reset))
+    let response = client.post(uri!("/api/admin/locker", locker::reset))
         .header(ContentType::JSON)
         .json(&request)
         .cookie(cookie)
@@ -203,7 +203,7 @@ async fn jwt_is_not_exists() {
     };
 
     // Act
-    let response = client.post(uri!("/api/admin/locker", controller::reset))
+    let response = client.post(uri!("/api/admin/locker", locker::reset))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -243,7 +243,7 @@ async fn jwt_is_not_valid() {
     }
 
     // Act
-    let response = client.post(uri!("/api/admin/locker", controller::reset))
+    let response = client.post(uri!("/api/admin/locker", locker::reset))
         .header(ContentType::JSON)
         .json(&request)
         .cookie(cookie)

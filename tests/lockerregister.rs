@@ -7,7 +7,7 @@ mod utils;
 use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType};
-use tus_yuurikai_system::adapters::{controller, httpmodels::LockerResisterRequest};
+use tus_yuurikai_system::adapters::{controller::locker, httpmodels::LockerResisterRequest};
 use tus_yuurikai_system::domain::{assignment::AssignmentInfo, student_pair::PairInfo, student::UserInfo};
 use tus_yuurikai_system::usecase::{student_pair::StudentPairUsecase, student::StudentUsecase, auth::AuthUsecase};
 use tus_yuurikai_system::infrastructure::router::App;
@@ -70,7 +70,7 @@ async fn normal() {
 
 
     // Act
-    let response = client.post(uri!("/api/locker", controller::locker_register))
+    let response = client.post(uri!("/api/locker", locker::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -138,7 +138,7 @@ async fn student_id_allow_a_b() {
 
 
     // Act
-    let response = client.post(uri!("/api/locker", controller::locker_register))
+    let response = client.post(uri!("/api/locker", locker::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -205,7 +205,7 @@ async fn student_id_do_not_match() {
     };
 
     // Act
-    let response = client.post(uri!("/api/locker", controller::locker_register))
+    let response = client.post(uri!("/api/locker", locker::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -270,7 +270,7 @@ async fn year_do_not_match() {
     };
 
     // Act
-    let response = client.post(uri!("/api/locker", controller::locker_register))
+    let response = client.post(uri!("/api/locker", locker::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -344,7 +344,7 @@ async fn locker_status_unavailable() {
 
 
     // Act
-    let response = client.post(uri!("/api/locker", controller::locker_register))
+    let response = client.post(uri!("/api/locker", locker::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -411,12 +411,12 @@ async fn same_pair_arleady_registered() {
     };
 
     // Act
-    let _response = client.post(uri!("/api/locker", controller::locker_register))
+    let _response = client.post(uri!("/api/locker", locker::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
 
-    let response = client.post(uri!("/api/locker", controller::locker_register))
+    let response = client.post(uri!("/api/locker", locker::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;

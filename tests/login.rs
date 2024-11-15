@@ -9,7 +9,7 @@ use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType};
 use dotenv::dotenv;
-use tus_yuurikai_system::adapters::{controller, httpmodels::LoginFormRequest};
+use tus_yuurikai_system::adapters::{controller::locker, httpmodels::LoginFormRequest};
 use tus_yuurikai_system::infrastructure::router::App;
 
 // 正常系
@@ -29,7 +29,7 @@ pub async fn normal() {
     setup_db(&app).await;
 
     // Act
-    let response = client.post(uri!("/api", controller::login))
+    let response = client.post(uri!("/api", locker::login))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -56,7 +56,7 @@ pub async fn username_does_not_exist() {
     setup_db(&app).await;
 
     // Act
-    let response = client.post(uri!("/api", controller::login))
+    let response = client.post(uri!("/api", locker::login))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -83,7 +83,7 @@ pub async fn password_is_wrong() {
     setup_db(&app).await;
 
     // Act
-    let response = client.post(uri!("/api", controller::login))
+    let response = client.post(uri!("/api", locker::login))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
