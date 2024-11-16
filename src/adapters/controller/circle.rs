@@ -14,9 +14,9 @@ use dotenv::dotenv;
 use rocket::{get, http::{Status, RawStr, Cookie, CookieJar, SameSite}, post, serde::json::Json, State};
 use chrono::Duration;
 
-// 団体情報更新API
-#[utoipa::path(context_path = "/api/circle")]
-#[post("/update", data = "<request>")]
+// 団体にかかわるAPIをここに追加します
+/*#[utoipa::path(context_path = "/api/circle/update")]
+#[post("/entry", data = "<request>")]
 pub async fn circle_update(request: Json<CircleUpdateRequest>, app: &State<App>) -> (Status, &'static str) {
     (Status::Ok, "organization updated successfully")
-}
+}*/

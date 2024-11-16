@@ -11,6 +11,7 @@ use crate::usecase::{
 use crate::utils::{decode_jwt::decode_jwt, encode_jwt::encode_jwt};
 
 use std::{env, collections::HashSet};
+use uuid::Uuid;
 use dotenv::dotenv;
 use rocket::{get, http::{Status, RawStr, Cookie, CookieJar, SameSite}, post, serde::json::Json, State};
 use chrono::Duration;
@@ -23,7 +24,7 @@ pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -
 
     let data = &request.data;
 
-    let token = match app.auth.register(&data.main_user.clone(), &data.co_user.clone(), &String::from("main_auth"), false).await{
+    let token = match app.auth.register("locker",&data.main_user.clone(), &data.co_user.clone(), &String::from("main_auth"), false).await{
         Ok(auth) => auth.main_auth_token,
         Err(_) => return Status::InternalServerError,
     };
@@ -61,11 +62,16 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
         return Status::BadRequest
     }
 
+    let auth_info = match app.auth.get_locker_auth_info(&auth.auth_id).await {
+        Ok(info) => info,
+        Err(status) => return status,
+    };
+
     // mainuserの情報を格納
     let main_user = &UserInfo{
-        student_id: auth.main_student_id.clone(),
-        family_name: auth.main_family_name.clone(),
-        given_name: auth.main_given_name.clone(),
+        student_id: auth_info.main_student_id.clone(),
+        family_name: auth_info.main_family_name.clone(),
+        given_name: auth_info.main_given_name.clone(),
     };
 
     // mainuserの情報をstudentテーブルに保存
@@ -75,9 +81,9 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
 
     // couserの情報を格納
     let co_user = &UserInfo{
-        student_id: auth.co_student_id.clone(),
-        family_name: auth.co_family_name.clone(),
-        given_name: auth.co_given_name.clone(),
+        student_id: auth_info.co_student_id.clone(),
+        family_name: auth_info.co_family_name.clone(),
+        given_name: auth_info.co_given_name.clone(),
     };
 
     // メール内容の作成
@@ -94,7 +100,7 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
     }
 
     // phaseの更新
-    if app.auth.update_phase(auth.main_auth_token.clone(), String::from("co_auth")).await.is_err() {
+    if app.auth.update_phase(&auth.auth_id, String::from("co_auth")).await.is_err() {
         return Status::InternalServerError;
     }
 
@@ -116,11 +122,16 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
         return Status::BadRequest
     }
 
+    let auth_info = match app.auth.get_locker_auth_info(&auth.auth_id).await {
+        Ok(info) => info,
+        Err(status) => return status,
+    };
+
     // couserの情報を格納
     let co_user = &UserInfo{
-        student_id: auth.co_student_id.clone(),
-        family_name: auth.co_family_name.clone(),
-        given_name: auth.co_given_name.clone(),
+        student_id: auth_info.co_student_id.clone(),
+        family_name: auth_info.co_family_name.clone(),
+        given_name: auth_info.co_given_name.clone(),
     };
 
     // couserの情報をstudentテーブルに保存
@@ -130,9 +141,9 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
 
     // mainuserの情報を格納
     let main_user = &UserInfo{
-        student_id: auth.main_student_id.clone(),
-        family_name: auth.main_family_name.clone(),
-        given_name: auth.main_given_name.clone(),
+        student_id: auth_info.main_student_id.clone(),
+        family_name: auth_info.main_family_name.clone(),
+        given_name: auth_info.main_given_name.clone(),
     };
 
     // studentpairの情報を作成
@@ -147,7 +158,7 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     }
 
     // 認証完了用のレコードを保存
-    let token = match app.auth.register(&main_user.clone(), &co_user.clone(), &String::from("auth_check"), true).await{
+    let token = match app.auth.register("locker", &main_user.clone(), &co_user.clone(), &String::from("auth_check"), true).await{
         Ok(auth) => auth.main_auth_token,
         Err(_) => return Status::InternalServerError,
     };
@@ -166,7 +177,7 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     }
 
     // レコードを削除
-    if app.auth.delete(auth.main_auth_token).await.is_err() {
+    if app.auth.delete(&auth.auth_id).await.is_err() {
         return Status::InternalServerError;
     }
 
@@ -188,18 +199,23 @@ pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthChec
         return Err(Status::BadRequest)
     }
 
+    let auth_info = match app.auth.get_locker_auth_info(&auth.auth_id).await {
+        Ok(info) => info,
+        Err(status) => return Err(status),
+    };
+
     // mainuserの情報を格納
     let main_user = &UserInfo{
-        student_id: auth.main_student_id.clone(),
-        family_name: auth.main_family_name.clone(),
-        given_name: auth.main_given_name.clone(),
+        student_id: auth_info.main_student_id.clone(),
+        family_name: auth_info.main_family_name.clone(),
+        given_name: auth_info.main_given_name.clone(),
     };
 
     // couserの情報を格納
     let co_user = &UserInfo{
-        student_id: auth.co_student_id.clone(),
-        family_name: auth.co_family_name.clone(),
-        given_name: auth.co_given_name.clone(),
+        student_id: auth_info.co_student_id.clone(),
+        family_name: auth_info.co_family_name.clone(),
+        given_name: auth_info.co_given_name.clone(),
     };
 
     // studentpairの情報を作成
@@ -210,7 +226,7 @@ pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthChec
 
     Ok(Json(AuthCheckResponse{
         data: student_pair.clone(),
-        auth_token: auth.main_auth_token.clone(),
+        auth_id: auth.auth_id.clone().to_string(),
     }))
 }
 
@@ -244,6 +260,8 @@ pub async fn availability(floor: Option<i8>, app: &State<App>) -> Result<Json<Lo
 pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<App>) -> (Status, &'static str) {
 
     let assignment = &request.data;
+    let auth_id = Uuid::parse_str(&request.auth_id).unwrap();
+    println!("{}", auth_id.to_string());
 
     // pair_idの検索
     let user_pair = match app.student_pair.get_by_main_id(&assignment.student_id).await {
@@ -280,7 +298,7 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     }
 
     // レコードを削除
-    if app.auth.delete(request.auth_token.clone()).await.is_err() {
+    if app.auth.delete(&auth_id).await.is_err() {
         return (Status::InternalServerError, "failed to delete auth table");
     }
 

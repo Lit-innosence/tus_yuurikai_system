@@ -11,7 +11,7 @@ const { Content } = Layout;
 const LockerRegisterConfirm: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { lockerId, pairInfo: initialPairInfo, authToken } = location.state || {};
+    const { lockerId, pairInfo: initialPairInfo, authId } = location.state || {};
 
     const [isChecked, setIsChecked] = useState(false);
     const [pairInfo, setPairInfo] = useState(initialPairInfo);
@@ -46,7 +46,7 @@ const LockerRegisterConfirm: React.FC = () => {
                 studentId: pairInfo.mainUser.studentId,
                 lockerId: lockerId,
             },
-            authToken: authToken,
+            authId: authId,
         };
 
         try {

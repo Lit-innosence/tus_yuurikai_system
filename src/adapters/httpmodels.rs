@@ -29,7 +29,7 @@ pub struct TokenGenRequest {
 #[serde(rename_all = "camelCase")]
 pub struct AuthCheckResponse {
     pub data: PairInfo,
-    pub auth_token: String,
+    pub auth_id: String,
 }
 
 /// ### LockerStatus
@@ -58,7 +58,7 @@ pub struct LockerStatusResponse{
 #[serde(rename_all = "camelCase")]
 pub struct LockerResisterRequest {
     pub data: AssignmentInfo,
-    pub auth_token: String,
+    pub auth_id: String,
 }
 
 /// ### 管理者パスワード照合APIのリクエストデータ

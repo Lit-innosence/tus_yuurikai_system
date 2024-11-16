@@ -4,8 +4,8 @@ use diesel::result::Error;
 use uuid::Uuid;
 use async_trait::async_trait;
 
-use crate::infrastructure::schema::{student, student_pair, locker, assignment_record, auth, admin};
-use crate::infrastructure::models::{Student, NewStudent, StudentPair, NewStudentPair, Auth, NewAuth, Locker, NewLocker ,AssignmentRecord, NewAssignmentRecord, Admin, NewAdmin};
+use crate::infrastructure::schema::*;
+use crate::infrastructure::models::*;
 use crate::infrastructure::router::Pool;
 
 // student
@@ -218,16 +218,10 @@ impl StudentPairRepository for StudentPairRepositorySqlImpl{
 #[async_trait]
 pub trait AuthRepository: Send + Sync {
     async fn insert (
-    &self,
-    main_auth_token: &String,
-    main_student_id: &String,
-    main_family_name: &String,
-    main_given_name: &String,
-    co_auth_token: &String,
-    co_student_id: &String,
-    co_family_name: &String,
-    co_given_name: &String,
-    phase: &String,
+        &self,
+        main_auth_token: &String,
+        co_auth_token: &String,
+        phase: &String,
     ) -> Result<Auth, Error>;
     async fn get_by_token(
         &self,
@@ -235,12 +229,12 @@ pub trait AuthRepository: Send + Sync {
     ) -> Result<Auth, Error>;
     async fn update_phase(
         &self,
-        main_auth_token: &String,
+        auth_id: &Uuid,
         phase: &String,
     ) -> Result<usize, Error>;
     async fn delete(
         &self,
-        main_auth_token: &String,
+        auth_ud: &Uuid,
     ) -> Result<usize, Error>;
     async fn delete_all(
         &self
@@ -262,24 +256,12 @@ impl AuthRepository for AuthRepositorySqlImpl {
     async fn insert(
         &self,
         main_auth_token: &String,
-        main_student_id: &String,
-        main_family_name: &String,
-        main_given_name: &String,
         co_auth_token: &String,
-        co_student_id: &String,
-        co_family_name: &String,
-        co_given_name: &String,
         phase: &String,
     ) -> Result<Auth, Error> {
         let new_auth = NewAuth {
             main_auth_token,
-            main_student_id,
-            main_family_name,
-            main_given_name,
             co_auth_token,
-            co_student_id,
-            co_family_name,
-            co_given_name,
             phase,
         };
         let mut conn = self.pool.get().unwrap();
@@ -304,21 +286,21 @@ impl AuthRepository for AuthRepositorySqlImpl {
 
     async fn update_phase(
             &self,
-            main_auth_token: &String,
+            auth_id: &Uuid,
             phase: &String,
         ) -> Result<usize, Error> {
         let mut conn = self.pool.get().unwrap();
-        diesel::update(auth::table.find(main_auth_token))
+        diesel::update(auth::table.find(auth_id))
             .set(auth::phase.eq(phase))
             .execute(&mut conn)
     }
 
     async fn delete(
             &self,
-            main_auth_token: &String,
+            auth_id: &Uuid
         ) -> Result<usize, Error> {
         let mut conn = self.pool.get().unwrap();
-        diesel::delete(auth::table.find(main_auth_token))
+        diesel::delete(auth::table.find(auth_id))
             .execute(&mut conn)
     }
 
@@ -649,6 +631,94 @@ impl AdminRepository for AdminRepositorySqlImpl {
     ) -> Result<usize, Error> {
         let mut conn = self.pool.get().unwrap();
         diesel::delete(admin::table)
+            .execute(&mut conn)
+    }
+}
+
+// locker_auth_info
+
+#[async_trait]
+pub trait LockerAuthInfoRepository: Send + Sync {
+    async fn insert(
+        &self,
+        auth_id: &Uuid,
+        main_student_id: &String,
+        main_family_name: &String,
+        main_given_name: &String,
+        co_student_id: &String,
+        co_family_name: &String,
+        co_given_name: &String,
+    ) -> Result<LockerAuthInfo, Error>;
+    async fn get_by_id(
+        &self,
+        auth_id: &Uuid,
+    ) -> Result<LockerAuthInfo, Error>;
+    async fn delete(
+        &self,
+        auth_id: &Uuid,
+    ) -> Result<usize, Error>;
+    async fn delete_all(
+        &self
+    ) -> Result<usize, Error>;
+}
+
+pub struct LockerAuthInfoRepositorySqlImpl {
+    pool: Pool<PgConnection>
+}
+
+impl LockerAuthInfoRepositorySqlImpl {
+    pub fn new(pool: Pool<PgConnection>) -> Self {
+        LockerAuthInfoRepositorySqlImpl { pool }
+    }
+}
+
+#[async_trait]
+impl LockerAuthInfoRepository for LockerAuthInfoRepositorySqlImpl {
+    async fn insert(
+            &self,
+            auth_id: &Uuid,
+            main_student_id: &String,
+            main_family_name: &String,
+            main_given_name: &String,
+            co_student_id: &String,
+            co_family_name: &String,
+            co_given_name: &String,
+    ) -> Result<LockerAuthInfo, Error> {
+        let new_auth_info = NewLockerAuthInfo {
+            auth_id: auth_id,
+            main_student_id: main_student_id,
+            main_family_name: main_family_name,
+            main_given_name: main_given_name,
+            co_student_id: co_student_id,
+            co_family_name: co_family_name,
+            co_given_name: co_given_name,
+        };
+        let mut conn = self.pool.get().unwrap();
+        diesel::insert_into(locker_auth_info::table)
+            .values(&new_auth_info)
+            .get_result(&mut conn)
+    }
+    async fn get_by_id(
+            &self,
+            auth_id: &Uuid,
+        ) -> Result<LockerAuthInfo, Error> {
+            let mut conn = self.pool.get().unwrap();
+        locker_auth_info::table.filter(locker_auth_info::auth_id.eq(auth_id))
+            .get_result(&mut conn)
+    }
+    async fn delete(
+            &self,
+            auth_id: &Uuid,
+        ) -> Result<usize, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::delete(locker_auth_info::table.find(auth_id))
+            .execute(&mut conn)
+    }
+    async fn delete_all(
+            &self
+        ) -> Result<usize, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::delete(locker_auth_info::table)
             .execute(&mut conn)
     }
 }

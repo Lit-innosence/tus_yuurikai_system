@@ -46,8 +46,8 @@ const MailAuth = () => {
                 if (response.status === 200 || response.status === 201) {
                     if (method === '2') {
                         const pairInfo = response.data.data;
-                        const authToken = response.data.authToken;
-                        navigate('/locker/register', { state: { pairInfo, authToken } });
+                        const authId = response.data.authId;
+                        navigate('/locker/register', { state: { pairInfo, authId } });
                     } else {
                         navigate(redirectUrl);
                     }
