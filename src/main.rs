@@ -1,17 +1,6 @@
 use tus_yuurikai_system::{infrastructure::router::App, adapters::controller::ApiDoc};
-use tus_yuurikai_system::adapters::controller::{
-                                get_healthcheck,
-                                post_healthcheck,
-                                token_generator,
-                                main_auth,
-                                co_auth,
-                                auth_check,
-                                locker_register,
-                                user_search,
-                                login,
-                                availability,
-                                reset,
-                            };
+use tus_yuurikai_system::adapters::controller::{*, locker::*};
+
 use rocket::{routes, fs::{FileServer, relative, NamedFile}};
 use rocket_cors::{CorsOptions, AllowedOrigins};
 use utoipa_swagger_ui::SwaggerUi;

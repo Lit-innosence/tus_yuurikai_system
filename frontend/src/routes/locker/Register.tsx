@@ -25,7 +25,7 @@ const Register: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const pairInfo = location.state?.pairInfo;
-    const authToken = location.state?.authToken;
+    const authId = location.state?.authId;
 
     useEffect(() => {
         const fetchData = async (floor: string) => {
@@ -68,7 +68,7 @@ const Register: React.FC = () => {
 
     const handleRegister = () => {
         if (selectedLocker) {
-            navigate('/locker/register/confirm', { state: { lockerId: selectedLocker, pairInfo, authToken } });
+            navigate('/locker/register/confirm', { state: { lockerId: selectedLocker, pairInfo, authId } });
         }
     };
 

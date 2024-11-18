@@ -3,13 +3,20 @@ use std::env;
 use diesel::{PgConnection, r2d2::ConnectionManager};
 use dotenv::dotenv;
 use crate::adapters::repository::{
-                                AdminRepositorySqlImpl, AssignmentRecordRepositorySqlImpl, AuthRepositorySqlImpl, LockerRepositorySqlImpl, StudentPairRepositorySqlImpl, StudentRepositorySqlImpl};
-use crate::usecase::admin::AdminUsecaseImpl;
+                                AdminRepositorySqlImpl,
+                                AssignmentRecordRepositorySqlImpl,
+                                AuthRepositorySqlImpl,
+                                LockerRepositorySqlImpl,
+                                StudentPairRepositorySqlImpl,
+                                StudentRepositorySqlImpl,
+                                LockerAuthInfoRepositorySqlImpl,
+                            };
 use crate::usecase::{
                     student::StudentUsecaseImpl,
                     student_pair::StudentPairUsecaseImpl,
                     assignment_record::AssignmentRecordUsecaseImpl,
                     auth::AuthUsecaseImpl,
+                    admin::AdminUsecaseImpl,
                     locker::LockerUsecaseImpl,
                 };
 
@@ -33,7 +40,7 @@ impl App{
 
         let student_repository = StudentUsecaseImpl::new(Arc::new(StudentRepositorySqlImpl::new(pool.clone())));
         let student_pair_repository = StudentPairUsecaseImpl::new(Arc::new(StudentPairRepositorySqlImpl::new(pool.clone())));
-        let auth_repository = AuthUsecaseImpl::new(Arc::new(AuthRepositorySqlImpl::new(pool.clone())));
+        let auth_repository = AuthUsecaseImpl::new(Arc::new(AuthRepositorySqlImpl::new(pool.clone())), Arc::new(LockerAuthInfoRepositorySqlImpl::new(pool.clone())));
         let locker_repository = LockerUsecaseImpl::new(Arc::new(LockerRepositorySqlImpl::new(pool.clone())));
         let assignment_record_repository = AssignmentRecordUsecaseImpl::new(Arc::new(AssignmentRecordRepositorySqlImpl::new(pool.clone())));
         let admin_repository = AdminUsecaseImpl::new(Arc::new(AdminRepositorySqlImpl::new(pool.clone())));

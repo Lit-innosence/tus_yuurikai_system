@@ -7,7 +7,7 @@ mod utils;
 use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType};
-use tus_yuurikai_system::adapters::{controller, httpmodels::LockerResisterRequest};
+use tus_yuurikai_system::adapters::{controller::locker, httpmodels::LockerResisterRequest};
 use tus_yuurikai_system::domain::{assignment::AssignmentInfo, student_pair::PairInfo, student::UserInfo};
 use tus_yuurikai_system::usecase::{student_pair::StudentPairUsecase, student::StudentUsecase, auth::AuthUsecase};
 use tus_yuurikai_system::infrastructure::router::App;
@@ -55,8 +55,8 @@ async fn normal() {
     };
 
     // 認証完了用のレコードを保存
-    let token = match app.auth.register(mainuser, couser, &String::from("auth_check"), true).await{
-        Ok(auth) => auth.main_auth_token,
+    let auth_id = match app.auth.register("locker", mainuser, couser, &String::from("auth_check"), true).await{
+        Ok(auth) => auth.auth_id,
         Err(err) => {panic!("{}", err)},
     };
 
@@ -65,12 +65,12 @@ async fn normal() {
             student_id: String::from("4622999"),
             locker_id: String::from("2001"),
         },
-        auth_token: token,
+        auth_id: auth_id.to_string(),
     };
 
 
     // Act
-    let response = client.post(uri!("/api/locker", controller::locker_register))
+    let response = client.post(uri!("/api/locker", locker::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -123,8 +123,8 @@ async fn student_id_allow_a_b() {
     };
 
     // 認証完了用のレコードを保存
-    let token = match app.auth.register(mainuser, couser, &String::from("auth_check"), true).await{
-        Ok(auth) => auth.main_auth_token,
+    let auth_id = match app.auth.register("locker", mainuser, couser, &String::from("auth_check"), true).await{
+        Ok(auth) => auth.auth_id,
         Err(err) => {panic!("{}", err)},
     };
 
@@ -133,12 +133,12 @@ async fn student_id_allow_a_b() {
             student_id: String::from("3A22999"),
             locker_id: String::from("2001"),
         },
-        auth_token: token,
+        auth_id: auth_id.to_string(),
     };
 
 
     // Act
-    let response = client.post(uri!("/api/locker", controller::locker_register))
+    let response = client.post(uri!("/api/locker", locker::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -191,8 +191,8 @@ async fn student_id_do_not_match() {
     };
 
     // 認証完了用のレコードを保存
-    let token = match app.auth.register(mainuser, couser, &String::from("auth_check"), true).await{
-        Ok(auth) => auth.main_auth_token,
+    let auth_id = match app.auth.register("locker", mainuser, couser, &String::from("auth_check"), true).await{
+        Ok(auth) => auth.auth_id,
         Err(err) => {panic!("{}", err)},
     };
 
@@ -201,11 +201,11 @@ async fn student_id_do_not_match() {
             student_id: String::from("4622000"),
             locker_id: String::from("2001"),
         },
-        auth_token: token,
+        auth_id: auth_id.to_string(),
     };
 
     // Act
-    let response = client.post(uri!("/api/locker", controller::locker_register))
+    let response = client.post(uri!("/api/locker", locker::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -256,8 +256,8 @@ async fn year_do_not_match() {
     };
 
     // 認証完了用のレコードを保存
-    let token = match app.auth.register(mainuser, couser, &String::from("auth_check"), true).await{
-        Ok(auth) => auth.main_auth_token,
+    let auth_id = match app.auth.register("locker", mainuser, couser, &String::from("auth_check"), true).await{
+        Ok(auth) => auth.auth_id,
         Err(err) => {panic!("{}", err)},
     };
 
@@ -266,11 +266,11 @@ async fn year_do_not_match() {
             student_id: String::from("4622999"),
             locker_id: String::from("2001"),
         },
-        auth_token: token,
+        auth_id: auth_id.to_string(),
     };
 
     // Act
-    let response = client.post(uri!("/api/locker", controller::locker_register))
+    let response = client.post(uri!("/api/locker", locker::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -323,8 +323,8 @@ async fn locker_status_unavailable() {
     };
 
     // 認証完了用のレコードを保存
-    let token = match app.auth.register(mainuser, couser, &String::from("auth_check"), true).await{
-        Ok(auth) => auth.main_auth_token,
+    let auth_id = match app.auth.register("locker",mainuser, couser, &String::from("auth_check"), true).await{
+        Ok(auth) => auth.auth_id,
         Err(err) => {panic!("{}", err)},
     };
 
@@ -333,7 +333,7 @@ async fn locker_status_unavailable() {
             student_id: String::from("4622999"),
             locker_id: String::from("2001"),
         },
-        auth_token: token,
+        auth_id: auth_id.to_string(),
     };
 
     // 該当lockerのstatusをunavailableに変更
@@ -344,7 +344,7 @@ async fn locker_status_unavailable() {
 
 
     // Act
-    let response = client.post(uri!("/api/locker", controller::locker_register))
+    let response = client.post(uri!("/api/locker", locker::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
@@ -397,8 +397,8 @@ async fn same_pair_arleady_registered() {
     };
 
     // 認証完了用のレコードを保存
-    let token = match app.auth.register(mainuser, couser, &String::from("auth_check"), true).await{
-        Ok(auth) => auth.main_auth_token,
+    let auth_id = match app.auth.register("locker", mainuser, couser, &String::from("auth_check"), true).await{
+        Ok(auth) => auth.auth_id,
         Err(err) => {panic!("{}", err)},
     };
 
@@ -407,16 +407,16 @@ async fn same_pair_arleady_registered() {
             student_id: String::from("4622999"),
             locker_id: String::from("2001"),
         },
-        auth_token: token,
+        auth_id: auth_id.to_string(),
     };
 
     // Act
-    let _response = client.post(uri!("/api/locker", controller::locker_register))
+    let _response = client.post(uri!("/api/locker", locker::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;
 
-    let response = client.post(uri!("/api/locker", controller::locker_register))
+    let response = client.post(uri!("/api/locker", locker::locker_register))
         .header(ContentType::JSON)
         .json(&request)
         .dispatch().await;

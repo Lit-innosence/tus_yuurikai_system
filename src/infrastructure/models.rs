@@ -1,6 +1,6 @@
 use diesel::{Insertable, Queryable};
 use serde::{Deserialize, Serialize};
-use crate::infrastructure::schema::{student, student_pair, locker, assignment_record, auth, admin};
+use crate::infrastructure::schema::{student, student_pair, locker, assignment_record, auth, admin, locker_auth_info};
 // student
 
 #[derive(Queryable)]
@@ -80,14 +80,9 @@ pub struct NewAssignmentRecord<'a> {
 
 #[derive(Queryable)]
 pub struct Auth {
+    pub auth_id: uuid::Uuid,
     pub main_auth_token: String,
-    pub main_student_id: String,
-    pub main_family_name: String,
-    pub main_given_name: String,
     pub co_auth_token: String,
-    pub co_student_id: String,
-    pub co_family_name: String,
-    pub co_given_name: String,
     pub phase: String,
     pub created_at: chrono::NaiveDateTime,
 }
@@ -96,13 +91,7 @@ pub struct Auth {
 #[diesel(table_name = auth)]
 pub struct NewAuth<'a> {
     pub main_auth_token: &'a String,
-    pub main_student_id: &'a String,
-    pub main_family_name: &'a String,
-    pub main_given_name: &'a String,
     pub co_auth_token: &'a String,
-    pub co_student_id: &'a String,
-    pub co_family_name: &'a String,
-    pub co_given_name: &'a String,
     pub phase: &'a String,
 }
 
@@ -127,4 +116,28 @@ pub struct Admin{
 pub struct NewAdmin<'a> {
     pub username: &'a String,
     pub password: &'a String,
+}
+
+#[derive(Queryable)]
+pub struct LockerAuthInfo{
+    pub auth_id: uuid::Uuid,
+    pub main_student_id: String,
+    pub main_family_name: String,
+    pub main_given_name: String,
+    pub co_student_id: String,
+    pub co_family_name: String,
+    pub co_given_name: String,
+    pub created_at: chrono::NaiveDateTime
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = locker_auth_info)]
+pub struct NewLockerAuthInfo<'a>{
+    pub auth_id: &'a uuid::Uuid,
+    pub main_student_id: &'a String,
+    pub main_family_name: &'a String,
+    pub main_given_name: &'a String,
+    pub co_student_id: &'a String,
+    pub co_family_name: &'a String,
+    pub co_given_name: &'a String,
 }

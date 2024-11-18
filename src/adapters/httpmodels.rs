@@ -29,7 +29,7 @@ pub struct TokenGenRequest {
 #[serde(rename_all = "camelCase")]
 pub struct AuthCheckResponse {
     pub data: PairInfo,
-    pub auth_token: String,
+    pub auth_id: String,
 }
 
 /// ### LockerStatus
@@ -58,7 +58,7 @@ pub struct LockerStatusResponse{
 #[serde(rename_all = "camelCase")]
 pub struct LockerResisterRequest {
     pub data: AssignmentInfo,
-    pub auth_token: String,
+    pub auth_id: String,
 }
 
 /// ### 管理者パスワード照合APIのリクエストデータ
@@ -104,4 +104,17 @@ pub struct UserSearchResponse {
 #[serde(rename_all = "camelCase")]
 pub struct LockerResetRequest {
     pub password: String,
+}
+
+/// ### CircleUpdateRequest
+///
+/// 団体情報更新のリクエストデータ
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct CircleUpdateRequest {
+    pub organization_name: String,
+    pub family_name: String,
+    pub given_name: String,
+    pub student_id: String,
+    pub email: String,
 }

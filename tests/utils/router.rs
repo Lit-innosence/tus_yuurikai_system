@@ -1,18 +1,7 @@
 extern crate tus_yuurikai_system;
 
 use tus_yuurikai_system::{infrastructure::router::App, adapters::controller::ApiDoc};
-use tus_yuurikai_system::adapters::controller::{
-                                get_healthcheck,
-                                post_healthcheck,
-                                token_generator,
-                                main_auth,
-                                co_auth,
-                                locker_register,
-                                user_search,
-                                login,
-                                availability,
-                                reset,
-                            };
+use tus_yuurikai_system::adapters::controller::{*, locker::*};
 
 use rocket::{routes, Rocket, Build};
 use utoipa_swagger_ui::SwaggerUi;
