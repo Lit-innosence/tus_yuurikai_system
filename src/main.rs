@@ -1,5 +1,5 @@
 use tus_yuurikai_system::{infrastructure::router::App, adapters::controller::ApiDoc};
-use tus_yuurikai_system::adapters::controller::{*, locker::*};
+use tus_yuurikai_system::adapters::controller::{*, locker::*, circle::*};
 
 use rocket::{routes, fs::{FileServer, relative, NamedFile}};
 use rocket_cors::{CorsOptions, AllowedOrigins};
@@ -69,7 +69,9 @@ async fn main() -> Result<(), rocket::Error> {
         )
         .mount(
             "/api/circle",
-            routes![]
+            routes![
+                update_entry,
+            ]
         )
         .mount("/", FileServer::from(relative!("frontend/build")))
         .mount(
