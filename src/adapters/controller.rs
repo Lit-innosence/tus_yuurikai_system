@@ -2,7 +2,7 @@ pub mod circle;
 pub mod locker;
 
 use crate::adapters::httpmodels::HealthCheckRequest;
-use crate::adapters::controller::locker::*;
+use crate::adapters::controller::{locker::*, circle::*};
 use crate::adapters::httpmodels::*;
 use crate::domain::{student::UserInfo, student_pair::PairInfo, assignment::AssignmentInfo};
 use rocket::{get, post, serde::json::Json};
@@ -22,6 +22,7 @@ use utoipa::OpenApi;
         user_search,
         availability,
         reset,
+        update_entry,
     ),
     components(schemas(
         HealthCheckRequest,
@@ -35,6 +36,7 @@ use utoipa::OpenApi;
         LockerStatusResponse,
         UserSearchResponse,
         LockerResetRequest,
+        CircleUpdateRequest,
     ))
 )]
 pub struct ApiDoc;
