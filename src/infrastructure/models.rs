@@ -1,6 +1,6 @@
 use diesel::{Insertable, Queryable};
 use serde::{Deserialize, Serialize};
-use crate::infrastructure::schema::{student, student_pair, locker, assignment_record, auth, admin, locker_auth_info};
+use crate::infrastructure::schema::{student, student_pair, locker, assignment_record, auth, admin, locker_auth_info, circle_auth_info};
 // student
 
 #[derive(Queryable)]
@@ -140,4 +140,48 @@ pub struct NewLockerAuthInfo<'a>{
     pub co_student_id: &'a String,
     pub co_family_name: &'a String,
     pub co_given_name: &'a String,
+}
+
+#[derive(Queryable)]
+pub struct CircleAuthInfo{
+    pub auth_id: uuid::Uuid,
+    pub main_student_id: String,
+    pub main_family_name: String,
+    pub main_given_name: String,
+    pub main_email: String,
+    pub main_phone: String,
+    pub co_student_id: String,
+    pub co_family_name: String,
+    pub co_given_name: String,
+    pub co_email: String,
+    pub co_phone: String,
+    pub b_url: String,
+    pub c_url: String,
+    pub d_url: String,
+    pub organization_name: String,
+    pub organization_ruby: String,
+    pub organization_email: String,
+    pub created_at: chrono::NaiveDateTime,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = circle_auth_info)]
+pub struct NewCircleAuthInfo<'a>{
+    pub auth_id: &'a uuid::Uuid,
+    pub main_student_id: &'a String,
+    pub main_family_name: &'a String,
+    pub main_given_name: &'a String,
+    pub main_email: &'a String,
+    pub main_phone: &'a String,
+    pub co_student_id: &'a String,
+    pub co_family_name: &'a String,
+    pub co_given_name: &'a String,
+    pub co_email: &'a String,
+    pub co_phone: &'a String,
+    pub b_url: &'a String,
+    pub c_url: &'a String,
+    pub d_url: &'a String,
+    pub organization_name: &'a String,
+    pub organization_ruby: &'a String,
+    pub organization_email: &'a String,
 }

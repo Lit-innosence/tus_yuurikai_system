@@ -71,6 +71,7 @@ async fn main() -> Result<(), rocket::Error> {
             "/api/circle",
             routes![
                 update_entry,
+                update_token_generator,
             ]
         )
         .mount("/", FileServer::from(relative!("frontend/build")))

@@ -1,4 +1,4 @@
-use crate::domain::{student::UserInfo, student_pair::PairInfo, assignment::AssignmentInfo};
+use crate::domain::{assignment::AssignmentInfo, circle::{OrganizationInfo, OrganizationUpdateInfo}, student::UserInfo, student_pair::PairInfo};
 
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
@@ -13,13 +13,31 @@ pub struct HealthCheckRequest {
     pub text: String,
 }
 
-/// ### TokenGenRequest
+/// ### LockerTokenGenRequest
 ///
-/// token生成、メール送信APIのリクエストに使用
+/// ロッカー予約システムにおいてtoken生成、メール送信APIのリクエストに使用
 #[derive(Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub struct TokenGenRequest {
+pub struct LockerTokenGenRequest {
     pub data: PairInfo,
+}
+
+/// ### CircleTokenGenRequest
+///
+/// 団体登録システムにおいてtoken生成、メール送信APIのリクエストに使用
+#[derive(Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct CircleTokenGenRequest {
+    pub data: OrganizationInfo,
+}
+
+/// ### CircleUpdateTokenGenRequest
+///
+/// 団体登録システムにおいて情報更新の際のtoken生成、メール送信APIのリクエストに使用
+#[derive(Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct CircleUpdateTokenGenRequest {
+    pub data: OrganizationUpdateInfo,
 }
 
 /// ### AuthCheckResponse
