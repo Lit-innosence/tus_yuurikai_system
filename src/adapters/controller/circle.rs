@@ -24,7 +24,7 @@ pub async fn update_entry(request: Json<CircleUpdateRequest>, app: &State<App>) 
 
     // メール内容の作成
     let user_address = format!("{}", request.email);
-    let content = format!("{} 代表 {} {} 様\n\n以下のURLから団体情報更新用GoogleFormにアクセスして更新内容を入力してください。\n\n{}", request.organization_name, request.family_name, request.given_name, app_url);
+    let content = format!("{} 代表 {}{} 様\n\n以下のURLから団体情報更新用GoogleFormにアクセスして更新内容を入力してください。\n\n{}", request.organization_name, request.family_name, request.given_name, app_url);
     let subject = "団体情報更新 更新用URLのお知らせ";
 
     // 認証メールを送信
@@ -70,8 +70,8 @@ pub async fn update_token_generator(request: Json<CircleUpdateTokenGenRequest>, 
     dotenv().ok();
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
 
-    let user_address = format!("{}", main_user.email);
-    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}?/*フロントエンドのURL*/method=1&token={}&id={}", main_user.family_name, main_user.given_name, app_url, token, data.organization_id);
+    let user_address = main_user.email.to_string();
+    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/circle/update/auth?method=1&token={}&id={}", main_user.family_name, main_user.given_name, app_url, token, data.organization_id);
     let subject = "ロッカーシステム メール認証";
 
     // メールの送信
