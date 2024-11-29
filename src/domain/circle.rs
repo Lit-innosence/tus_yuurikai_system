@@ -8,9 +8,13 @@ pub struct OrganizationInfo {
     pub main_user: super::student::RepresentativeInfo,
     #[schema(inline)]
     pub co_user: super::student::RepresentativeInfo,
+    #[schema(inline)]
     pub organization: Organization,
+    #[schema(example = "https://www.google.com")]
     pub b_url: String,
+    #[schema(example = "https://www.google.com")]
     pub c_url: String,
+    #[schema(example = "https://www.google.com")]
     pub d_url: String,
 }
 

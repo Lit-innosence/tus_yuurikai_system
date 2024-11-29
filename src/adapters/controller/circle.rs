@@ -82,6 +82,38 @@ pub async fn update_token_generator(request: Json<CircleUpdateTokenGenRequest>, 
     (Status::Created, "Authentication email sent successfully")
 }
 
+// 団体登録認証API
+#[utoipa::path(context_path = "/api/circle")]
+#[post("/register/token-gen", data="<request>")]
+pub async fn register_token_generator(request: Json<CircleTokenGenRequest>, app: &State<App>) -> (Status, &'static str) {
+
+    // リクエストからデータを取得
+    let data = &request.data;
+
+    // 団体情報をDBに登録し、auth_tokenを取得
+    let token = match app.auth.circle_register(data, &String::from("main_auth"), false).await {
+        Ok(auth) => auth.main_auth_token,
+        Err(_) => {return (Status::InternalServerError, "failed to issue auth token")}
+    };
+
+    // メール内容の作成
+    let main_user = &data.main_user;
+
+    dotenv().ok();
+    let app_url = env::var("APP_URL").expect("APP_URL must be set.");
+
+    let user_address = main_user.email.to_string();
+    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/circle/register/auth?method=1&token={}", main_user.family_name, main_user.given_name, app_url, token);
+    let subject = "ロッカーシステム メール認証";
+
+    // メールの送信
+    if app.auth.mail_sender(user_address, content, subject).await.is_err() {
+        return (Status::InternalServerError, "failed to send authentication email");
+    }
+
+    (Status::Created, "Authentication email sent successfully")
+}
+
 // 団体代表者認証API
 
 // 団体副代表者認証API
