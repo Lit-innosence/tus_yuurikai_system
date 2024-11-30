@@ -53,9 +53,9 @@ pub async fn update_token_generator(request: Json<CircleUpdateTokenGenRequest>, 
             organization_ruby: String::from(""),
             organization_email: data.organization_email.clone(),
         },
-        b_url: data.b_url.clone(),
-        c_url: String::from(""),
-        d_url: String::from(""),
+        b_doc: data.b_doc.clone(),
+        c_doc: String::from(""),
+        d_doc: String::from(""),
     };
 
     // 団体情報をDBに登録し、auth_tokenを取得

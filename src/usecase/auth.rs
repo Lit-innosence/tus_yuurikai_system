@@ -87,9 +87,9 @@ impl AuthUsecase for AuthUsecaseImpl {
                                                     &organization.co_user.given_name,
                                                     &organization.co_user.email,
                                                     &organization.co_user.phone_number,
-                                                    &organization.b_url,
-                                                    &organization.c_url,
-                                                    &organization.d_url,
+                                                    &organization.b_doc,
+                                                    &organization.c_doc,
+                                                    &organization.d_doc,
                                                     &organization.organization.organization_name,
                                                     &organization.organization.organization_ruby,
                                                     &organization.organization.organization_email).await {

@@ -10,12 +10,12 @@ pub struct OrganizationInfo {
     pub co_user: super::student::RepresentativeInfo,
     #[schema(inline)]
     pub organization: Organization,
-    #[schema(example = "https://www.google.com")]
-    pub b_url: String,
-    #[schema(example = "https://www.google.com")]
-    pub c_url: String,
-    #[schema(example = "https://www.google.com")]
-    pub d_url: String,
+    #[schema(example = "xxxxxxxxxxxxxxxxxxxxxx")]
+    pub b_doc: String,
+    #[schema(example = "xxxxxxxxxxxxxxxxxxxxxx")]
+    pub c_doc: String,
+    #[schema(example = "xxxxxxxxxxxxxxxxxxxxxx")]
+    pub d_doc: String,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
@@ -29,8 +29,8 @@ pub struct OrganizationUpdateInfo {
     pub co_user: super::student::RepresentativeInfo,
     #[schema(example = "example@example.com")]
     pub organization_email: String,
-    #[schema(example = "https://www.google.com")]
-    pub b_url: String,
+    #[schema(example = "xxxxxxxxxxxxxxxxxxxxxx")]
+    pub b_doc: String,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
