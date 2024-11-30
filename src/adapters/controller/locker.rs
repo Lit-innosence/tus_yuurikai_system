@@ -20,11 +20,11 @@ use chrono::Duration;
 // token生成、メール送信API
 #[utoipa::path(context_path = "/api/locker")]
 #[post("/token-gen", data = "<request>")]
-pub async fn token_generator(request: Json<TokenGenRequest>, app: &State<App>) -> Status {
+pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<App>) -> Status {
 
     let data = &request.data;
 
-    let token = match app.auth.register("locker",&data.main_user.clone(), &data.co_user.clone(), &String::from("main_auth"), false).await{
+    let token = match app.auth.locker_register(&data.main_user.clone(), &data.co_user.clone(), &String::from("main_auth"), false).await{
         Ok(auth) => auth.main_auth_token,
         Err(_) => return Status::InternalServerError,
     };
@@ -158,7 +158,7 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     }
 
     // 認証完了用のレコードを保存
-    let token = match app.auth.register("locker", &main_user.clone(), &co_user.clone(), &String::from("auth_check"), true).await{
+    let token = match app.auth.locker_register(&main_user.clone(), &co_user.clone(), &String::from("auth_check"), true).await{
         Ok(auth) => auth.main_auth_token,
         Err(_) => return Status::InternalServerError,
     };

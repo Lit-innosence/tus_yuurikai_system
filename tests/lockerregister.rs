@@ -55,7 +55,7 @@ async fn normal() {
     };
 
     // 認証完了用のレコードを保存
-    let auth_id = match app.auth.register("locker", mainuser, couser, &String::from("auth_check"), true).await{
+    let auth_id = match app.auth.locker_register(mainuser, couser, &String::from("auth_check"), true).await{
         Ok(auth) => auth.auth_id,
         Err(err) => {panic!("{}", err)},
     };
@@ -123,7 +123,7 @@ async fn student_id_allow_a_b() {
     };
 
     // 認証完了用のレコードを保存
-    let auth_id = match app.auth.register("locker", mainuser, couser, &String::from("auth_check"), true).await{
+    let auth_id = match app.auth.locker_register(mainuser, couser, &String::from("auth_check"), true).await{
         Ok(auth) => auth.auth_id,
         Err(err) => {panic!("{}", err)},
     };
@@ -191,7 +191,7 @@ async fn student_id_do_not_match() {
     };
 
     // 認証完了用のレコードを保存
-    let auth_id = match app.auth.register("locker", mainuser, couser, &String::from("auth_check"), true).await{
+    let auth_id = match app.auth.locker_register(mainuser, couser, &String::from("auth_check"), true).await{
         Ok(auth) => auth.auth_id,
         Err(err) => {panic!("{}", err)},
     };
@@ -256,7 +256,7 @@ async fn year_do_not_match() {
     };
 
     // 認証完了用のレコードを保存
-    let auth_id = match app.auth.register("locker", mainuser, couser, &String::from("auth_check"), true).await{
+    let auth_id = match app.auth.locker_register(mainuser, couser, &String::from("auth_check"), true).await{
         Ok(auth) => auth.auth_id,
         Err(err) => {panic!("{}", err)},
     };
@@ -323,7 +323,7 @@ async fn locker_status_unavailable() {
     };
 
     // 認証完了用のレコードを保存
-    let auth_id = match app.auth.register("locker",mainuser, couser, &String::from("auth_check"), true).await{
+    let auth_id = match app.auth.locker_register(mainuser, couser, &String::from("auth_check"), true).await{
         Ok(auth) => auth.auth_id,
         Err(err) => {panic!("{}", err)},
     };
@@ -397,7 +397,7 @@ async fn same_pair_arleady_registered() {
     };
 
     // 認証完了用のレコードを保存
-    let auth_id = match app.auth.register("locker", mainuser, couser, &String::from("auth_check"), true).await{
+    let auth_id = match app.auth.locker_register(mainuser, couser, &String::from("auth_check"), true).await{
         Ok(auth) => auth.auth_id,
         Err(err) => {panic!("{}", err)},
     };
