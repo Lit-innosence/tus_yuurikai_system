@@ -7,7 +7,8 @@ import AuthProvider from './routes/component/AuthContext';
 import Login from './routes/Login';
 import Admin from './routes/admin/Admin';
 import PrivateRoute from './routes/component/PrivateRouter';
-import MailAuth from './routes/locker/MailAuth';
+import LockerMailAuth from './routes/locker/MailAuth';
+import CircleMailAuth from './routes/circle/MailAuth';
 
 // QueryClientのインスタンスを作成
 const queryClient = new QueryClient({
@@ -32,10 +33,12 @@ const LockerRegisterComplete = lazy(() => import('./routes/locker/RegisterComp')
 
 const CircleSelect = lazy(() => import('./routes/circle/CircleSelect'));
 const CircleRegister = lazy(() => import('./routes/circle/Status'));
+const CircleRegisterAuthComp = lazy(() => import('./routes/circle/AuthComp'));
+const CircleRegisterProcess = lazy(() => import('./routes/circle/RegisterProcess'));
 const CircleUpdate = lazy(() => import('./routes/circle/Update'));
 const CircleUpdateConfirm = lazy(() => import('./routes/circle/UpdateConfirm'));
 const CircleUpdateComplete = lazy(() => import('./routes/circle/UpdateComp'));
-const CircleProcess = lazy(() => import('./routes/circle/UpdateProcess'));
+const CircleUpdateProcess = lazy(() => import('./routes/circle/UpdateProcess'));
 const Redirect = lazy(() => import('./routes/component/Redirect'));
 
 const LockerSearch = lazy(() => import('./routes/admin/LockerSearch'));
@@ -57,17 +60,20 @@ function App() {
             <Route path='/locker/form/complete' element={<FormComp />} />
             <Route path='/locker/auth/complete' element={<AuthComp />} />
             <Route path='/locker/process' element={<LockerProcess />} />
-            <Route path='/locker/user-register' element={<MailAuth />} />
+            <Route path='/locker/user-register' element={<LockerMailAuth />} />
             <Route path='/locker/register' element={<LockerRegister />} />
             <Route path='/locker/register/confirm' element={<LockerRegisterConfirm />} />
             <Route path='/locker/register/complete' element={<LockerRegisterComplete />} />
 
             <Route path='/circle' element={<CircleSelect />} />
             <Route path='/circle/register/status' element={<CircleRegister />} />
+            <Route path='/circle/auth' element={<CircleMailAuth />} />
+            <Route path='/circle/auth/complete' element={<CircleRegisterAuthComp />} />
+            <Route path='/circle/register/process' element={<CircleRegisterProcess />} />
             <Route path='/circle/update' element={<CircleUpdate />} />
             <Route path='/circle/update/confirm' element={<CircleUpdateConfirm />} />
             <Route path='/circle/update/complete' element={<CircleUpdateComplete />} />
-            <Route path='/circle/update/process' element={<CircleProcess />} />
+            <Route path='/circle/update/process' element={<CircleUpdateProcess />} />
             
             <Route path='/redirect/*' element={<Redirect />} />
 
@@ -77,7 +83,9 @@ function App() {
             <Route path='/admin/circle' element={<PrivateRoute><AdminCircleSelect/></PrivateRoute>} />
             <Route path='/admin/locker/reset' element={<PrivateRoute><LockerReset /></PrivateRoute>} />
             <Route path='/admin/locker/search' element={<PrivateRoute><LockerSearch /></PrivateRoute>} />
+
             <Route path='/locker/nopage' element={<Page404 />} />
+            <Route path='/circle/nopage' element={<Page404 />} />
             <Route path='*' element={<Page404 />} />
           </Routes>
         </Suspense>
