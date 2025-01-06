@@ -67,7 +67,7 @@ function App() {
 
             <Route path='/circle' element={<CircleSelect />} />
             <Route path='/circle/register/status' element={<CircleRegister />} />
-            <Route path='/circle/auth' element={<CircleMailAuth />} />
+            <Route path='/circle/register/auth' element={<CircleMailAuth />} />
             <Route path='/circle/auth/complete' element={<CircleRegisterAuthComp />} />
             <Route path='/circle/register/process' element={<CircleRegisterProcess />} />
             <Route path='/circle/update' element={<CircleUpdate />} />
