@@ -164,8 +164,8 @@ pub async fn circle_main_auth(token: String, id: Option<String>, app:&State<App>
 
     let user_address = co_user.email.to_string();
     let content = match id {
-        Some(id) => format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/circle/update/auth?method=2&token={}&id={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token, id),
-        None => format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/circle/register/auth?method=2&token={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token),
+        Some(id) => format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/circle/update/auth?method=0&token={}&id={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token, id),
+        None => format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/circle/register/auth?method=0&token={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token),
     };
     let subject = "団体登録システム メール認証";
 
