@@ -5,4 +5,5 @@ pub mod auth;
 pub mod locker;
 pub mod admin;
 pub mod organization;
+pub mod registration;
 pub mod representatives;

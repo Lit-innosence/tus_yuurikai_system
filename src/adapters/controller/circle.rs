@@ -1,9 +1,11 @@
 use crate::adapters::httpmodels::*;
 use crate::domain::{circle::{OrganizationInfo, Organization}, student::RepresentativeInfo};
 use crate::infrastructure::router::App;
-use crate::usecase::representatives::RepresentativesUsecase;
 use crate::usecase::{
                     auth::AuthUsecase,
+                    representatives::RepresentativesUsecase,
+                    organization::OrganizationUsecase,
+                    registration::RegistrationUsecase,
                     admin::AdminUsecase};
 use crate::utils::{decode_jwt::decode_jwt, encode_jwt::encode_jwt};
 
@@ -183,3 +185,99 @@ pub async fn circle_main_auth(token: String, id: Option<String>, app:&State<App>
 }
 
 // 団体副代表者認証API
+#[utoipa::path(context_path = "/api/circle")]
+#[post("/co-auth?<token>&<id>")]
+pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) -> (Status, &'static str) {
+
+    // tokenが一致するレコードを取得
+    let auth = match app.auth.token_check(token, false).await{
+        Ok(auth) => auth,
+        // 存在しなかったら終了
+        Err(status) => return (status, "invalid token"),
+    };
+
+    // authのphaseを確認
+    if auth.phase != String::from("co_auth") {
+        return (Status::BadRequest, "authentication phase does not match");
+    }
+
+    // auth_infoからレコードを取得
+    let auth_info = match app.auth.get_circle_auth_info(&auth.auth_id).await {
+        Ok(info) => info,
+        Err(status) => return (status, "failed to get circle info"),
+    };
+
+    // main_userの情報を格納
+    let main_user = RepresentativeInfo{
+        student_id: auth_info.main_student_id,
+        family_name: auth_info.main_family_name,
+        given_name: auth_info.main_given_name,
+        email: auth_info.main_email,
+        phone_number: auth_info.main_phone,
+    };
+
+    // co_userの情報を格納
+    let co_user = RepresentativeInfo{
+        student_id: auth_info.co_student_id,
+        family_name: auth_info.co_family_name,
+        given_name: auth_info.co_given_name,
+        email: auth_info.co_email,
+        phone_number: auth_info.co_phone,
+    };
+
+    if app.representatives.register(&co_user).await.is_err() {
+        return (Status::InternalServerError, "failed to insert Representative")
+    }
+
+    match id {
+        // 団体情報更新
+        Some(organization_id) => {
+            // TODO: 更新処理の作成
+            // TODO: oauth処理の作成
+        },
+        // 団体新規登録
+        None => {
+            // organizationの情報を格納
+            let organization = Organization{
+                organization_name: auth_info.organization_name,
+                organization_ruby: auth_info.organization_ruby,
+                organization_email: auth_info.organization_email,
+            };
+
+            // registrationの情報を格納
+            let organization_info = &OrganizationInfo{
+                organization: organization.clone(),
+                main_user: main_user.clone(),
+                co_user: co_user.clone(),
+                b_doc: auth_info.b_doc,
+                c_doc: auth_info.c_doc,
+                d_doc: auth_info.d_doc,
+            };
+
+            let organization_id = match app.organization.register(&organization).await {
+                Ok(org) => {
+                    org.organization_id
+                },
+                Err(_) => {
+                    return (Status::InternalServerError, "failed to insert Organization")
+                }
+            };
+
+            // register DBに登録
+            if app.registration.register(organization_info, &organization_id).await.is_err() {
+                return (Status::InternalServerError, "failed to insert Registration")
+            }
+        }
+    }
+
+    let user_address = main_user.email.to_string();
+    let content = format!("{}{} 様\n\nメール認証が完了し、団体情報が登録されました。\n", main_user.family_name, main_user.given_name);
+    let subject = "団体登録システム メール認証";
+
+    // 登録完了メールの送信
+    if app.auth.mail_sender(user_address, content, subject).await.is_err() {
+        return (Status::InternalServerError, "failed to send authentication email");
+    }
+
+    (Status::Created, "Organization Infomation registered successfully")
+}

@@ -188,7 +188,7 @@ pub struct NewCircleAuthInfo<'a>{
 
 #[derive(Queryable)]
 pub struct Organization{
-    pub organization_id: String,
+    pub organization_id: i32,
     pub organization_name: String,
     pub organization_ruby: String,
     pub organization_email: String,
@@ -199,7 +199,6 @@ pub struct Organization{
 #[derive(Insertable)]
 #[diesel(table_name = organization)]
 pub struct NewOrganization<'a>{
-    pub organization_id: &'a String,
     pub organization_name: &'a String,
     pub organization_ruby: &'a String,
     pub organization_email: &'a String,
@@ -228,7 +227,7 @@ pub struct NewRepresentatives<'a>{
 
 #[derive(Queryable)]
 pub struct Registration{
-    pub organization_id: String,
+    pub organization_id: i32,
     pub year: i32,
     pub main_student_id: String,
     pub co_student_id: String,
@@ -246,7 +245,7 @@ pub struct Registration{
 #[derive(Insertable)]
 #[diesel(table_name = registration)]
 pub struct NewRegistration<'a>{
-    pub organization_id: &'a String,
+    pub organization_id: &'a i32,
     pub year: &'a i32,
     pub main_student_id: &'a String,
     pub co_student_id: &'a String,

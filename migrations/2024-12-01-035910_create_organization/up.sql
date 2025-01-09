@@ -1,6 +1,6 @@
 -- Your SQL goes here
 CREATE TABLE organization(
-    organization_id TEXT PRIMARY KEY,
+    organization_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     organization_name TEXT NOT NULL,
     organization_ruby TEXT NOT NULL,
     organization_email TEXT NOT NULL,

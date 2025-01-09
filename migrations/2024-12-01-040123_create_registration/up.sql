@@ -1,6 +1,6 @@
 -- Your SQL goes here
 CREATE TABLE registration(
-    organization_id TEXT NOT NULL,
+    organization_id INT NOT NULL,
     year INT NOT NULL,
     main_student_id TEXT NOT NULL,
     co_student_id TEXT NOT NULL,

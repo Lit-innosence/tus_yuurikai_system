@@ -8,10 +8,11 @@ use crate::adapters::repository::{
                                 AuthRepositorySqlImpl,
                                 CircleAuthInfoRepositorySqlImpl,
                                 LockerAuthInfoRepositorySqlImpl,
-                                LockerRepositorySqlImpl,
-                                StudentPairRepositorySqlImpl,
-                                StudentRepositorySqlImpl,
+                                LockerRepositorySqlImpl, OrganizationRepositorySqlImpl,
                                 RepresentativesRepositorySqlImpl,
+                                RegistrationRepositorySqlImpl,
+                                StudentPairRepositorySqlImpl,
+                                StudentRepositorySqlImpl
                             };
 use crate::usecase::{
                     student::StudentUsecaseImpl,
@@ -21,6 +22,8 @@ use crate::usecase::{
                     admin::AdminUsecaseImpl,
                     locker::LockerUsecaseImpl,
                     representatives::RepresentativesUsecaseImpl,
+                    organization::OrganizationUsecaseImpl,
+                    registration::RegistrationUsecaseImpl,
                 };
 
 pub type Pool<T> = diesel::r2d2::Pool<ConnectionManager<T>>;
@@ -32,6 +35,8 @@ pub struct App{
     pub assignment_record: AssignmentRecordUsecaseImpl,
     pub admin: AdminUsecaseImpl,
     pub representatives: RepresentativesUsecaseImpl,
+    pub organization: OrganizationUsecaseImpl,
+    pub registration: RegistrationUsecaseImpl,
 }
 
 impl App{
@@ -49,6 +54,8 @@ impl App{
         let assignment_record_repository = AssignmentRecordUsecaseImpl::new(Arc::new(AssignmentRecordRepositorySqlImpl::new(pool.clone())));
         let admin_repository = AdminUsecaseImpl::new(Arc::new(AdminRepositorySqlImpl::new(pool.clone())));
         let representatives_repository = RepresentativesUsecaseImpl::new(Arc::new(RepresentativesRepositorySqlImpl::new(pool.clone())));
+        let organization_repository = OrganizationUsecaseImpl::new(Arc::new(OrganizationRepositorySqlImpl::new(pool.clone())));
+        let registration_repository = RegistrationUsecaseImpl::new(Arc::new(RegistrationRepositorySqlImpl::new(pool.clone())));
 
         App {
             student: student_repository,
@@ -58,6 +65,8 @@ impl App{
             assignment_record: assignment_record_repository,
             admin: admin_repository,
             representatives: representatives_repository,
+            organization: organization_repository,
+            registration: registration_repository,
         }
     }
 }
