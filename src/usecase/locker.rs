@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use crate::adapters::repository::LockerRepository;
+use crate::adapters::repository::locker::LockerRepository;
 use crate::infrastructure::models::Locker;
 use diesel::result::Error;
 use async_trait::async_trait;

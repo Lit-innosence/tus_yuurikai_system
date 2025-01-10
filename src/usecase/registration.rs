@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use crate::domain::circle::OrganizationInfo;
-use crate::adapters::repository::RegistrationRepository;
+use crate::adapters::repository::registration::RegistrationRepository;
 use crate::infrastructure::models::Registration;
 use diesel::result::Error;
 use async_trait::async_trait;

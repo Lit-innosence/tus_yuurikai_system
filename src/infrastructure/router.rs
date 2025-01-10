@@ -3,16 +3,17 @@ use std::env;
 use diesel::{PgConnection, r2d2::ConnectionManager};
 use dotenv::dotenv;
 use crate::adapters::repository::{
-                                AdminRepositorySqlImpl,
-                                AssignmentRecordRepositorySqlImpl,
-                                AuthRepositorySqlImpl,
-                                CircleAuthInfoRepositorySqlImpl,
-                                LockerAuthInfoRepositorySqlImpl,
-                                LockerRepositorySqlImpl, OrganizationRepositorySqlImpl,
-                                RepresentativesRepositorySqlImpl,
-                                RegistrationRepositorySqlImpl,
-                                StudentPairRepositorySqlImpl,
-                                StudentRepositorySqlImpl
+                                admin::AdminRepositorySqlImpl,
+                                assignment_record::AssignmentRecordRepositorySqlImpl,
+                                auth::AuthRepositorySqlImpl,
+                                circle_auth_info::CircleAuthInfoRepositorySqlImpl,
+                                locker_auth_info::LockerAuthInfoRepositorySqlImpl,
+                                locker::LockerRepositorySqlImpl,
+                                organization::OrganizationRepositorySqlImpl,
+                                representatives::RepresentativesRepositorySqlImpl,
+                                registration::RegistrationRepositorySqlImpl,
+                                student_pair::StudentPairRepositorySqlImpl,
+                                student::StudentRepositorySqlImpl
                             };
 use crate::usecase::{
                     student::StudentUsecaseImpl,

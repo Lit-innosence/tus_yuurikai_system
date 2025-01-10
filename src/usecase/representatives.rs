@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use crate::adapters::repository::RepresentativesRepository;
+use crate::adapters::repository::representatives::RepresentativesRepository;
 use crate::domain::student::RepresentativeInfo;
 use crate::infrastructure::models::Representatives;
 use diesel::result::Error;

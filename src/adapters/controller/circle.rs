@@ -288,7 +288,7 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
             let input_json = serde_json::to_string(&input).unwrap();
 
             let client = reqwest::Client::builder()
-                .timeout(Duration::from_secs(15))
+                .timeout(Duration::from_secs(60))
                 .build().unwrap();
             let result = client.post(format!("https://script.googleapis.com/v1/scripts/{}:run", deploy_id.as_str()))
                 .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", api_tokens.access_token))

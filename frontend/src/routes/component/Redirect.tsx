@@ -28,7 +28,7 @@ const Redirect = () => {
 
         switch (path) {
             case 'googleform':
-                url = 'https://www.google.co.jp/';
+                url = 'https://docs.google.com/forms/d/e/1FAIpQLScUmgpCyBEmheeZYDNv5Ok6EqyNsri7y8S19r-TFbQ4y8ESUg/viewform?usp=sf_link';
                 break;
             case 'onedrive':
                 url = 'https://onedrive.live.com/?authkey=%21AHAUgQpyo9KUOJA&id=7A895461B26453F8%21123&cid=7A895461B26453F8';

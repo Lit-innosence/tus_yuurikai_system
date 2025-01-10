@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Loading from '../Loading';
 import constants from '../constants';
+import { Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 
 const CircleMailAuth = () => {
     const navigate = useNavigate();
@@ -11,9 +12,10 @@ const CircleMailAuth = () => {
         const queryParams = new URLSearchParams(window.location.search);
         const token = queryParams.get('token');
         const method = queryParams.get('method');
+        const id = queryParams.get('id');
 
         const validMethods = ['0', '1'];
-        if (!token || !method || !validMethods.includes(method)) {
+        if (!token || !method || !id || !validMethods.includes(method)) {
             navigate('/circle/nopage');
             return;
         }
@@ -22,32 +24,30 @@ const CircleMailAuth = () => {
             try {
 
                 let apiUrl = '';
-                let redirectUrl = '';
+                let redirectUrl = '/circle/update/complete';
 
                 switch (method) {
                     case '0':
-                        apiUrl = constants.backendApiEndpoint + '/api/circle/co-auth?token=' + token;
-                        redirectUrl = '/circle/auth/complete';
+                        apiUrl = constants.backendApiEndpoint + '/api/circle/co-auth?token=' + token + '&id=' + id;
                         break;
                     case '1':
-                        apiUrl = constants.backendApiEndpoint + '/api/circle/main-auth?token=' + token;
-                        redirectUrl = '/circle/auth/complete';
+                        apiUrl = constants.backendApiEndpoint + '/api/circle/main-auth?token=' + token + '&id=' + id;
                         break;
                     default:
-                        navigate('/circle/nopage');
+                        // navigate('/circle/nopage');
                         return;
                 }
 
-                const response = await axios.get(apiUrl);
+                const response = await axios.post(apiUrl);
 
                 if (response.status === 200 || response.status === 201) {
                     navigate(redirectUrl);
                 } else {
-                    navigate('/circle/nopage');
+                    // navigate('/circle/nopage');
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
-                navigate('/circle/nopage');
+                // navigate('/circle/nopage');
             }
         };
 
@@ -56,7 +56,9 @@ const CircleMailAuth = () => {
 
     return (
         <div>
-            <Loading />
+            // フロントエンドを修正
+            <Spin indicator={<LoadingOutlined spin />} tip="Loading..." style={{transform: 'scale(3)'}} />
+            <p>１分ぐらいかかります、、、</p>
         </div>
     );
 };
