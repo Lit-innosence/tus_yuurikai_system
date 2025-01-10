@@ -14,6 +14,8 @@ pub struct RegistrationUsecaseImpl {
 #[async_trait]
 pub trait RegistrationUsecase: Sync + Send {
     async fn register(&self, organization: &OrganizationInfo, organization_id: &i32) -> Result<Registration, Error>;
+
+    async fn update_student(&self, organization_id: &i32, main_student_id: &String, co_student_id: &String) -> Result<Registration, Error>;
 }
 
 impl RegistrationUsecaseImpl {
@@ -40,5 +42,10 @@ impl RegistrationUsecase for RegistrationUsecaseImpl {
                                             &organization.c_doc,
                                             &organization.d_doc
                                             ).await
+    }
+
+    async fn update_student(&self, organization_id: &i32, main_student_id: &String, co_student_id: &String) -> Result<Registration, Error> {
+        // 団体代表者と団体副代表者の更新
+        self.registration_repository.update_student_by_id(organization_id, main_student_id, co_student_id).await
     }
 }

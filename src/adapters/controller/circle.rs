@@ -1,5 +1,5 @@
 use crate::adapters::httpmodels::*;
-use crate::domain::{circle::{OrganizationInfo, Organization}, student::RepresentativeInfo};
+use crate::domain::{circle::{OrganizationInfo, Organization}, student::RepresentativeInfo, googleapis::{MakeContact, MakeContactParameters}};
 use crate::infrastructure::router::App;
 use crate::usecase::{
                     auth::AuthUsecase,
@@ -7,13 +7,14 @@ use crate::usecase::{
                     organization::OrganizationUsecase,
                     registration::RegistrationUsecase,
                     admin::AdminUsecase};
-use crate::utils::{decode_jwt::decode_jwt, encode_jwt::encode_jwt};
+use crate::utils::oauth_authentication::refresh_access_token;
 
 use std::env;
+use std::time::Duration;
 use dotenv::dotenv;
 use rocket::{get, http::{Status, RawStr, Cookie, CookieJar, SameSite}, post, serde::json::Json, State};
-use chrono::Duration;
-use utoipa::openapi::request_body;
+use regex::Regex;
+use reqwest::StatusCode;
 
 // 団体登録受付API
 #[utoipa::path(context_path = "/api/circle")]
@@ -208,12 +209,12 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
     };
 
     // main_userの情報を格納
-    let main_user = RepresentativeInfo{
+    let main_user= RepresentativeInfo{
         student_id: auth_info.main_student_id,
         family_name: auth_info.main_family_name,
         given_name: auth_info.main_given_name,
         email: auth_info.main_email,
-        phone_number: auth_info.main_phone,
+        phone_number: auth_info.main_phone
     };
 
     // co_userの情報を格納
@@ -225,24 +226,97 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
         phone_number: auth_info.co_phone,
     };
 
+    // organizationの情報を格納
+    let organization = Organization{
+        organization_name: auth_info.organization_name,
+        organization_ruby: auth_info.organization_ruby,
+        organization_email: auth_info.organization_email,
+    };
+
     if app.representatives.register(&co_user).await.is_err() {
         return (Status::InternalServerError, "failed to insert Representative")
     }
 
     match id {
         // 団体情報更新
-        Some(organization_id) => {
+        Some(id) => {
             // TODO: 更新処理の作成
+
+            // organization_idの整形
+            let re = Regex::new(r"[1-9]+").unwrap();
+            let organization_id = match re.find(id.as_str()) {
+                Some(m) => m.as_str().parse::<i32>().unwrap(),
+                None => {return (Status::InternalServerError, "can't get valid organization_id")}
+            };
+
+            // 団体メールアドレスの更新
+            if organization.organization_email != "" {
+                if app.organization.update_email(&organization_id, &organization.organization_email).await.is_err() {
+                    return (Status::InternalServerError, "failed to update organization")
+                }
+            }
+
+            // 代表者、副代表者の更新
+            if main_user.student_id != "" && co_user.student_id != "" {
+                if app.registration.update_student(&organization_id, &main_user.student_id, &co_user.student_id).await.is_err() {
+                    return (Status::InternalServerError, "failed to update registration")
+                }
+            }
+
             // TODO: oauth処理の作成
+            dotenv().ok();
+            let refresh_token = env::var("REFRESH_TOKEN").expect("refresh token must be set.");
+            let client_id = env::var("CLIENT_ID").expect("client id must be set.");
+            let client_secret = env::var("CLIENT_SECRET").expect("client secret must be set.");
+            let deploy_id = env::var("DEPLOY_ID").expect("deploy id must be set.");
+
+            let api_tokens = refresh_access_token(refresh_token.as_str(), client_id.as_str(), client_secret.as_str()).await.unwrap();
+
+            let input = MakeContact {
+                function: String::from("onPostRequest"),
+                parameters: MakeContactParameters {
+                    data: OrganizationInfo{
+                        organization: organization,
+                        main_user: main_user.clone(),
+                        co_user: co_user,
+                        b_doc: auth_info.b_doc,
+                        c_doc: auth_info.c_doc,
+                        d_doc: auth_info.d_doc,
+                    },
+                }
+            };
+            let input_json = serde_json::to_string(&input).unwrap();
+
+            let client = reqwest::Client::builder()
+                .timeout(Duration::from_secs(15))
+                .build().unwrap();
+            let result = client.post(format!("https://script.googleapis.com/v1/scripts/{}:run", deploy_id.as_str()))
+                .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", api_tokens.access_token))
+                .body(input_json)
+                .send()
+                .await.unwrap();
+
+            match result.status() {
+                StatusCode::OK => {
+                    let user_address = main_user.email.to_string();
+                    let content = format!("{}{} 様\n\nメール認証が完了し、団体情報が更新されました。\n", main_user.family_name, main_user.given_name);
+                    let subject = "団体登録システム メール認証完了のお知らせ";
+
+                    // 登録完了メールの送信
+                    if app.auth.mail_sender(user_address, content, subject).await.is_err() {
+                        return (Status::InternalServerError, "failed to send authentication email");
+                    }
+
+                    (Status::Created, "Organization Infomation updated successfully")
+                },
+                _ => {
+                    (Status::InternalServerError, "googleapi request failed")
+                }
+            }
+
         },
         // 団体新規登録
         None => {
-            // organizationの情報を格納
-            let organization = Organization{
-                organization_name: auth_info.organization_name,
-                organization_ruby: auth_info.organization_ruby,
-                organization_email: auth_info.organization_email,
-            };
 
             // registrationの情報を格納
             let organization_info = &OrganizationInfo{
@@ -267,17 +341,17 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
             if app.registration.register(organization_info, &organization_id).await.is_err() {
                 return (Status::InternalServerError, "failed to insert Registration")
             }
+
+            let user_address = main_user.email.to_string();
+            let content = format!("{}{} 様\n\nメール認証が完了し、団体情報が登録されました。\n", main_user.family_name, main_user.given_name);
+            let subject = "団体登録システム メール認証完了のお知らせ";
+
+            // 登録完了メールの送信
+            if app.auth.mail_sender(user_address, content, subject).await.is_err() {
+                return (Status::InternalServerError, "failed to send authentication email");
+            }
+
+            (Status::Created, "Organization Infomation registered successfully")
         }
     }
-
-    let user_address = main_user.email.to_string();
-    let content = format!("{}{} 様\n\nメール認証が完了し、団体情報が登録されました。\n", main_user.family_name, main_user.given_name);
-    let subject = "団体登録システム メール認証";
-
-    // 登録完了メールの送信
-    if app.auth.mail_sender(user_address, content, subject).await.is_err() {
-        return (Status::InternalServerError, "failed to send authentication email");
-    }
-
-    (Status::Created, "Organization Infomation registered successfully")
 }

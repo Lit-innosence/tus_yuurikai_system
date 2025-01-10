@@ -910,6 +910,14 @@ pub trait RegistrationRepository: Send + Sync {
         c_url: &String,
         d_url: &String,
     ) -> Result<Registration, Error>;
+
+    async fn update_student_by_id (
+        &self,
+        organization_id: &i32,
+        main_student_id: &String,
+        co_student_id: &String,
+    ) -> Result<Registration, Error>;
+
 }
 
 pub struct RegistrationRepositorySqlImpl {
@@ -956,6 +964,19 @@ impl RegistrationRepository for RegistrationRepositorySqlImpl {
             .values(new_registration)
             .get_result(&mut conn)
     }
+
+    async fn update_student_by_id (
+            &self,
+            organization_id: &i32,
+            main_student_id: &String,
+            co_student_id: &String,
+        ) -> Result<Registration, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::update(registration::table)
+            .filter(registration::organization_id.eq(organization_id))
+            .set((registration::main_student_id.eq(main_student_id), registration::co_student_id.eq(co_student_id), registration::updated_at.eq(diesel::dsl::now)))
+            .get_result(&mut conn)
+    }
 }
 
 /// # organization
@@ -971,6 +992,12 @@ pub trait OrganizationRepository: Send + Sync {
     async fn get_by_id(
         &self,
         organization_id: &i32,
+    ) -> Result<Organization, Error>;
+
+    async fn update_email_by_id(
+        &self,
+        organization_id: &i32,
+        organization_email: &String,
     ) -> Result<Organization, Error>;
 }
 
@@ -1009,6 +1036,18 @@ impl OrganizationRepository for OrganizationRepositorySqlImpl {
         ) -> Result<Organization, Error> {
         let mut conn = self.pool.get().unwrap();
         organization::table.filter(organization::organization_id.eq(organization_id))
+            .get_result(&mut conn)
+    }
+
+    async fn update_email_by_id(
+            &self,
+            organization_id: &i32,
+            organization_email: &String,
+        ) -> Result<Organization, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::update(organization::table)
+            .filter(organization::organization_id.eq(organization_id))
+            .set((organization::organization_email.eq(organization_email), organization::updated_at.eq(diesel::dsl::now)))
             .get_result(&mut conn)
     }
 }
