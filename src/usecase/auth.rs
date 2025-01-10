@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::env;
 use crate::domain::{student::UserInfo, circle::OrganizationInfo};
-use crate::adapters::repository::{AuthRepository, CircleAuthInfoRepository, LockerAuthInfoRepository};
+use crate::adapters::repository::{auth::AuthRepository, circle_auth_info::CircleAuthInfoRepository, locker_auth_info::LockerAuthInfoRepository};
 use crate::infrastructure::models::{Auth, CircleAuthInfo, LockerAuthInfo};
 use crate::utils::token::generate_token;
 

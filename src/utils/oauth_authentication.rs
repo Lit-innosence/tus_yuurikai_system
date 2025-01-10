@@ -21,7 +21,7 @@ pub async fn refresh_access_token(refresh_token: &str, client_id: &str, client_s
     params.insert("grant_type", "refresh_token");
 
     let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(15))
+        .timeout(Duration::from_secs(60))
         .build()?;
 
     dotenv().ok();

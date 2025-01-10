@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use crate::domain::assignment::AssignmentInfo;
-use crate::adapters::repository::AssignmentRecordRepository;
+use crate::adapters::repository::assignment_record::AssignmentRecordRepository;
 use crate::infrastructure::models::{AssignmentRecord, StudentPair};
 use diesel::result::Error;
 use async_trait::async_trait;

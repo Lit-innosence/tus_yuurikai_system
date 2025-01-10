@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use crate::adapters::repository::AdminRepository;
+use crate::adapters::repository::admin::AdminRepository;
 use crate::infrastructure::models::Admin;
 use diesel::result::Error;
 use async_trait::async_trait;

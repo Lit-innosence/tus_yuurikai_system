@@ -8,7 +8,8 @@ import Login from './routes/Login';
 import Admin from './routes/admin/Admin';
 import PrivateRoute from './routes/component/PrivateRouter';
 import LockerMailAuth from './routes/locker/MailAuth';
-import CircleMailAuth from './routes/circle/MailAuth';
+import CircleRegisterAuth from './routes/circle/RegisterAuth';
+import CircleUpdateAuth from './routes/circle/UpdateAuth';
 
 // QueryClientのインスタンスを作成
 const queryClient = new QueryClient({
@@ -67,10 +68,11 @@ function App() {
 
             <Route path='/circle' element={<CircleSelect />} />
             <Route path='/circle/register/status' element={<CircleRegister />} />
-            <Route path='/circle/register/auth' element={<CircleMailAuth />} />
-            <Route path='/circle/auth/complete' element={<CircleRegisterAuthComp />} />
+            <Route path='/circle/register/auth' element={<CircleRegisterAuth />} />
+            <Route path='/circle/register/complete' element={<CircleRegisterAuthComp />} />
             <Route path='/circle/register/process' element={<CircleRegisterProcess />} />
             <Route path='/circle/update' element={<CircleUpdate />} />
+            <Route path='/circle/update/auth' element={<CircleUpdateAuth />} />
             <Route path='/circle/update/confirm' element={<CircleUpdateConfirm />} />
             <Route path='/circle/update/complete' element={<CircleUpdateComplete />} />
             <Route path='/circle/update/process' element={<CircleUpdateProcess />} />
