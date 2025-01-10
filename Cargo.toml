@@ -20,3 +20,5 @@ rand = "0.8.5"
 async-trait = "0.1.81"
 jsonwebtoken = "9"
 rocket_cors = "0.6.0"
+reqwest = { version = "0.12.12", features = ["json"]}
+regex = "1.11.1"

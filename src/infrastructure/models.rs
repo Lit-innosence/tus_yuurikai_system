@@ -1,6 +1,6 @@
 use diesel::{Insertable, Queryable};
 use serde::{Deserialize, Serialize};
-use crate::infrastructure::schema::{student, student_pair, locker, assignment_record, auth, admin, locker_auth_info, circle_auth_info};
+use crate::infrastructure::schema::{student, student_pair, locker, assignment_record, auth, admin, locker_auth_info, circle_auth_info, organization, representatives, registration};
 // student
 
 #[derive(Queryable)]
@@ -184,4 +184,76 @@ pub struct NewCircleAuthInfo<'a>{
     pub organization_name: &'a String,
     pub organization_ruby: &'a String,
     pub organization_email: &'a String,
+}
+
+#[derive(Queryable)]
+pub struct Organization{
+    pub organization_id: i32,
+    pub organization_name: String,
+    pub organization_ruby: String,
+    pub organization_email: String,
+    pub created_at: chrono::NaiveDateTime,
+    pub updated_at: chrono::NaiveDateTime,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = organization)]
+pub struct NewOrganization<'a>{
+    pub organization_name: &'a String,
+    pub organization_ruby: &'a String,
+    pub organization_email: &'a String,
+}
+
+#[derive(Clone, Queryable)]
+pub struct Representatives{
+    pub student_id: String,
+    pub family_name: String,
+    pub given_name: String,
+    pub email: String,
+    pub phone: String,
+    pub created_at: chrono::NaiveDateTime,
+    pub updated_at: chrono::NaiveDateTime,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = representatives)]
+pub struct NewRepresentatives<'a>{
+    pub student_id: &'a String,
+    pub family_name: &'a String,
+    pub given_name: &'a String,
+    pub email: &'a String,
+    pub phone: &'a String,
+}
+
+#[derive(Queryable)]
+pub struct Registration{
+    pub organization_id: i32,
+    pub year: i32,
+    pub main_student_id: String,
+    pub co_student_id: String,
+    pub status_acceptance: String,
+    pub status_authentication: String,
+    pub status_form_comfirmation: String,
+    pub status_registration_complete: String,
+    pub b_doc: String,
+    pub c_doc: String,
+    pub d_doc: String,
+    pub created_at: chrono::NaiveDateTime,
+    pub updated_at: chrono::NaiveDateTime,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = registration)]
+pub struct NewRegistration<'a>{
+    pub organization_id: &'a i32,
+    pub year: &'a i32,
+    pub main_student_id: &'a String,
+    pub co_student_id: &'a String,
+    pub status_acceptance: &'a String,
+    pub status_authentication: &'a String,
+    pub status_form_confirmation: &'a String,
+    pub status_registration_complete: &'a String,
+    pub b_doc: &'a String,
+    pub c_doc: &'a String,
+    pub d_doc: &'a String,
 }
