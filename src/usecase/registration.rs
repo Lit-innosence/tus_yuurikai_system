@@ -29,15 +29,18 @@ impl RegistrationUsecase for RegistrationUsecaseImpl {
     async fn register(&self, organization: &OrganizationInfo, organization_id: &i32) -> Result<Registration, Error> {
         // 団体情報の登録
         let year = Local::now().year();
-        let init_status = String::from("Pending");
+        let init_status_acpt = String::from("pending");
+        let init_status_auth = String::from("not_authenticated");
+        let init_status_form = String::from("not_confirmed");
+        let init_status_rgst = String::from("incomplete");
         self.registration_repository.insert(organization_id,
                                             &year,
                                             &organization.main_user.student_id,
                                             &organization.co_user.student_id,
-                                            &init_status,
-                                            &init_status,
-                                            &init_status,
-                                            &init_status,
+                                            &init_status_acpt,
+                                            &init_status_auth,
+                                            &init_status_form,
+                                            &init_status_rgst,
                                             &organization.b_doc,
                                             &organization.c_doc,
                                             &organization.d_doc

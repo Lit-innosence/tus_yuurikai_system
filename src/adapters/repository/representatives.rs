@@ -1,7 +1,6 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::result::Error;
-use uuid::Uuid;
 use async_trait::async_trait;
 
 use crate::infrastructure::schema::*;
