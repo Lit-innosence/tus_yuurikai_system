@@ -16,7 +16,7 @@ const CircleMailAuth = () => {
 
         const validMethods = ['0', '1'];
         if (!token || !method || !id || !validMethods.includes(method)) {
-            //navigate('/circle/nopage');
+            navigate('/circle/nopage');
             return;
         }
 
@@ -33,7 +33,7 @@ const CircleMailAuth = () => {
                         apiUrl = constants.backendApiEndpoint + '/api/circle/main-auth?token=' + token + '&id=' + id;
                         break;
                     default:
-                        //navigate('/circle/nopage');
+                        navigate('/circle/nopage');
                         return;
                 }
 
@@ -42,11 +42,11 @@ const CircleMailAuth = () => {
                 if (response.status === 200 || response.status === 201) {
                     navigate(redirectUrl);
                 } else {
-                    //navigate('/circle/nopage');
+                    navigate('/circle/nopage');
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
-                //navigate('/circle/nopage');
+                navigate('/circle/nopage');
             }
         };
 
