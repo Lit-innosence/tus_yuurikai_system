@@ -75,6 +75,7 @@ async fn main() -> Result<(), rocket::Error> {
                 update_token_generator,
                 circle_main_auth,
                 circle_co_auth,
+                circle_status,
             ]
         )
         .mount("/", FileServer::from(relative!("frontend/build")))

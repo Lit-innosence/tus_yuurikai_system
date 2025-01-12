@@ -136,3 +136,26 @@ pub struct CircleUpdateRequest {
     pub student_id: String,
     pub email: String,
 }
+
+/// ### OrganizationStatus
+///
+/// OrganizationStatusResponseに使用する構造体
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationStatus {
+    pub organization_id: String,
+    pub organization_name: String,
+    pub status_acceptance: String,
+    pub status_authentication: String,
+    pub status_form_comfirmation: String,
+    pub status_registration_complete: String,
+}
+
+/// ### OrganizationStatusResponse
+///
+/// 団体情報取得に使用
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationStatusResponse {
+    pub data: Vec<OrganizationStatus>,
+}
