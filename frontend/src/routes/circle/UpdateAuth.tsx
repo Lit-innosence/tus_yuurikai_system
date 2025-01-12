@@ -22,7 +22,6 @@ const CircleMailAuth = () => {
 
         const fetchData = async () => {
             try {
-
                 let apiUrl = '';
                 let redirectUrl = '/circle/update/complete';
 
@@ -34,7 +33,7 @@ const CircleMailAuth = () => {
                         apiUrl = constants.backendApiEndpoint + '/api/circle/main-auth?token=' + token + '&id=' + id;
                         break;
                     default:
-                        // navigate('/circle/nopage');
+                        navigate('/circle/nopage');
                         return;
                 }
 
@@ -43,11 +42,11 @@ const CircleMailAuth = () => {
                 if (response.status === 200 || response.status === 201) {
                     navigate(redirectUrl);
                 } else {
-                    // navigate('/circle/nopage');
+                    navigate('/circle/nopage');
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
-                // navigate('/circle/nopage');
+                navigate('/circle/nopage');
             }
         };
 
@@ -55,12 +54,44 @@ const CircleMailAuth = () => {
     }, [navigate]);
 
     return (
-        <div>
-            // フロントエンドを修正
-            <Spin indicator={<LoadingOutlined spin />} tip="Loading..." style={{transform: 'scale(3)'}} />
-            <p>１分ぐらいかかります、、、</p>
+        <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh',
+            flexDirection: 'column',
+            textAlign: 'center',
+        }}>
+            <Spin
+                indicator={
+                    <LoadingOutlined
+                        spin
+                        style={{ fontSize: '64px' }} 
+                    />
+                }
+            />
+            <div style={{
+                marginTop: '32px', 
+                textAlign: 'center',
+            }}>
+                <p style={{
+                    fontSize: '16px',
+                    fontWeight: 'bold', 
+                    margin: '4px 0',
+                }}>
+                    １分ぐらいかかります。
+                </p>
+                <p style={{
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    margin: '4px 0',
+                }}>
+                    ページを開いたままお待ちください。
+                </p>
+            </div>
         </div>
     );
+    
 };
 
 export default CircleMailAuth;
