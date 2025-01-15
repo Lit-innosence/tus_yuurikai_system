@@ -49,7 +49,7 @@ const CircleRegister: React.FC = () => {
 
         const fetchOrganizations = async () => {
             try {
-                const response = await axios.post<{ data: Organization[] }>('/api/circle/status');
+                const response = await axios.get<{ data: Organization[] }>('/api/circle/status');
                 setOrganizations(response.data.data);
                 setFilteredData(response.data.data);
             } catch (error) {
