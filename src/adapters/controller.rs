@@ -27,6 +27,7 @@ use utoipa::OpenApi;
         register_token_generator,
         circle_main_auth,
         circle_co_auth,
+        circle_status,
     ),
     components(schemas(
         HealthCheckRequest,

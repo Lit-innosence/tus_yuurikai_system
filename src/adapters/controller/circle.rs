@@ -240,7 +240,7 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
     match id {
         // 団体情報更新
         Some(id) => {
-            // TODO: 更新処理の作成
+            // 更新処理
 
             // organization_idの整形
             let re = Regex::new(r"[1-9]+").unwrap();
@@ -263,15 +263,19 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
                 }
             }
 
-            // TODO: oauth処理の作成
+            // googleapiの処理
+
+            // token類を環境変数から取得
             dotenv().ok();
             let refresh_token = env::var("REFRESH_TOKEN").expect("refresh token must be set.");
             let client_id = env::var("CLIENT_ID").expect("client id must be set.");
             let client_secret = env::var("CLIENT_SECRET").expect("client secret must be set.");
             let deploy_id = env::var("DEPLOY_ID").expect("deploy id must be set.");
 
+            // refreshtokenからaccesstokenを取得
             let api_tokens = refresh_access_token(refresh_token.as_str(), client_id.as_str(), client_secret.as_str()).await.unwrap();
 
+            // googleapi用のデータを格納
             let input = MakeContact {
                 function: String::from("onPostRequest"),
                 parameters: MakeContactParameters {
@@ -287,9 +291,12 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
             };
             let input_json = serde_json::to_string(&input).unwrap();
 
+            // リクエスト用クライアント
             let client = reqwest::Client::builder()
                 .timeout(Duration::from_secs(60))
                 .build().unwrap();
+
+            // リクエストを送信
             let result = client.post(format!("https://script.googleapis.com/v1/scripts/{}:run", deploy_id.as_str()))
                 .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", api_tokens.access_token))
                 .body(input_json)
@@ -354,4 +361,32 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
             (Status::Created, "Organization Infomation registered successfully")
         }
     }
+}
+
+// 団体情報取得API
+#[utoipa::path(context_path = "/api/circle")]
+#[post("/status")]
+pub async fn circle_status(app: &State<App>) -> Result<Json<OrganizationStatusResponse>, Status> {
+
+    let result = app.registration.get_all().await.unwrap();
+
+    let mut response: Vec<OrganizationStatus> = Vec::new();
+    for element in result {
+        let organization_info = app.organization.get_by_id(&element.organization_id).await.unwrap();
+        let data = OrganizationStatus{
+            organization_id: format!("C{0: >05}", element.organization_id),
+            organization_name: organization_info.organization_name,
+            status_acceptance: element.status_acceptance,
+            status_authentication: element.status_authentication,
+            status_form_comfirmation: element.status_form_comfirmation,
+            status_registration_complete: element.status_registration_complete,
+        };
+        response.push(data);
+    }
+
+    response.sort_by(|lt, rt| lt.organization_id.partial_cmp(&rt.organization_id).unwrap());
+
+    Ok(Json(OrganizationStatusResponse {
+        data: response,
+    }))
 }

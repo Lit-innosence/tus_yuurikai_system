@@ -1,7 +1,6 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::result::Error;
-use uuid::Uuid;
 use async_trait::async_trait;
 
 use crate::infrastructure::schema::*;
@@ -33,6 +32,9 @@ pub trait RegistrationRepository: Send + Sync {
         co_student_id: &String,
     ) -> Result<Registration, Error>;
 
+    async fn get_all (
+        &self,
+    ) -> Result<Vec<Registration>, Error>;
 }
 
 pub struct RegistrationRepositorySqlImpl {
@@ -91,5 +93,12 @@ impl RegistrationRepository for RegistrationRepositorySqlImpl {
             .filter(registration::organization_id.eq(organization_id))
             .set((registration::main_student_id.eq(main_student_id), registration::co_student_id.eq(co_student_id), registration::updated_at.eq(diesel::dsl::now)))
             .get_result(&mut conn)
+    }
+
+    async fn get_all (
+            &self,
+        ) -> Result<Vec<Registration>, Error> {
+        let mut conn = self.pool.get().unwrap();
+        registration::table.get_results(&mut conn)
     }
 }

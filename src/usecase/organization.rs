@@ -14,6 +14,8 @@ pub trait OrganizationUsecase: Sync + Send {
     async fn register(&self, organization: &Organization) -> Result<models::Organization, Error>;
 
     async fn update_email(&self, organization_id: &i32, organization_email: &String) -> Result<models::Organization, Error>;
+
+    async fn get_by_id(&self, organization_id: &i32) -> Result<models::Organization, Error>;
 }
 
 impl OrganizationUsecaseImpl {
@@ -32,5 +34,10 @@ impl OrganizationUsecase for OrganizationUsecaseImpl {
     async fn update_email(&self, organization_id: &i32, organization_email: &String) -> Result<models::Organization, Error> {
         // 団体メールアドレスの更新
         self.organization_repository.update_email_by_id(organization_id, organization_email).await
+    }
+
+    async fn get_by_id(&self, organization_id: &i32) -> Result<models::Organization, Error> {
+        // 団体情報の取得
+        self.organization_repository.get_by_id(organization_id).await
     }
 }
