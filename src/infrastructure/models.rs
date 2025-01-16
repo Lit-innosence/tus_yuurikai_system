@@ -233,7 +233,7 @@ pub struct Registration{
     pub co_student_id: String,
     pub status_acceptance: String,
     pub status_authentication: String,
-    pub status_form_comfirmation: String,
+    pub status_form_confirmation: String,
     pub status_registration_complete: String,
     pub b_doc: String,
     pub c_doc: String,

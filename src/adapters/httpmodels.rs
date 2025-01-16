@@ -147,7 +147,7 @@ pub struct OrganizationStatus {
     pub organization_name: String,
     pub status_acceptance: String,
     pub status_authentication: String,
-    pub status_form_comfirmation: String,
+    pub status_form_confirmation: String,
     pub status_registration_complete: String,
 }
 
