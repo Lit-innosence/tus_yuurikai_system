@@ -237,7 +237,7 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
         return (Status::InternalServerError, "failed to insert Representative")
     }
 
-    match id {
+    match id.clone() {
         // 団体情報更新
         Some(id) => {
             // 更新処理
@@ -262,65 +262,6 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
                     return (Status::InternalServerError, "failed to update registration")
                 }
             }
-
-            // googleapiの処理
-
-            // token類を環境変数から取得
-            dotenv().ok();
-            let refresh_token = env::var("REFRESH_TOKEN").expect("refresh token must be set.");
-            let client_id = env::var("CLIENT_ID").expect("client id must be set.");
-            let client_secret = env::var("CLIENT_SECRET").expect("client secret must be set.");
-            let deploy_id = env::var("DEPLOY_ID").expect("deploy id must be set.");
-
-            // refreshtokenからaccesstokenを取得
-            let api_tokens = refresh_access_token(refresh_token.as_str(), client_id.as_str(), client_secret.as_str()).await.unwrap();
-
-            // googleapi用のデータを格納
-            let input = MakeContact {
-                function: String::from("onPostRequest"),
-                parameters: MakeContactParameters {
-                    data: OrganizationInfo{
-                        organization: organization,
-                        main_user: main_user.clone(),
-                        co_user: co_user,
-                        b_doc: auth_info.b_doc,
-                        c_doc: auth_info.c_doc,
-                        d_doc: auth_info.d_doc,
-                    },
-                }
-            };
-            let input_json = serde_json::to_string(&input).unwrap();
-
-            // リクエスト用クライアント
-            let client = reqwest::Client::builder()
-                .timeout(Duration::from_secs(60))
-                .build().unwrap();
-
-            // リクエストを送信
-            let result = client.post(format!("https://script.googleapis.com/v1/scripts/{}:run", deploy_id.as_str()))
-                .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", api_tokens.access_token))
-                .body(input_json)
-                .send()
-                .await.unwrap();
-
-            match result.status() {
-                StatusCode::OK => {
-                    let user_address = main_user.email.to_string();
-                    let content = format!("{}{} 様\n\nメール認証が完了し、団体情報が更新されました。\n", main_user.family_name, main_user.given_name);
-                    let subject = "団体登録システム メール認証完了のお知らせ";
-
-                    // 登録完了メールの送信
-                    if app.auth.mail_sender(user_address, content, subject).await.is_err() {
-                        return (Status::InternalServerError, "failed to send authentication email");
-                    }
-
-                    (Status::Created, "Organization Infomation updated successfully")
-                },
-                _ => {
-                    (Status::InternalServerError, "googleapi request failed")
-                }
-            }
-
         },
         // 団体新規登録
         None => {
@@ -330,9 +271,9 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
                 organization: organization.clone(),
                 main_user: main_user.clone(),
                 co_user: co_user.clone(),
-                b_doc: auth_info.b_doc,
-                c_doc: auth_info.c_doc,
-                d_doc: auth_info.d_doc,
+                b_doc: auth_info.b_doc.clone(),
+                c_doc: auth_info.c_doc.clone(),
+                d_doc: auth_info.d_doc.clone(),
             };
 
             let organization_id = match app.organization.register(&organization).await {
@@ -348,9 +289,56 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
             if app.registration.register(organization_info, &organization_id).await.is_err() {
                 return (Status::InternalServerError, "failed to insert Registration")
             }
+        }
+    }
 
+    // googleapiの処理
+
+    // token類を環境変数から取得
+    dotenv().ok();
+    let refresh_token = env::var("REFRESH_TOKEN").expect("refresh token must be set.");
+    let client_id = env::var("CLIENT_ID").expect("client id must be set.");
+    let client_secret = env::var("CLIENT_SECRET").expect("client secret must be set.");
+    let deploy_id = env::var("DEPLOY_ID").expect("deploy id must be set.");
+
+    // refreshtokenからaccesstokenを取得
+    let api_tokens = refresh_access_token(refresh_token.as_str(), client_id.as_str(), client_secret.as_str()).await.unwrap();
+
+    // googleapi用のデータを格納
+    let input = MakeContact {
+        function: String::from("onPostRequest"),
+        parameters: MakeContactParameters {
+            data: OrganizationInfo{
+                organization: organization,
+                main_user: main_user.clone(),
+                co_user: co_user,
+                b_doc: auth_info.b_doc,
+                c_doc: auth_info.c_doc,
+                d_doc: auth_info.d_doc,
+            },
+        }
+    };
+    let input_json = serde_json::to_string(&input).unwrap();
+
+    // リクエスト用クライアント
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(60))
+        .build().unwrap();
+
+    // リクエストを送信
+    let result = client.post(format!("https://script.googleapis.com/v1/scripts/{}:run", deploy_id.as_str()))
+        .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", api_tokens.access_token))
+        .body(input_json)
+        .send()
+        .await.unwrap();
+
+    match result.status() {
+        StatusCode::OK => {
             let user_address = main_user.email.to_string();
-            let content = format!("{}{} 様\n\nメール認証が完了し、団体情報が登録されました。\n", main_user.family_name, main_user.given_name);
+            let content = match id {
+                Some(_) => format!("{}{} 様\n\nメール認証が完了し、団体情報が更新されました。\n", main_user.family_name, main_user.given_name),
+                None => format!("{}{} 様\n\nメール認証が完了し、団体情報が登録されました。\n", main_user.family_name, main_user.given_name),
+            };
             let subject = "団体登録システム メール認証完了のお知らせ";
 
             // 登録完了メールの送信
@@ -358,7 +346,10 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
                 return (Status::InternalServerError, "failed to send authentication email");
             }
 
-            (Status::Created, "Organization Infomation registered successfully")
+            (Status::Created, "Organization Infomation updated successfully")
+        },
+        _ => {
+            (Status::InternalServerError, "googleapi request failed")
         }
     }
 }
