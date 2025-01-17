@@ -26,7 +26,7 @@ const isValidResponseData = (data: any): data is { start: string; end: string } 
 // 現在設定されている時刻を取得する関数
 const fetchCurrentSettings = async () => {
     try {
-    const response = await axios.get('/api/circle/access/setting');
+    const response = await axios.get('/api/circle/access/setting', { withCredentials: true });
     if (response.status === 200 && response.data && isValidResponseData(response.data)) {
         console.log(response.data);
         const { start, end } = response.data;

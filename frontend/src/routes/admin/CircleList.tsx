@@ -64,7 +64,7 @@ const CircleList: React.FC = () => {
     useEffect(() => {
         // const fetchOrganizations = async () => {
         //     try {
-        //         const response = await axios.get<{ data: Organization[] }>('/api/admin/circle/list');
+        //         const response = await axios.get<{ data: Organization[] }>('/api/admin/circle/list', { withCredentials: true });
         //         setOrganizations(response.data.data);
         //         setFilteredData(response.data.data);
         //     } catch (error) {
