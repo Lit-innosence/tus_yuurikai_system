@@ -47,6 +47,7 @@ const LockerSelect = lazy(() => import('./routes/admin/LockerSelect'));
 const LockerReset = lazy(() => import('./routes/admin/LockerReset'));
 const AdminCircleSelect = lazy(() => import('./routes/admin/CircleSelect'));
 const CircleAccessLimit = lazy(() => import('./routes/admin/CircleAccessLimit'));
+const CircleList = lazy(() => import('./routes/admin/CircleList'));
 
 function App() {
   return (
@@ -87,6 +88,7 @@ function App() {
             <Route path='/admin/locker/reset' element={<PrivateRoute><LockerReset /></PrivateRoute>} />
             <Route path='/admin/locker/search' element={<PrivateRoute><LockerSearch /></PrivateRoute>} />
             <Route path='/admin/circle/access' element={<PrivateRoute><CircleAccessLimit /></PrivateRoute>} />
+            <Route path='/admin/circle/list' element={<PrivateRoute><CircleList /></PrivateRoute>} />
 
             <Route path='/locker/nopage' element={<Page404 />} />
             <Route path='/circle/nopage' element={<Page404 />} />
