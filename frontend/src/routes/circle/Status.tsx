@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Typography, Layout, Input, message } from 'antd';
-// import axios from 'axios';
+import axios from 'axios';
 import CustomHeader from '../component/CustomHeader';
 import CustomFooter from '../component/CustomFooter';
 
@@ -16,57 +16,6 @@ interface Organization {
     statusFormConfirmation: string;
     statusRegistrationComplete: string;
 }
-
-const mockData: Organization[] = [
-    {
-        organizationId: "550e8400-e29b-41d4-a716-446655440000",
-        organizationName: "団体A",
-        statusAcceptance: "accepted",
-        statusAuthentication: "authenticated",
-        statusFormConfirmation: "confirmed",
-        statusRegistrationComplete: "completed"
-    },
-    {
-        organizationId: "550e8400-e29b-41d4-a716-446655440001",
-        organizationName: "団体B",
-        statusAcceptance: "pending",
-        statusAuthentication: "not_authenticated",
-        statusFormConfirmation: "not_confirmed",
-        statusRegistrationComplete: "incomplete"
-    },
-    {
-        organizationId: "550e8400-e29b-41d4-a716-446655440002",
-        organizationName: "団体C",
-        statusAcceptance: "accepted",
-        statusAuthentication: "authenticated",
-        statusFormConfirmation: "confirmed",
-        statusRegistrationComplete: "completed"
-    },
-    {
-        organizationId: "550e8400-e29b-41d4-a716-446655440003",
-        organizationName: "団体D",
-        statusAcceptance: "pending",
-        statusAuthentication: "not_authenticated",
-        statusFormConfirmation: "not_confirmed",
-        statusRegistrationComplete: "incomplete"
-    },
-    {
-        organizationId: "550e8400-e29b-41d4-a716-446655440004",
-        organizationName: "団体E",
-        statusAcceptance: "accepted",
-        statusAuthentication: "authenticated",
-        statusFormConfirmation: "confirmed",
-        statusRegistrationComplete: "completed"
-    },
-    {
-        organizationId: "550e8400-e29b-41d4-a716-446655440005",
-        organizationName: "団体F",
-        statusAcceptance: "pending",
-        statusAuthentication: "not_authenticated",
-        statusFormConfirmation: "not_confirmed",
-        statusRegistrationComplete: "incomplete"
-    },
-];
 
 const pageSize = 5;
 
@@ -97,18 +46,11 @@ const CircleRegister: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<number>(1);
 
     useEffect(() => {
-        // モックデータを使用
-        setTimeout(() => {
-            setOrganizations(mockData);
-            setFilteredData(mockData);
-            setLoading(false);
-        }, 1000);
 
-        // 本来は以下のようにAPIを叩いてデータを取得する
-        /*
         const fetchOrganizations = async () => {
             try {
                 const response = await axios.get<{ data: Organization[] }>('/api/circle/status');
+                console.log(response.data.data);
                 setOrganizations(response.data.data);
                 setFilteredData(response.data.data);
             } catch (error) {
@@ -118,7 +60,6 @@ const CircleRegister: React.FC = () => {
             }
         };
         fetchOrganizations();
-        */
     }, []);
 
     const getStatusLabel = (status: string, statusType: string) => {

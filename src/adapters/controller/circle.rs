@@ -356,7 +356,7 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
 
 // 団体情報取得API
 #[utoipa::path(context_path = "/api/circle")]
-#[post("/status")]
+#[get("/status")]
 pub async fn circle_status(app: &State<App>) -> Result<Json<OrganizationStatusResponse>, Status> {
 
     let result = app.registration.get_all().await.unwrap();
@@ -369,7 +369,7 @@ pub async fn circle_status(app: &State<App>) -> Result<Json<OrganizationStatusRe
             organization_name: organization_info.organization_name,
             status_acceptance: element.status_acceptance,
             status_authentication: element.status_authentication,
-            status_form_comfirmation: element.status_form_comfirmation,
+            status_form_confirmation: element.status_form_confirmation,
             status_registration_complete: element.status_registration_complete,
         };
         response.push(data);
