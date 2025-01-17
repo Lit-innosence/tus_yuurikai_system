@@ -120,7 +120,6 @@ const CircleList: React.FC = () => {
                 statusFormConfirmation: 'not_confirmed',
                 statusRegistrationComplete: 'incomplete',
             },
-            
         ];
 
         setTimeout(() => {
@@ -149,6 +148,10 @@ const CircleList: React.FC = () => {
         );
         setFilteredData(filtered);
         setCurrentPage(1);
+    };
+
+    const handleTableChange = (pagination: any) => {
+        setCurrentPage(pagination.current);
     };
 
     const columns = [
@@ -264,6 +267,7 @@ const CircleList: React.FC = () => {
                             total: filteredData.length,
                             onChange: (page) => setCurrentPage(page),
                         }}
+                        onChange={handleTableChange}
                         scroll={{ x: 'max-content' }}
                     />
                 </div>
