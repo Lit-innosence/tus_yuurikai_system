@@ -51,7 +51,7 @@ impl TimeRepository for TimeRepositorySqlImpl {
             .values(&new_time)
             .on_conflict(time::name)
             .do_update()
-            .set(time::updated_at.eq(diesel::dsl::now))
+            .set((time::start_time.eq(start_time), time::end_time.eq(end_time), time::updated_at.eq(diesel::dsl::now)))
             .get_result(&mut conn)
     }
     async fn get_by_name(
