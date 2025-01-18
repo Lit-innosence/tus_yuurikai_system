@@ -13,7 +13,8 @@ use crate::adapters::repository::{
                                 representatives::RepresentativesRepositorySqlImpl,
                                 registration::RegistrationRepositorySqlImpl,
                                 student_pair::StudentPairRepositorySqlImpl,
-                                student::StudentRepositorySqlImpl
+                                student::StudentRepositorySqlImpl,
+                                time::TimeRepositorySqlImpl,
                             };
 use crate::usecase::{
                     student::StudentUsecaseImpl,
@@ -25,6 +26,7 @@ use crate::usecase::{
                     representatives::RepresentativesUsecaseImpl,
                     organization::OrganizationUsecaseImpl,
                     registration::RegistrationUsecaseImpl,
+                    time::TimeUsecaseImpl,
                 };
 
 pub type Pool<T> = diesel::r2d2::Pool<ConnectionManager<T>>;
@@ -38,6 +40,7 @@ pub struct App{
     pub representatives: RepresentativesUsecaseImpl,
     pub organization: OrganizationUsecaseImpl,
     pub registration: RegistrationUsecaseImpl,
+    pub time: TimeUsecaseImpl,
 }
 
 impl App{
@@ -57,6 +60,7 @@ impl App{
         let representatives_repository = RepresentativesUsecaseImpl::new(Arc::new(RepresentativesRepositorySqlImpl::new(pool.clone())));
         let organization_repository = OrganizationUsecaseImpl::new(Arc::new(OrganizationRepositorySqlImpl::new(pool.clone())));
         let registration_repository = RegistrationUsecaseImpl::new(Arc::new(RegistrationRepositorySqlImpl::new(pool.clone())));
+        let time_repository = TimeUsecaseImpl::new(Arc::new(TimeRepositorySqlImpl::new(pool.clone())));
 
         App {
             student: student_repository,
@@ -68,6 +72,7 @@ impl App{
             representatives: representatives_repository,
             organization: organization_repository,
             registration: registration_repository,
+            time: time_repository,
         }
     }
 }

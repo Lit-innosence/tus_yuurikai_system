@@ -1,6 +1,6 @@
 use diesel::{Insertable, Queryable};
 use serde::{Deserialize, Serialize};
-use crate::infrastructure::schema::{student, student_pair, locker, assignment_record, auth, admin, locker_auth_info, circle_auth_info, organization, representatives, registration};
+use crate::infrastructure::schema::*;
 // student
 
 #[derive(Queryable)]
@@ -105,6 +105,8 @@ pub struct AssignmentRecordGetResult {
     pub year: i32,
 }
 
+// admin
+
 #[derive(Queryable)]
 pub struct Admin{
     pub username: String,
@@ -117,6 +119,8 @@ pub struct NewAdmin<'a> {
     pub username: &'a String,
     pub password: &'a String,
 }
+
+// locker auth info
 
 #[derive(Queryable)]
 pub struct LockerAuthInfo{
@@ -141,6 +145,8 @@ pub struct NewLockerAuthInfo<'a>{
     pub co_family_name: &'a String,
     pub co_given_name: &'a String,
 }
+
+// circle auth info
 
 #[derive(Queryable)]
 pub struct CircleAuthInfo{
@@ -186,6 +192,8 @@ pub struct NewCircleAuthInfo<'a>{
     pub organization_email: &'a String,
 }
 
+// organization
+
 #[derive(Queryable)]
 pub struct Organization{
     pub organization_id: i32,
@@ -203,6 +211,8 @@ pub struct NewOrganization<'a>{
     pub organization_ruby: &'a String,
     pub organization_email: &'a String,
 }
+
+// representatives
 
 #[derive(Clone, Queryable)]
 pub struct Representatives{
@@ -224,6 +234,8 @@ pub struct NewRepresentatives<'a>{
     pub email: &'a String,
     pub phone: &'a String,
 }
+
+// registration
 
 #[derive(Queryable)]
 pub struct Registration{
@@ -256,4 +268,22 @@ pub struct NewRegistration<'a>{
     pub b_doc: &'a String,
     pub c_doc: &'a String,
     pub d_doc: &'a String,
+}
+
+// time
+
+#[derive(Queryable)]
+pub struct Time{
+    pub name: String,
+    pub start_time: String,
+    pub end_time: String,
+    pub updated_at: chrono::NaiveDateTime,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = time)]
+pub struct NewTime<'a>{
+    pub name: &'a String,
+    pub start_time: &'a String,
+    pub end_time: &'a String,
 }

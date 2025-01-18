@@ -159,3 +159,15 @@ pub struct OrganizationStatus {
 pub struct OrganizationStatusResponse {
     pub data: Vec<OrganizationStatus>,
 }
+
+/// ### CircleAccessSetting
+///
+/// 団体アクセス制限に使用
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct CircleAccessSetting {
+    #[schema(example = "2025-01-12T08:00:00.000Z")]
+    pub start_time: String,
+    #[schema(example = "2025-01-15T08:00:00.000Z")]
+    pub end_time: String,
+}
