@@ -1,7 +1,7 @@
 use std::sync::Arc;
-use crate::domain::student::UserInfo;
 use crate::adapters::repository::time::TimeRepository;
-use crate::infrastructure::models::{Student, Time};
+use crate::infrastructure::models::Time;
+use chrono::NaiveDateTime;
 use diesel::result::Error;
 use async_trait::async_trait;
 
@@ -11,7 +11,7 @@ pub struct TimeUsecaseImpl {
 
 #[async_trait]
 pub trait TimeUsecase: Sync + Send {
-    async fn register(&self, name: &String, start_time: &String, end_time: &String) -> Result<Time, Error>;
+    async fn register(&self, name: &String, start_time: &NaiveDateTime, end_time: &NaiveDateTime) -> Result<Time, Error>;
     async fn get_by_name(&self, name: &String) -> Result<Time, Error>;
 }
 
@@ -23,7 +23,7 @@ impl TimeUsecaseImpl {
 
 #[async_trait]
 impl TimeUsecase for TimeUsecaseImpl {
-    async fn register(&self, name: &String, start_time: &String, end_time: &String) -> Result<Time, Error> {
+    async fn register(&self, name: &String, start_time: &NaiveDateTime, end_time: &NaiveDateTime) -> Result<Time, Error> {
         self.time_repository.insert(name, start_time, end_time).await
     }
 

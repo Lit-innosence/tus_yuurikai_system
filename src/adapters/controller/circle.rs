@@ -13,6 +13,7 @@ use crate::utils::oauth_authentication::refresh_access_token;
 
 use std::env;
 use std::time::Duration;
+use chrono::{DateTime, Utc};
 use dotenv::dotenv;
 use rocket::{get, http::{Status, CookieJar}, post, serde::json::Json, State};
 use regex::Regex;
@@ -397,8 +398,12 @@ pub async fn access_setting_post(request: Json<CircleAccessSetting>, jar: &Cooki
     match decode_jwt(&jwt) {
         None => return (Status::Unauthorized, "request token is not valid."),
         Some(_) => {
+            // 時間情報を整形
+            let start_time = DateTime::parse_from_rfc3339(&request.start_time).unwrap().naive_utc();
+            let end_time = DateTime::parse_from_rfc3339(&request.end_time).unwrap().naive_utc();
+
             // アクセス制限情報をDBに保存
-            if app.time.register(&String::from("access_restrictions"), &request.start_time, &request.end_time).await.is_err() {
+            if app.time.register(&String::from("access_restrictions"), &start_time, &end_time).await.is_err() {
                 return (Status::InternalServerError, "failed to insert time")
             }
 
@@ -412,12 +417,20 @@ pub async fn access_setting_post(request: Json<CircleAccessSetting>, jar: &Cooki
 #[get("/access/setting")]
 pub async fn access_setting_get(app: &State<App>) -> Result<Json<CircleAccessSetting>, Status> {
 
-    // nameがaccess_restrictionsのレコードをtimeから取得
-    let result = app.time.get_by_name(&String::from("access_restrictions")).await.unwrap();
-
-    let response = CircleAccessSetting {
-        start_time: result.start_time,
-        end_time: result.end_time,
+    // nameがaccess_restrictionsのレコードをtimeから取得しレスポンスを作成
+    let response =  match app.time.get_by_name(&String::from("access_restrictions")).await {
+        Ok(time) => {
+            CircleAccessSetting {
+                start_time: time.start_time.and_local_timezone(Utc).unwrap().to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
+                end_time: time.end_time.and_local_timezone(Utc).unwrap().to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
+            }
+        },
+        Err(_) => {
+            CircleAccessSetting {
+                start_time: String::from(""),
+                end_time: String::from(""),
+            }
+        }
     };
 
     Ok(Json(response))

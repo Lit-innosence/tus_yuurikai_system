@@ -275,8 +275,8 @@ pub struct NewRegistration<'a>{
 #[derive(Queryable)]
 pub struct Time{
     pub name: String,
-    pub start_time: String,
-    pub end_time: String,
+    pub start_time: chrono::NaiveDateTime,
+    pub end_time: chrono::NaiveDateTime,
     pub updated_at: chrono::NaiveDateTime,
 }
 
@@ -284,6 +284,6 @@ pub struct Time{
 #[diesel(table_name = time)]
 pub struct NewTime<'a>{
     pub name: &'a String,
-    pub start_time: &'a String,
-    pub end_time: &'a String,
+    pub start_time: &'a chrono::NaiveDateTime,
+    pub end_time: &'a chrono::NaiveDateTime,
 }

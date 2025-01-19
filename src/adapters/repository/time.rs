@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::result::Error;
@@ -13,8 +14,8 @@ pub trait TimeRepository: Send + Sync {
     async fn insert(
         &self,
         name: &String,
-        start_time: &String,
-        end_time: &String,
+        start_time: &NaiveDateTime,
+        end_time: &NaiveDateTime,
     ) -> Result<Time, Error>;
 
     async fn get_by_name(
@@ -38,8 +39,8 @@ impl TimeRepository for TimeRepositorySqlImpl {
     async fn insert(
             &self,
             name: &String,
-            start_time: &String,
-            end_time: &String,
+            start_time: &NaiveDateTime,
+            end_time: &NaiveDateTime,
         ) -> Result<Time, Error> {
         let new_time = NewTime{
             name: name,
