@@ -211,7 +211,7 @@ const CircleList: React.FC = () => {
             await axios.post(
                 '/api/admin/circle/status/update',
                 {
-                    ...selectedOrg,
+                    organizationId: selectedOrg.organizationId,
                     statusAcceptance: tempStatusAcceptance,
                     statusAuthentication: tempStatusAuthentication,
                     statusFormConfirmation: tempStatusFormConfirmation,
