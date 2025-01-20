@@ -417,11 +417,7 @@ const CircleList: React.FC = () => {
                                     <Option value="incomplete">未完了</Option>
                                 </Select>
                             </div>
-
                             <div style={{ textAlign: 'right' }}>
-                                <Button onClick={handleCancel} style={{ marginRight: 8 }}>
-                                    キャンセル
-                                </Button>
                                 <Button type="primary" onClick={handleSave}>
                                     保存
                                 </Button>
