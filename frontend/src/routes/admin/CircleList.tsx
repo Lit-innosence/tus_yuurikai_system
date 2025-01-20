@@ -331,7 +331,7 @@ const CircleList: React.FC = () => {
                     overflowX: 'auto',
                 }}
             >
-                <div style={{ width: '100%', maxWidth: '1000px', overflowX: 'auto' }}>
+                <div style={{ width: '100%', overflowX: 'auto' }}>
                     <Title level={2}>団体一覧</Title>
                     <Search
                         placeholder="団体名で検索"
