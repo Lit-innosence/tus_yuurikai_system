@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Typography, Layout, Input, message } from 'antd';
+import { Table, Typography, Layout, Input, message, Modal, Button, Select } from 'antd';
 import { ExportOutlined } from '@ant-design/icons';
+import axios from 'axios'; 
 import CustomHeader from '../component/CustomHeader';
 import CustomFooter from '../component/CustomFooter';
 
 const { Title } = Typography;
 const { Content } = Layout;
 const { Search } = Input;
+const { Option } = Select;
 
 interface Organization {
     organizationId: string;
@@ -61,7 +63,18 @@ const CircleList: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [currentPage, setCurrentPage] = useState<number>(1);
 
+    // モーダル制御用のstate
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
+
+    // 選択メニュー用の一時ステータス
+    const [tempStatusAcceptance, setTempStatusAcceptance] = useState<string>('pending');
+    const [tempStatusAuthentication, setTempStatusAuthentication] = useState<string>('not_authenticated');
+    const [tempStatusFormConfirmation, setTempStatusFormConfirmation] = useState<string>('not_confirmed');
+    const [tempStatusRegistrationComplete, setTempStatusRegistrationComplete] = useState<string>('incomplete');
+
     useEffect(() => {
+        // 本来はこちらのAPIから取得
         // const fetchOrganizations = async () => {
         //     try {
         //         const response = await axios.get<{ data: Organization[] }>('/api/admin/circle/list', { withCredentials: true });
@@ -75,6 +88,7 @@ const CircleList: React.FC = () => {
         // };
         // fetchOrganizations();
 
+        // モックデータ
         const mockData: Organization[] = [
             {
                 organizationId: 'C00001',
@@ -133,17 +147,35 @@ const CircleList: React.FC = () => {
         const statusInfo = statusMapping[statusType]?.[status];
         if (statusInfo) {
             return (
-                <span style={{ color: statusInfo.color, backgroundColor: statusInfo.backgroundColor, padding: '2px 5px', borderRadius: '3px' }}>
+                <span
+                    style={{
+                        color: statusInfo.color,
+                        backgroundColor: statusInfo.backgroundColor,
+                        padding: '2px 5px',
+                        borderRadius: '3px',
+                    }}
+                >
                     {statusInfo.label}
                 </span>
             );
         }
-        return <span style={{ color: 'grey', backgroundColor: '#f0f0f0', padding: '2px 5px', borderRadius: '3px' }}>不明</span>;
+        return (
+            <span
+                style={{
+                    color: 'grey',
+                    backgroundColor: '#f0f0f0',
+                    padding: '2px 5px',
+                    borderRadius: '3px',
+                }}
+            >
+                不明
+            </span>
+        );
     };
 
     const handleSearch = (value: string) => {
         setSearchTerm(value);
-        const filtered = organizations.filter(org =>
+        const filtered = organizations.filter((org) =>
             org.organizationName.toLowerCase().includes(value.toLowerCase())
         );
         setFilteredData(filtered);
@@ -152,6 +184,47 @@ const CircleList: React.FC = () => {
 
     const handleTableChange = (pagination: any) => {
         setCurrentPage(pagination.current);
+    };
+
+    // モーダルを開く関数
+    const handleOpenModal = (record: Organization) => {
+        setSelectedOrg(record);
+        // 既存のステータスをそのままセット
+        setTempStatusAcceptance(record.statusAcceptance);
+        setTempStatusAuthentication(record.statusAuthentication);
+        setTempStatusFormConfirmation(record.statusFormConfirmation);
+        setTempStatusRegistrationComplete(record.statusRegistrationComplete);
+        setIsModalOpen(true);
+    };
+
+    // モーダルを閉じる関数
+    const handleCancel = () => {
+        setIsModalOpen(false);
+    };
+
+    // 保存ボタンクリック時：APIにデータ送信
+    const handleSave = async () => {
+        if (!selectedOrg) return;
+
+        try {
+            // 実際にはAPIのURLを修正して利用してください
+            await axios.post(
+                '/api/admin/circle/status/update',
+                {
+                    ...selectedOrg,
+                    statusAcceptance: tempStatusAcceptance,
+                    statusAuthentication: tempStatusAuthentication,
+                    statusFormConfirmation: tempStatusFormConfirmation,
+                    statusRegistrationComplete: tempStatusRegistrationComplete,
+                },
+                { withCredentials: true }
+            );
+            message.success('ステータスを更新しました');
+        } catch (error) {
+            message.error('更新に失敗しました');
+        } finally {
+            setIsModalOpen(false);
+        }
     };
 
     const columns = [
@@ -174,12 +247,14 @@ const CircleList: React.FC = () => {
         {
             title: '代表者情報',
             key: 'mainInfo',
-            render: (record: Organization) => `${record.mainFamilyName} ${record.mainGivenName} (${record.mainEmail}, ${record.mainPhone})`,
+            render: (record: Organization) =>
+                `${record.mainFamilyName} ${record.mainGivenName} (${record.mainEmail}, ${record.mainPhone})`,
         },
         {
             title: '副代表者情報',
             key: 'coInfo',
-            render: (record: Organization) => `${record.coFamilyName} ${record.coGivenName} (${record.coEmail}, ${record.coPhone})`,
+            render: (record: Organization) =>
+                `${record.coFamilyName} ${record.coGivenName} (${record.coEmail}, ${record.coPhone})`,
         },
         {
             title: 'B用紙',
@@ -232,6 +307,15 @@ const CircleList: React.FC = () => {
             key: 'statusRegistrationComplete',
             render: (status: string) => getStatusLabel(status, 'statusRegistrationComplete'),
         },
+        {
+            title: 'ステータス更新',
+            key: 'updateStatus',
+            render: (record: Organization) => (
+                <Button type="primary" onClick={() => handleOpenModal(record)}>
+                    更新
+                </Button>
+            ),
+        },
     ];
 
     return (
@@ -271,6 +355,80 @@ const CircleList: React.FC = () => {
                         scroll={{ x: 'max-content' }}
                     />
                 </div>
+
+                {/* ステータス更新用モーダル */}
+                <Modal
+                    title="ステータス更新"
+                    visible={isModalOpen}
+                    onCancel={handleCancel}
+                    footer={null}
+                >
+                    {selectedOrg && (
+                        <>
+                            <p>団体名: {selectedOrg.organizationName}</p>
+                            {/* 承認状況 */}
+                            <div style={{ marginBottom: 10 }}>
+                                <span style={{ display: 'inline-block', width: 120 }}>承認状況</span>
+                                <Select
+                                    value={tempStatusAcceptance}
+                                    onChange={setTempStatusAcceptance}
+                                    style={{ width: 200 }}
+                                >
+                                    <Option value="accepted">承認済み</Option>
+                                    <Option value="pending">承認待ち</Option>
+                                </Select>
+                            </div>
+
+                            {/* 認証状況 */}
+                            <div style={{ marginBottom: 10 }}>
+                                <span style={{ display: 'inline-block', width: 120 }}>認証状況</span>
+                                <Select
+                                    value={tempStatusAuthentication}
+                                    onChange={setTempStatusAuthentication}
+                                    style={{ width: 200 }}
+                                >
+                                    <Option value="authenticated">認証済み</Option>
+                                    <Option value="not_authenticated">未認証</Option>
+                                </Select>
+                            </div>
+
+                            {/* フォーム状況 */}
+                            <div style={{ marginBottom: 10 }}>
+                                <span style={{ display: 'inline-block', width: 120 }}>フォーム状況</span>
+                                <Select
+                                    value={tempStatusFormConfirmation}
+                                    onChange={setTempStatusFormConfirmation}
+                                    style={{ width: 200 }}
+                                >
+                                    <Option value="confirmed">確認済み</Option>
+                                    <Option value="not_confirmed">未確認</Option>
+                                </Select>
+                            </div>
+
+                            {/* 登録状況 */}
+                            <div style={{ marginBottom: 20 }}>
+                                <span style={{ display: 'inline-block', width: 120 }}>登録状況</span>
+                                <Select
+                                    value={tempStatusRegistrationComplete}
+                                    onChange={setTempStatusRegistrationComplete}
+                                    style={{ width: 200 }}
+                                >
+                                    <Option value="completed">完了</Option>
+                                    <Option value="incomplete">未完了</Option>
+                                </Select>
+                            </div>
+
+                            <div style={{ textAlign: 'right' }}>
+                                <Button onClick={handleCancel} style={{ marginRight: 8 }}>
+                                    キャンセル
+                                </Button>
+                                <Button type="primary" onClick={handleSave}>
+                                    保存
+                                </Button>
+                            </div>
+                        </>
+                    )}
+                </Modal>
             </Content>
             <CustomFooter />
         </Layout>
