@@ -399,8 +399,8 @@ pub async fn access_setting_post(request: Json<CircleAccessSetting>, jar: &Cooki
         None => return (Status::Unauthorized, "request token is not valid."),
         Some(_) => {
             // 時間情報を整形
-            let start_time = DateTime::parse_from_rfc3339(&request.start_time).unwrap().naive_utc();
-            let end_time = DateTime::parse_from_rfc3339(&request.end_time).unwrap().naive_utc();
+            let start_time = DateTime::parse_from_rfc3339(&request.start).unwrap().naive_utc();
+            let end_time = DateTime::parse_from_rfc3339(&request.end).unwrap().naive_utc();
 
             // アクセス制限情報をDBに保存
             if app.time.register(&String::from("access_restrictions"), &start_time, &end_time).await.is_err() {
@@ -421,14 +421,14 @@ pub async fn access_setting_get(app: &State<App>) -> Result<Json<CircleAccessSet
     let response =  match app.time.get_by_name(&String::from("access_restrictions")).await {
         Ok(time) => {
             CircleAccessSetting {
-                start_time: time.start_time.and_local_timezone(Utc).unwrap().to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
-                end_time: time.end_time.and_local_timezone(Utc).unwrap().to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
+                start: time.start_time.and_local_timezone(Utc).unwrap().to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
+                end: time.end_time.and_local_timezone(Utc).unwrap().to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
             }
         },
         Err(_) => {
             CircleAccessSetting {
-                start_time: String::from(""),
-                end_time: String::from(""),
+                start: String::from(""),
+                end: String::from(""),
             }
         }
     };

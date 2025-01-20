@@ -167,7 +167,7 @@ pub struct OrganizationStatusResponse {
 #[serde(rename_all = "camelCase")]
 pub struct CircleAccessSetting {
     #[schema(example = "2025-01-12T08:00:00.000Z")]
-    pub start_time: String,
+    pub start: String,
     #[schema(example = "2025-01-15T08:00:00.000Z")]
-    pub end_time: String,
+    pub end: String,
 }
