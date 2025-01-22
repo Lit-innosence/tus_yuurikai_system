@@ -8,7 +8,7 @@ const [loading, setLoading] = useState(false);
 const [form] = Form.useForm();
 
 // ISO形式かどうかをチェックする正規表現
-const isoDateTimeRegex = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/;
+const isoDateTimeRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
 // レスポンスデータが有効かどうかをチェックする関数
 const isValidResponseData = (data: any): data is { start: string; end: string } => {
@@ -28,7 +28,6 @@ const fetchCurrentSettings = async () => {
     try {
     const response = await axios.get('/api/circle/access/setting', { withCredentials: true });
     if (response.status === 200 && response.data && isValidResponseData(response.data)) {
-        console.log(response.data);
         const { start, end } = response.data;
 
         // フォームに取得した値を設定
@@ -70,8 +69,6 @@ const onFinish = async (values: { date1: Moment; time1: Moment; date2: Moment; t
     const startDateTime = moment(`${values.date1.format('YYYY-MM-DD')} ${values.time1.format('HH:mm')}`).toISOString();
     const endDateTime = moment(`${values.date2.format('YYYY-MM-DD')} ${values.time2.format('HH:mm')}`).toISOString();
 
-    console.log(startDateTime, endDateTime);
-
     // 無効な時間の場合はエラーメッセージを表示
     if (!validateTimes(startDateTime, endDateTime)) {
         message.error('無効な時間設定です。時間範囲を再度確認してください。');
@@ -80,10 +77,10 @@ const onFinish = async (values: { date1: Moment; time1: Moment; date2: Moment; t
     }
 
     try {
-    const response = await axios.post('/api/circle/access/setting', {
+    const response = await axios.post('/api/admin/circle/access/setting', {
         start: startDateTime,
         end: endDateTime,
-    });
+    }, {withCredentials: true});
 
     if (response.status === 201) {
         message.success('設定が完了しました！');

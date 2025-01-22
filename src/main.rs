@@ -54,7 +54,9 @@ async fn main() -> Result<(), rocket::Error> {
         )
         .mount(
             "/api/admin/circle",
-            routes![],
+            routes![
+                access_setting_post,
+            ],
         )
         .mount(
             "/api/locker",
@@ -76,6 +78,7 @@ async fn main() -> Result<(), rocket::Error> {
                 circle_main_auth,
                 circle_co_auth,
                 circle_status,
+                access_setting_get,
             ]
         )
         .mount("/", FileServer::from(relative!("frontend/build")))

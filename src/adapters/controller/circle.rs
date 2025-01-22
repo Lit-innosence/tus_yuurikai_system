@@ -1,18 +1,21 @@
 use crate::adapters::httpmodels::*;
 use crate::domain::{circle::{OrganizationInfo, Organization}, student::RepresentativeInfo, googleapis::{MakeContact, MakeContactParameters}};
 use crate::infrastructure::router::App;
+use crate::usecase::time::TimeUsecase;
 use crate::usecase::{
                     auth::AuthUsecase,
                     representatives::RepresentativesUsecase,
                     organization::OrganizationUsecase,
                     registration::RegistrationUsecase,
-                    admin::AdminUsecase};
+                    };
+use crate::utils::decode_jwt::decode_jwt;
 use crate::utils::oauth_authentication::refresh_access_token;
 
 use std::env;
 use std::time::Duration;
+use chrono::{DateTime, Utc};
 use dotenv::dotenv;
-use rocket::{get, http::{Status, RawStr, Cookie, CookieJar, SameSite}, post, serde::json::Json, State};
+use rocket::{get, http::{Status, CookieJar}, post, serde::json::Json, State};
 use regex::Regex;
 use reqwest::StatusCode;
 
@@ -380,4 +383,55 @@ pub async fn circle_status(app: &State<App>) -> Result<Json<OrganizationStatusRe
     Ok(Json(OrganizationStatusResponse {
         data: response,
     }))
+}
+
+// 団体アクセス制限API POST
+#[utoipa::path(context_path = "/api/admin/circle")]
+#[post("/access/setting", data="<request>")]
+pub async fn access_setting_post(request: Json<CircleAccessSetting>, jar: &CookieJar<'_>, app: &State<App>) -> (Status, &'static str) {
+    // Cookieからjwtの取得
+    let jwt = match jar.get("token").map(|c| c.value()) {
+        None => return (Status::Unauthorized, "request is unautorized"),
+        Some(t) => String::from(t),
+    };
+
+    match decode_jwt(&jwt) {
+        None => return (Status::Unauthorized, "request token is not valid."),
+        Some(_) => {
+            // 時間情報を整形
+            let start_time = DateTime::parse_from_rfc3339(&request.start).unwrap().naive_utc();
+            let end_time = DateTime::parse_from_rfc3339(&request.end).unwrap().naive_utc();
+
+            // アクセス制限情報をDBに保存
+            if app.time.register(&String::from("access_restrictions"), &start_time, &end_time).await.is_err() {
+                return (Status::InternalServerError, "failed to insert time")
+            }
+
+            (Status::Created, "Access Restrictions registered successfully")
+        }
+    }
+}
+
+// 団体アクセス制限API GET
+#[utoipa::path(context_path = "/api/circle")]
+#[get("/access/setting")]
+pub async fn access_setting_get(app: &State<App>) -> Result<Json<CircleAccessSetting>, Status> {
+
+    // nameがaccess_restrictionsのレコードをtimeから取得しレスポンスを作成
+    let response =  match app.time.get_by_name(&String::from("access_restrictions")).await {
+        Ok(time) => {
+            CircleAccessSetting {
+                start: time.start_time.and_local_timezone(Utc).unwrap().to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
+                end: time.end_time.and_local_timezone(Utc).unwrap().to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
+            }
+        },
+        Err(_) => {
+            CircleAccessSetting {
+                start: String::from(""),
+                end: String::from(""),
+            }
+        }
+    };
+
+    Ok(Json(response))
 }

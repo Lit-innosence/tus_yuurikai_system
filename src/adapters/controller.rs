@@ -28,6 +28,8 @@ use utoipa::OpenApi;
         circle_main_auth,
         circle_co_auth,
         circle_status,
+        access_setting_post,
+        access_setting_get,
     ),
     components(schemas(
         HealthCheckRequest,
@@ -48,6 +50,7 @@ use utoipa::OpenApi;
         CircleUpdateRequest,
         CircleTokenGenRequest,
         CircleUpdateTokenGenRequest,
+        CircleAccessSetting,
     ))
 )]
 pub struct ApiDoc;

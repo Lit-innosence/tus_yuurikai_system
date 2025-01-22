@@ -7,3 +7,4 @@ pub mod admin;
 pub mod organization;
 pub mod registration;
 pub mod representatives;
+pub mod time;
