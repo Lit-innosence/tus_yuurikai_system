@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Typography, Layout, Input, message, Modal, Button, Select } from 'antd';
 import { ExportOutlined } from '@ant-design/icons';
-import axios from 'axios'; 
+import axios from 'axios';
 import CustomHeader from '../component/CustomHeader';
 import CustomFooter from '../component/CustomFooter';
 
@@ -75,20 +75,21 @@ const CircleList: React.FC = () => {
 
     useEffect(() => {
         // 本来はこちらのAPIから取得
-        // const fetchOrganizations = async () => {
-        //     try {
-        //         const response = await axios.get<{ data: Organization[] }>('/api/admin/circle/list', { withCredentials: true });
-        //         setOrganizations(response.data.data);
-        //         setFilteredData(response.data.data);
-        //     } catch (error) {
-        //         message.error('データの取得に失敗しました。');
-        //     } finally {
-        //         setLoading(false);
-        //     }
-        // };
-        // fetchOrganizations();
+        const fetchOrganizations = async () => {
+            try {
+                const response = await axios.get<{ data: Organization[] }>('/api/admin/circle/list', { withCredentials: true });
+                setOrganizations(response.data.data);
+                setFilteredData(response.data.data);
+            } catch (error) {
+                message.error('データの取得に失敗しました。');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchOrganizations();
 
         // モックデータ
+        /*
         const mockData: Organization[] = [
             {
                 organizationId: 'C00001',
@@ -140,7 +141,7 @@ const CircleList: React.FC = () => {
             setOrganizations(mockData);
             setFilteredData(mockData);
             setLoading(false);
-        }, 1000);
+        }, 1000);*/
     }, []);
 
     const getStatusLabel = (status: string, statusType: string) => {

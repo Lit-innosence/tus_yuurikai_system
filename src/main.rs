@@ -56,6 +56,7 @@ async fn main() -> Result<(), rocket::Error> {
             "/api/admin/circle",
             routes![
                 access_setting_post,
+                circle_list,
             ],
         )
         .mount(

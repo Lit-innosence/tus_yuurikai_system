@@ -12,6 +12,7 @@ pub struct RepresentativesUsecaseImpl {
 #[async_trait]
 pub trait RepresentativesUsecase: Sync + Send {
     async fn register(&self, student: &RepresentativeInfo) -> Result<Representatives, Error>;
+    async fn get_by_id(&self, student_id: &String) -> Result<Representatives, Error>;
 }
 
 impl RepresentativesUsecaseImpl {
@@ -24,5 +25,9 @@ impl RepresentativesUsecaseImpl {
 impl RepresentativesUsecase for RepresentativesUsecaseImpl {
     async fn register(&self, student: &RepresentativeInfo) -> Result<Representatives, Error> {
         self.representatives_repository.insert(&student.student_id, &student.family_name, &student.given_name, &student.email, &student.phone_number).await
+    }
+
+    async fn get_by_id(&self, student_id: &String) -> Result<Representatives, Error> {
+        self.representatives_repository.get_by_id(student_id).await
     }
 }

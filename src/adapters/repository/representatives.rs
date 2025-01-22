@@ -7,6 +7,8 @@ use crate::infrastructure::schema::*;
 use crate::infrastructure::models::*;
 use crate::infrastructure::router::Pool;
 
+use super::student;
+
 /// # representatives
 #[async_trait]
 pub trait RepresentativesRepository: Send + Sync {
@@ -17,6 +19,11 @@ pub trait RepresentativesRepository: Send + Sync {
         given_name: &String,
         email: &String,
         phone: &String,
+    ) -> Result<Representatives, Error>;
+
+    async fn get_by_id(
+        &self,
+        student_id: &String,
     ) -> Result<Representatives, Error>;
 }
 
@@ -53,6 +60,16 @@ impl RepresentativesRepository for RepresentativesRepositorySqlImpl {
             .on_conflict(representatives::student_id)
             .do_update()
             .set((representatives::updated_at.eq(diesel::dsl::now), representatives::email.eq(email), representatives::phone.eq(phone)))
+            .get_result(&mut conn)
+    }
+
+    async fn get_by_id(
+            &self,
+            student_id: &String,
+        ) -> Result<Representatives, Error> {
+        let mut conn = self.pool.get().unwrap();
+        representatives::table
+            .filter(representatives::student_id.eq(student_id))
             .get_result(&mut conn)
     }
 }
