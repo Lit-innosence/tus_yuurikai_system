@@ -30,6 +30,7 @@ use utoipa::OpenApi;
         circle_status,
         access_setting_post,
         access_setting_get,
+        circle_list,
     ),
     components(schemas(
         HealthCheckRequest,

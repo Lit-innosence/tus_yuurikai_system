@@ -3,6 +3,7 @@ import { Layout, Button, Modal, Input, message } from 'antd';
 import axios from 'axios';
 import CustomHeader from '../component/CustomHeader';
 import CustomFooter from '../component/CustomFooter';
+import constants from '../constants';
 
 const { Content } = Layout;
 
@@ -28,7 +29,7 @@ const LockerReset: React.FC = () => {
 
         setLoading(true);
         try {
-            await axios.post('/api/admin/locker/reset', { password }, { withCredentials: true });
+            await axios.post(`${constants.backendApiEndpoint}/api/admin/locker/reset`, { password }, { withCredentials: true });
             message.success('リセットが成功しました');
         } catch (error) {
             message.error('リセットに失敗しました');

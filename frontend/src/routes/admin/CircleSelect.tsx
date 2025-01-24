@@ -6,8 +6,8 @@ const content = [
     { title: '団体情報照会', route: '/admin/circle/list' },
 ];
 
-const LockerSelect: React.FC = () => {
+const CircleSelect: React.FC = () => {
     return <SelectLayout content={content} />;
 };
 
-export default LockerSelect;
+export default CircleSelect;

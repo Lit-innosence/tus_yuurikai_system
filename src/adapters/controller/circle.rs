@@ -435,3 +435,58 @@ pub async fn access_setting_get(app: &State<App>) -> Result<Json<CircleAccessSet
 
     Ok(Json(response))
 }
+
+// 管理者用団体情報取得API
+#[utoipa::path(context_path = "/api/admin/circle")]
+#[get("/list")]
+pub async fn circle_list(jar: &CookieJar<'_>, app: &State<App>) -> Result<Json<OrganizationListResponse>, Status> {
+    // Cookieからjwtの取得
+    let jwt = match jar.get("token").map(|c| c.value()) {
+        None => return Err(Status::Unauthorized),
+        Some(t) => String::from(t),
+    };
+
+    match decode_jwt(&jwt) {
+        None => return Err(Status::Unauthorized),
+        Some(_) => {
+            let result = app.registration.get_all().await.unwrap();
+
+            let mut response: Vec<OrganizationList> = Vec::new();
+            for element in result {
+                let organization_info = app.organization.get_by_id(&element.organization_id).await.unwrap();
+                let main_info = app.representatives.get_by_id(&element.main_student_id).await.unwrap();
+                let co_info = app.representatives.get_by_id(&element.co_student_id).await.unwrap();
+
+                let data = OrganizationList{
+                    organization_id: format!("C{0: >05}", element.organization_id),
+                    organization_name: organization_info.organization_name,
+                    organization_email: organization_info.organization_email,
+                    main_id: main_info.student_id,
+                    main_family_name: main_info.family_name,
+                    main_given_name: main_info.given_name,
+                    main_email: main_info.email,
+                    main_phone: main_info.phone,
+                    co_id: co_info.student_id,
+                    co_family_name: co_info.family_name,
+                    co_given_name: co_info.given_name,
+                    co_email: co_info.email,
+                    co_phone: co_info.phone,
+                    b_url: element.b_doc,
+                    c_url: element.c_doc,
+                    d_url: element.d_doc,
+                    status_acceptance: element.status_acceptance,
+                    status_authentication: element.status_authentication,
+                    status_form_confirmation: element.status_form_confirmation,
+                    status_registration_complete: element.status_registration_complete,
+                };
+                response.push(data);
+            }
+
+            response.sort_by(|lt, rt| lt.organization_id.partial_cmp(&rt.organization_id).unwrap());
+
+            Ok(Json(OrganizationListResponse {
+                data: response,
+            }))
+        }
+    }
+}

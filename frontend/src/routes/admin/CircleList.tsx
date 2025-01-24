@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Typography, Layout, Input, message, Modal, Button, Select } from 'antd';
 import { ExportOutlined } from '@ant-design/icons';
-import axios from 'axios'; 
+import axios from 'axios';
 import CustomHeader from '../component/CustomHeader';
 import CustomFooter from '../component/CustomFooter';
+import constants from '../constants';
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -74,73 +75,19 @@ const CircleList: React.FC = () => {
     const [tempStatusRegistrationComplete, setTempStatusRegistrationComplete] = useState<string>('incomplete');
 
     useEffect(() => {
-        // 本来はこちらのAPIから取得
-        // const fetchOrganizations = async () => {
-        //     try {
-        //         const response = await axios.get<{ data: Organization[] }>('/api/admin/circle/list', { withCredentials: true });
-        //         setOrganizations(response.data.data);
-        //         setFilteredData(response.data.data);
-        //     } catch (error) {
-        //         message.error('データの取得に失敗しました。');
-        //     } finally {
-        //         setLoading(false);
-        //     }
-        // };
-        // fetchOrganizations();
-
-        // モックデータ
-        const mockData: Organization[] = [
-            {
-                organizationId: 'C00001',
-                organizationName: '団体A',
-                organizationEmail: 'a@example.com',
-                mainId: '1001',
-                mainFamilyName: '田中',
-                mainGivenName: '太郎',
-                mainEmail: 'tanaka@example.com',
-                mainPhone: '090-1234-5678',
-                coId: '2001',
-                coFamilyName: '佐藤',
-                coGivenName: '花子',
-                coEmail: 'sato@example.com',
-                coPhone: '080-9876-5432',
-                bUrl: '14Zh77eFIDdmFKuBWioE-GaeNsivF0x5E',
-                cUrl: '1RcbGGaPWwXv1lbfp6Ju8kJ1CQ60IF2eD',
-                dUrl: '19gAhh-rNTgws7rmm8aEj_04Y0fm-IQD2',
-                statusAcceptance: 'accepted',
-                statusAuthentication: 'authenticated',
-                statusFormConfirmation: 'confirmed',
-                statusRegistrationComplete: 'completed',
-            },
-            {
-                organizationId: 'C00002',
-                organizationName: '団体B',
-                organizationEmail: 'b@example.com',
-                mainId: '1002',
-                mainFamilyName: '山田',
-                mainGivenName: '次郎',
-                mainEmail: 'yamada@example.com',
-                mainPhone: '090-5678-1234',
-                coId: '2002',
-                coFamilyName: '高橋',
-                coGivenName: '三郎',
-                coEmail: 'takahashi@example.com',
-                coPhone: '080-4321-8765',
-                bUrl: 'b-file-b',
-                cUrl: 'c-file-b',
-                dUrl: 'd-file-b',
-                statusAcceptance: 'pending',
-                statusAuthentication: 'not_authenticated',
-                statusFormConfirmation: 'not_confirmed',
-                statusRegistrationComplete: 'incomplete',
-            },
-        ];
-
-        setTimeout(() => {
-            setOrganizations(mockData);
-            setFilteredData(mockData);
-            setLoading(false);
-        }, 1000);
+        // APIから取得
+        const fetchOrganizations = async () => {
+            try {
+                const response = await axios.get<{ data: Organization[] }>(`${constants.backendApiEndpoint}/api/admin/circle/list`, { withCredentials: true });
+                setOrganizations(response.data.data);
+                setFilteredData(response.data.data);
+            } catch (error) {
+                message.error('データの取得に失敗しました。');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchOrganizations();
     }, []);
 
     const getStatusLabel = (status: string, statusType: string) => {

@@ -171,3 +171,40 @@ pub struct CircleAccessSetting {
     #[schema(example = "2025-01-15T08:00:00.000Z")]
     pub end: String,
 }
+
+/// ### OrganizationList
+///
+/// OrganizationListResponseに使用する構造体
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationList {
+    pub organization_id: String,
+    pub organization_name: String,
+    pub organization_email: String,
+    pub main_id: String,
+    pub main_family_name: String,
+    pub main_given_name: String,
+    pub main_email: String,
+    pub main_phone: String,
+    pub co_id: String,
+    pub co_family_name: String,
+    pub co_given_name: String,
+    pub co_email: String,
+    pub co_phone: String,
+    pub b_url: String,
+    pub c_url: String,
+    pub d_url: String,
+    pub status_acceptance: String,
+    pub status_authentication: String,
+    pub status_form_confirmation: String,
+    pub status_registration_complete: String,
+}
+
+/// ### OrganizationListResponse
+///
+/// 管理者用団体情報取得に使用
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationListResponse {
+    pub data: Vec<OrganizationList>
+}
