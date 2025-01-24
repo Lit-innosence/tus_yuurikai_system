@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, DatePicker, TimePicker, Button, message, Card, Row, Col } from 'antd';
 import axios from 'axios';
 import moment, { Moment } from 'moment';
+import constants from '../constants';
 
 const AccessRestrictionPage: React.FC = () => {
 const [loading, setLoading] = useState(false);
@@ -26,7 +27,7 @@ const isValidResponseData = (data: any): data is { start: string; end: string } 
 // 現在設定されている時刻を取得する関数
 const fetchCurrentSettings = async () => {
     try {
-    const response = await axios.get('/api/circle/access/setting', { withCredentials: true });
+    const response = await axios.get(`${constants.backendApiEndpoint}/api/circle/access/setting`, { withCredentials: true });
     if (response.status === 200 && response.data && isValidResponseData(response.data)) {
         const { start, end } = response.data;
 
