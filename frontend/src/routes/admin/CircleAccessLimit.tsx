@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Form, DatePicker, TimePicker, Button, message, Card, Row, Col } from 'antd';
+import { Form, DatePicker, TimePicker, Button, message, Card, Layout, Row, Col } from 'antd';
 import axios from 'axios';
 import moment, { Moment } from 'moment';
 import constants from '../constants';
+import CustomHeader from '../component/CustomHeader';
+import CustomFooter from '../component/CustomFooter';
 
 const AccessRestrictionPage: React.FC = () => {
 const [loading, setLoading] = useState(false);
@@ -97,51 +99,88 @@ const onFinish = async (values: { date1: Moment; time1: Moment; date2: Moment; t
 };
 
 return (
-    <Row justify="center" style={{ marginTop: '50px' }}>
-    <Col xs={24} sm={20} md={16} lg={12} xl={10}>
-        <Card title="アクセス制限設定" bordered={true}>
-        <Form layout="vertical" form={form} onFinish={onFinish}>
-            <Form.Item
-            label="開始日"
-            name="date1"
-            rules={[{ required: true, message: '開始日を設定してください' }]}
+    <Layout style={{ minHeight: '100vh' }}>
+        <CustomHeader />
+        <Layout
+            style={{
+                padding: '50px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'column',
+                overflowX: 'auto',
+            }}
+        >
+            <Card
+                title="アクセス制限設定"
+                bordered={true}
+                style={{
+                    maxWidth: '1000px', // 最大幅を1000pxに設定
+                    width: '100%',      // 横幅を親要素いっぱいに
+                }}
             >
-            <DatePicker style={{ width: '100%' }} />
-            </Form.Item>
+                <Form
+                    layout="vertical"
+                    form={form}
+                    onFinish={onFinish}
+                    style={{
+                        width: '100%',        // フォーム全体の幅を親要素に合わせる
+                        maxWidth: '800px',    // 必要に応じて最大幅を調整
+                        margin: '0 auto',     // フォームを中央揃え
+                    }}
+                >
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item
+                                label="開始日"
+                                name="date1"
+                                rules={[{ required: true, message: '開始日を設定してください' }]}
+                            >
+                                <DatePicker style={{ width: '100%' }} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                label="開始時刻"
+                                name="time1"
+                                rules={[{ required: true, message: '開始時刻を設定してください' }]}
+                            >
+                                <TimePicker style={{ width: '100%' }} format="HH:mm" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
 
-            <Form.Item
-            label="開始時刻"
-            name="time1"
-            rules={[{ required: true, message: '開始時刻を設定してください' }]}
-            >
-            <TimePicker style={{ width: '100%' }} format="HH:mm" />
-            </Form.Item>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item
+                                label="終了日"
+                                name="date2"
+                                rules={[{ required: true, message: '終了日を設定してください' }]}
+                            >
+                                <DatePicker style={{ width: '100%' }} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                label="終了時刻"
+                                name="time2"
+                                rules={[{ required: true, message: '終了時刻を設定してください' }]}
+                            >
+                                <TimePicker style={{ width: '100%' }} format="HH:mm" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
 
-            <Form.Item
-            label="終了日"
-            name="date2"
-            rules={[{ required: true, message: '終了日を設定してください' }]}
-            >
-            <DatePicker style={{ width: '100%' }} />
-            </Form.Item>
-
-            <Form.Item
-            label="終了時刻"
-            name="time2"
-            rules={[{ required: true, message: '終了時刻を設定してください' }]}
-            >
-            <TimePicker style={{ width: '100%' }} format="HH:mm" />
-            </Form.Item>
-
-            <Form.Item>
-            <Button type="primary" htmlType="submit" loading={loading} block>
-                設定する
-            </Button>
-            </Form.Item>
-        </Form>
-        </Card>
-    </Col>
-    </Row>
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit" loading={loading} block>
+                            設定する
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </Card>
+        </Layout>
+        <CustomFooter />
+    </Layout>
 );
 };
 
