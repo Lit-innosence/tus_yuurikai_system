@@ -80,7 +80,7 @@ const onFinish = async (values: { date1: Moment; time1: Moment; date2: Moment; t
     }
 
     try {
-    const response = await axios.post('/api/admin/circle/access/setting', {
+    const response = await axios.post(`${constants.backendApiEndpoint}/api/admin/circle/access/setting`, {
         start: startDateTime,
         end: endDateTime,
     }, {withCredentials: true});
