@@ -16,15 +16,16 @@ const isoDateTimeRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 // レスポンスデータが有効かどうかをチェックする関数
 const isValidResponseData = (data: any): data is { start: string; end: string } => {
     return (
-    typeof data === 'object' &&
-    typeof data.start === 'string' &&
-    typeof data.end === 'string' &&
-    moment(data.start).isValid() &&
-    moment(data.end).isValid() &&
-    isoDateTimeRegex.test(data.start) &&
-    isoDateTimeRegex.test(data.end)
+        typeof data === 'object' &&
+        (typeof data.start === 'string' || data.start === '') &&
+        (typeof data.end === 'string' || data.end === '') &&
+        (data.start === '' || moment(data.start).isValid()) &&
+        (data.end === '' || moment(data.end).isValid()) &&
+        (data.start === '' || isoDateTimeRegex.test(data.start)) &&
+        (data.end === '' || isoDateTimeRegex.test(data.end))
     );
 };
+
 
 // 現在設定されている時刻を取得する関数
 const fetchCurrentSettings = async () => {
@@ -34,12 +35,14 @@ const fetchCurrentSettings = async () => {
         const { start, end } = response.data;
 
         // フォームに取得した値を設定
-        form.setFieldsValue({
-        date1: moment(start),
-        time1: moment(start),
-        date2: moment(end),
-        time2: moment(end),
-        });
+        if (response.data.start != "" && response.data.end != "") {
+            form.setFieldsValue({
+            date1: moment(start),
+            time1: moment(start),
+            date2: moment(end),
+            time2: moment(end),
+            });
+        }
 
         message.success('現在の設定を取得しました。');
     } else {
