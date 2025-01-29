@@ -1,5 +1,5 @@
 import React from 'react';
-import AdminLayout from '../component/PageSelectLayout';
+import SelectLayout from '../component/PageSelectLayout';
 
 const content = [
     { title: 'ロッカー利用者検索', route: '/admin/locker/search' },
@@ -7,7 +7,7 @@ const content = [
 ];
 
 const LockerSelect: React.FC = () => {
-    return <AdminLayout content={content} />;
+    return <SelectLayout content={content} />;
 };
 
 export default LockerSelect;
