@@ -17,6 +17,8 @@ pub trait RegistrationUsecase: Sync + Send {
 
     async fn update_student(&self, organization_id: &i32, main_student_id: &String, co_student_id: &String) -> Result<Registration, Error>;
 
+    async fn update_status(&self, organization_id: &i32, status_acceptance: &String, status_authentication: &String, status_form_confirmation: &String, status_registration_complete: &String) -> Result<Registration, Error>;
+
     async fn get_all(&self) -> Result<Vec<Registration>, Error>;
 }
 
@@ -52,6 +54,11 @@ impl RegistrationUsecase for RegistrationUsecaseImpl {
     async fn update_student(&self, organization_id: &i32, main_student_id: &String, co_student_id: &String) -> Result<Registration, Error> {
         // 団体代表者と団体副代表者の更新
         self.registration_repository.update_student_by_id(organization_id, main_student_id, co_student_id).await
+    }
+
+    async fn update_status(&self, organization_id: &i32, status_acceptance: &String, status_authentication: &String, status_form_confirmation: &String, status_registration_complete: &String) -> Result<Registration, Error> {
+        // 団体のステータス更新
+        self.registration_repository.update_status_by_id(organization_id, status_acceptance, status_authentication, status_form_confirmation, status_registration_complete).await
     }
 
     async fn get_all(&self) -> Result<Vec<Registration>, Error> {

@@ -31,6 +31,7 @@ use utoipa::OpenApi;
         access_setting_post,
         access_setting_get,
         circle_list,
+        circle_status_update,
     ),
     components(schemas(
         HealthCheckRequest,
@@ -48,6 +49,7 @@ use utoipa::OpenApi;
         Organization,
         OrganizationInfo,
         OrganizationUpdateInfo,
+        OrganizationStatusUpdateRequest,
         CircleUpdateRequest,
         CircleTokenGenRequest,
         CircleUpdateTokenGenRequest,

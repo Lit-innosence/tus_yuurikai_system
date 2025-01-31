@@ -490,3 +490,34 @@ pub async fn circle_list(jar: &CookieJar<'_>, app: &State<App>) -> Result<Json<O
         }
     }
 }
+
+// 団体ステータス更新API
+#[utoipa::path(context_path = "/api/admin/circle")]
+#[post("/status/update", data="<request>")]
+pub async fn circle_status_update(request: Json<OrganizationStatusUpdateRequest>, jar: &CookieJar<'_>, app: &State<App>) -> (Status, &'static str) {
+    // Cookieからjwtの取得
+    let jwt = match jar.get("token").map(|c| c.value()) {
+        None => return (Status::Unauthorized, "request is unauthorized"),
+        Some(t) => String::from(t),
+    };
+
+    match decode_jwt(&jwt) {
+        None => return (Status::Unauthorized, "request token is not valid"),
+        Some(_) => {
+
+             // organization_idの整形
+            let re = Regex::new(r"[1-9]+").unwrap();
+            let organization_id = match re.find(request.organization_id.as_str()) {
+                Some(m) => m.as_str().parse::<i32>().unwrap(),
+                None => {return (Status::InternalServerError, "can't get valid organization_id")}
+            };
+
+
+            if app.registration.update_status(&organization_id, &request.status_acceptance, &request.status_authentication, &request.status_form_confirmation, &request.status_registration_complete).await.is_err() {
+                return (Status::InternalServerError, "failed to update status")
+            }
+
+            return (Status::Ok, "organization status updated successfully")
+        }
+    }
+}
