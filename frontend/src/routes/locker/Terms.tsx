@@ -108,7 +108,7 @@ const LockerTerms: React.FC = () => {
                     type="primary" 
                     disabled={!isChecked}
                     style={{ marginTop: '16px' }}
-                    onClick={() => { navigate('/locker/form') }}
+                    onClick={() => { navigate('/locker/terms/important') }}
                 >
                     同意して次に進む
                 </Button>

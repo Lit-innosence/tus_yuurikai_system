@@ -23,6 +23,7 @@ const queryClient = new QueryClient({
 
 const Toppage = lazy(() => import('./routes/Toppage'));
 const LockerTerms = lazy(() => import('./routes/locker/Terms'));
+const ImportantConfirm = lazy(() => import('./routes/locker/ImportantConfirm'));
 const LockerForm = lazy(() => import('./routes/locker/Form'));
 const LockerFormConfirm = lazy(() => import('./routes/locker/ConfirmPage'));
 const FormComp = lazy(() => import('./routes/locker/FormComp'));
@@ -58,6 +59,7 @@ function App() {
             <Route path='/' element={<Toppage />} />
 
             <Route path='/locker/terms' element={<LockerTerms />} />
+            <Route path='/locker/terms/important' element={<ImportantConfirm />} />
             <Route path='/locker/form' element={<LockerForm />} />
             <Route path='/locker/form/confirm' element={<LockerFormConfirm />} />
             <Route path='/locker/form/complete' element={<FormComp />} />
