@@ -7,8 +7,6 @@ use crate::infrastructure::schema::*;
 use crate::infrastructure::models::*;
 use crate::infrastructure::router::Pool;
 
-use super::student;
-
 /// # representatives
 #[async_trait]
 pub trait RepresentativesRepository: Send + Sync {

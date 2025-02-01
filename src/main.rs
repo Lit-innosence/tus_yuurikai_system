@@ -57,6 +57,7 @@ async fn main() -> Result<(), rocket::Error> {
             routes![
                 access_setting_post,
                 circle_list,
+                circle_status_update,
             ],
         )
         .mount(

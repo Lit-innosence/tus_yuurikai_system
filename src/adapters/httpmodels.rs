@@ -208,3 +208,17 @@ pub struct OrganizationList {
 pub struct OrganizationListResponse {
     pub data: Vec<OrganizationList>
 }
+
+
+/// ### OrganizationStatusUpdateRequest
+///
+/// 団体ステータス更新APIに使用
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationStatusUpdateRequest {
+    pub organization_id: String,
+    pub status_acceptance: String,
+    pub status_authentication: String,
+    pub status_form_confirmation: String,
+    pub status_registration_complete: String,
+}

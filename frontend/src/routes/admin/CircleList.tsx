@@ -156,7 +156,7 @@ const CircleList: React.FC = () => {
         try {
             // 実際にはAPIのURLを修正して利用してください
             await axios.post(
-                '/api/admin/circle/status/update',
+                `${constants.backendApiEndpoint}/api/admin/circle/status/update`,
                 {
                     organizationId: selectedOrg.organizationId,
                     statusAcceptance: tempStatusAcceptance,

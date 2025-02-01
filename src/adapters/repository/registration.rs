@@ -32,9 +32,20 @@ pub trait RegistrationRepository: Send + Sync {
         co_student_id: &String,
     ) -> Result<Registration, Error>;
 
+    async fn update_status_by_id (
+        &self,
+        organization_id: &i32,
+        status_acceptance: &String,
+        status_authentication: &String,
+        status_form_confirmation: &String,
+        status_registration_complete: &String,
+    ) -> Result<Registration, Error>;
+
     async fn get_all (
         &self,
     ) -> Result<Vec<Registration>, Error>;
+
+
 }
 
 pub struct RegistrationRepositorySqlImpl {
@@ -92,6 +103,21 @@ impl RegistrationRepository for RegistrationRepositorySqlImpl {
         diesel::update(registration::table)
             .filter(registration::organization_id.eq(organization_id))
             .set((registration::main_student_id.eq(main_student_id), registration::co_student_id.eq(co_student_id), registration::updated_at.eq(diesel::dsl::now)))
+            .get_result(&mut conn)
+    }
+
+    async fn update_status_by_id (
+            &self,
+            organization_id: &i32,
+            status_acceptance: &String,
+            status_authentication: &String,
+            status_form_confirmation: &String,
+            status_registration_complete: &String,
+        ) -> Result<Registration, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::update(registration::table)
+            .filter(registration::organization_id.eq(organization_id))
+            .set((registration::status_acceptance.eq(status_acceptance), registration::status_authentication.eq(status_authentication), registration::status_form_confirmation.eq(status_form_confirmation), registration::status_registration_complete.eq(status_registration_complete)))
             .get_result(&mut conn)
     }
 
