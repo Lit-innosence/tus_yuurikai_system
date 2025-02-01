@@ -302,6 +302,30 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
         return (Status::InternalServerError, "failed to delete auth table");
     }
 
+    let user_address = format!("{}@ed.tus.ac.jp", user_pair.student_id1.clone());
+    let content = format!(
+        "ロッカーの登録が完了しました。\n\n\
+        ロッカー番号: {}\n\n\
+        【内容物の回収・保管・廃棄について】\n\
+        ・内容物回収期間：3月中旬\n\
+        ・保管期間：次年度の4~6月\n\
+        ・廃棄日：次年度の6月下旬\n\n\
+        ※ 期限までに回収しなかった場合、内容物は廃棄され、返還できません。\n\
+        ※ 廃棄に伴う責任は負いかねますので、必ず期間内に回収をお願いします。\n\n\
+        【ロッカー使用時の注意事項】\n\
+        ・ロッカー使用時には必ず鍵を使用してください。\n\
+        ・鍵の購入はこちら：<URL>\n\n\
+        ご不明点がございましたら、お問い合わせください。\n\n\
+        よろしくお願いいたします。\n",
+        assignment.locker_id
+    );    
+    let subject = "ロッカーシステム ロッカー登録通知";
+
+    // メールの送信
+    if app.auth.mail_sender(user_address, content, subject).await.is_err(){
+        return (Status::InternalServerError, "failed to send mail");
+    }
+
     (Status::Created, "success create assignment")
 }
 
