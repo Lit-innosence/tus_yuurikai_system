@@ -236,9 +236,50 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
         organization_email: auth_info.organization_email,
     };
 
+    // 副代表者を登録
     if app.representatives.register(&co_user).await.is_err() {
         return (Status::InternalServerError, "failed to insert Representative")
     }
+
+    // googleapiの処理
+
+    // token類を環境変数から取得
+    dotenv().ok();
+    let refresh_token = env::var("REFRESH_TOKEN").expect("refresh token must be set.");
+    let client_id = env::var("CLIENT_ID").expect("client id must be set.");
+    let client_secret = env::var("CLIENT_SECRET").expect("client secret must be set.");
+    let deploy_id = env::var("DEPLOY_ID").expect("deploy id must be set.");
+
+    // refreshtokenからaccesstokenを取得
+    let api_tokens = refresh_access_token(refresh_token.as_str(), client_id.as_str(), client_secret.as_str()).await.unwrap();
+
+    // googleapi用のデータを格納
+    let input = MakeContact {
+        function: String::from("onPostRequest"),
+        parameters: MakeContactParameters {
+            data: OrganizationInfo{
+                organization: organization.clone(),
+                main_user: main_user.clone(),
+                co_user: co_user.clone(),
+                b_doc: auth_info.b_doc.clone(),
+                c_doc: auth_info.c_doc.clone(),
+                d_doc: auth_info.d_doc.clone(),
+            },
+        }
+    };
+    let input_json = serde_json::to_string(&input).unwrap();
+
+    // リクエスト用クライアント
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(60))
+        .build().unwrap();
+
+    // リクエストを送信
+    let result = client.post(format!("https://script.googleapis.com/v1/scripts/{}:run", deploy_id.as_str()))
+        .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", api_tokens.access_token))
+        .body(input_json)
+        .send()
+        .await.unwrap();
 
     match id.clone() {
         // 団体情報更新
@@ -273,10 +314,10 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
             let organization_info = &OrganizationInfo{
                 organization: organization.clone(),
                 main_user: main_user.clone(),
-                co_user: co_user.clone(),
-                b_doc: auth_info.b_doc.clone(),
-                c_doc: auth_info.c_doc.clone(),
-                d_doc: auth_info.d_doc.clone(),
+                co_user: co_user,
+                b_doc: auth_info.b_doc,
+                c_doc: auth_info.c_doc,
+                d_doc: auth_info.d_doc,
             };
 
             let organization_id = match app.organization.register(&organization).await {
@@ -294,46 +335,6 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
             }
         }
     }
-
-    // googleapiの処理
-
-    // token類を環境変数から取得
-    dotenv().ok();
-    let refresh_token = env::var("REFRESH_TOKEN").expect("refresh token must be set.");
-    let client_id = env::var("CLIENT_ID").expect("client id must be set.");
-    let client_secret = env::var("CLIENT_SECRET").expect("client secret must be set.");
-    let deploy_id = env::var("DEPLOY_ID").expect("deploy id must be set.");
-
-    // refreshtokenからaccesstokenを取得
-    let api_tokens = refresh_access_token(refresh_token.as_str(), client_id.as_str(), client_secret.as_str()).await.unwrap();
-
-    // googleapi用のデータを格納
-    let input = MakeContact {
-        function: String::from("onPostRequest"),
-        parameters: MakeContactParameters {
-            data: OrganizationInfo{
-                organization: organization,
-                main_user: main_user.clone(),
-                co_user: co_user,
-                b_doc: auth_info.b_doc,
-                c_doc: auth_info.c_doc,
-                d_doc: auth_info.d_doc,
-            },
-        }
-    };
-    let input_json = serde_json::to_string(&input).unwrap();
-
-    // リクエスト用クライアント
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(60))
-        .build().unwrap();
-
-    // リクエストを送信
-    let result = client.post(format!("https://script.googleapis.com/v1/scripts/{}:run", deploy_id.as_str()))
-        .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", api_tokens.access_token))
-        .body(input_json)
-        .send()
-        .await.unwrap();
 
     match result.status() {
         StatusCode::OK => {
