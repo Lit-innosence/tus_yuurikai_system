@@ -1,0 +1,100 @@
+name: Create Pull requests released contents
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [closed]
+
+jobs:
+  create-auto-tag:
+    if: github.ref == 'master' && github.event.pull_request.merged == true
+    runs-on: [ self-hosted ]
+    # secrets.GITHUB_TOKENの権限が大きいので、セキュリティリスク軽減のために制限。
+    permissions:
+      contents: write
+      pull-requests: write
+    # デフォルトでは最大6時間実行されるため制限。
+    timeout-minutes: 10
+    env:
+      MASTER_BRANCH: master
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: gh auth login
+        env:
+          # secrets.GITHUB_TOKENはworkflowが実施されるたびに自動で生成される
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo ${GH_TOKEN} | gh auth login --hostname {ホスト名} --with-token
+      
+      - name: create release tag
+          # エラーの場合でも次のPR作成の処理を実行。結果ではエラーのマークは出ないので、タグが作成されなかった場合はActionsのページから詳細を確認。
+        continue-on-error: true
+        env:
+          # 独自でタグを指定する場合はtrueにする。
+          USE_ORIGINAL_TAG: false
+          # 独自のタグを指定する場合（例: v2.0.0rc）、もしくは最新のタグをvX.Y.Zの形に直したい場合（例: v2.0.0rc→v2.0.0）に指定。
+          NEW_TAG_NAME: "original_tag"
+          # major minor patchのいずれかを指定。バージョンを上げるように指定した部分以下は0にする。他のバージョン部分も一緒に変更する際は独自でタグを指定。（例: v1.1.1→v2.2.2）
+          # major: メジャーバージョンを上げる。（例: v1.1.1→v2.0.0）
+          # minor: マイナーバージョンを上げる。（例: v1.1.1→v1.2.0）
+          # patch: パッチバージョンを上げる。（例: v1.1.1→v1.1.2）
+          UP_VER: minor
+        run: |
+          NEW_TAG=${NEW_TAG_NAME}
+          # タグの履歴を取得。would clobber existing tagのエラーを避けるため、-fのオプションを追加。
+          git fetch --prune --unshallow --tags -f
+          # 最新のタグを取得
+          NOW_TAG=(`git describe --tags $(git rev-list --tags --max-count=1)`)
+          echo "NOW_TAG is ${NOW_TAG}"
+          if [ "${USE_ORIGINAL_TAG}" == false ]; then
+            # 取得したタグのバリデーション。vX.Y.Zの形になっていることを確認。各数字部分3桁まで対応。
+            if [[ ! ${NOW_TAG} =~ ^v[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$ ]]; then
+                echo "${NOW_TAG} does not match regular expression ^v[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$"
+                exit 1
+            fi
+            # 先頭のvを取り除く
+            MAJOR_VER=(`echo ${NOW_TAG#v}| awk '{split($0, version, "."); print version[1]}'`)
+            MINOR_VER=(`echo ${NOW_TAG}| awk '{split($0, version, "."); print version[2]}'`)
+            PATCH_VER=(`echo ${NOW_TAG}| awk '{split($0, version, "."); print version[3]}'`)
+            UP_VER=""
+            items=$(gh pr view ${{ github.event.number }} --json labels -q '.labels[]')
+            # 配列をループで処理
+            IFS=$'\n' # 改行で区切る
+            for item in $items; do
+                name=`echo $item | jq -r '.name'`
+                case "${name}" in
+                    "major"|"minor"|"patch")
+                            # 事前のワークフローでチェック済みなのでとりあえず変数を詰める
+                            UP_VER=${name}
+                        ;;
+                esac
+            done
+            # バージョンを上げるように指定した部分以下は0にする。大文字の指定でも小文字に変換して対応。
+            case `echo "${UP_VER}"|tr A-Z a-z` in
+                "major")
+                  MAJOR_VER=`expr ${MAJOR_VER} \+ 1`
+                  MINOR_VER=0
+                  PATCH_VER=0
+                  ;;
+                "minor")
+                  MINOR_VER=`expr ${MINOR_VER} \+ 1`
+                  PATCH_VER=0
+                  ;;
+                "patch")
+                  PATCH_VER=`expr ${PATCH_VER} \+ 1`
+                  ;;
+                *)
+                  echo "UP_VER is invalid: ${UP_VER}"
+                  ;;
+            esac
+            NEW_TAG=v${MAJOR_VER}.${MINOR_VER}.${PATCH_VER}
+          fi
+          echo "NEW_TAG is ${NEW_TAG}"
+          # 前のタグとの差分を基にリリースノートの自動生成、およびlatestのマークの付与を行う。
+          echo `gh pr view ${{ github.event.number }} --json body | jq -r '.body'` >> body.txt
+          today=`date +'%Y/%m/%d'`
+          gh release create ${NEW_TAG} --notes-start-tag ${NOW_TAG} --latest --target ${{env.MASTER_BRANCH}} -F body.txt -t "${today}リリース"
+      - name: gh auth logout
+        # ランナーのインスタンスは他のプロダクトでも使用されているのでログアウトする。
+        run: gh auth logout --hostname {ホスト名}
