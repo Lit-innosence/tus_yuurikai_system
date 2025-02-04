@@ -1,9 +1,9 @@
-name: check label of PR to master
+name: check label of PR to main
 
 on:
   pull_request:
     branches:
-      - master
+      - main
     types:
       - synchronize
       - labeled
@@ -13,7 +13,7 @@ on:
 
 jobs:
   check_label:
-    if: github.base_ref == 'master'
+    if: github.base_ref == 'main'
     runs-on: [ self-hosted ]
     # secrets.GITHUB_TOKENの権限が大きいので、セキュリティリスク軽減のために制限。
     permissions:
@@ -22,7 +22,7 @@ jobs:
     # デフォルトでは最大6時間実行されるため制限。
     timeout-minutes: 10
     env:
-      MASTER_BRANCH: master
+      MASTER_BRANCH: main
 
     steps:
       - uses: actions/checkout@v3
@@ -32,7 +32,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: echo ${GH_TOKEN} | gh auth login --hostname {ホスト名} --with-token
 
-      - name: check label of PR to master
+      - name: check label of PR to main
         # エラーの場合でも次のログアウトの処理を実行。結果ではエラーのマークは出ないので、PRが作成されなかった場合はActionsのページから詳細を確認。
         continue-on-error: false
         env:

@@ -3,12 +3,12 @@ name: Create Pull requests released contents
 on:
   pull_request:
     branches:
-      - master
+      - main
     types: [closed]
 
 jobs:
   create-auto-tag:
-    if: github.ref == 'master' && github.event.pull_request.merged == true
+    if: github.ref == 'main' && github.event.pull_request.merged == true
     runs-on: [ self-hosted ]
     # secrets.GITHUB_TOKENの権限が大きいので、セキュリティリスク軽減のために制限。
     permissions:
@@ -17,7 +17,7 @@ jobs:
     # デフォルトでは最大6時間実行されるため制限。
     timeout-minutes: 10
     env:
-      MASTER_BRANCH: master
+      MASTER_BRANCH: main
 
     steps:
       - uses: actions/checkout@v3
