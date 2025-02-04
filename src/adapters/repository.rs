@@ -1,0 +1,12 @@
+pub mod student;
+pub mod student_pair;
+pub mod locker;
+pub mod assignment_record;
+pub mod admin;
+pub mod auth;
+pub mod locker_auth_info;
+pub mod circle_auth_info;
+pub mod registration;
+pub mod representatives;
+pub mod organization;
+pub mod time;

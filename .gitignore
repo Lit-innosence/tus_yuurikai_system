@@ -1,1 +1,12 @@
-hogehoge
+# Added by cargo
+/target
+
+# Environment file
+.env
+
+# disel file
+**/schema.rs
+diesel.toml
+
+# locker file
+lockerdata.csv
