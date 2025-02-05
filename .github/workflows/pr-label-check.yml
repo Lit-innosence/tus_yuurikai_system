@@ -13,54 +13,54 @@ on:
 
 jobs:
   check_label:
-    if: github.base_ref == 'main'
-    runs-on: [ self-hosted ]
-    # secrets.GITHUB_TOKENの権限が大きいので、セキュリティリスク軽減のために制限。
+    if: github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+
     permissions:
-      contents: write
-      pull-requests: write
-    # デフォルトでは最大6時間実行されるため制限。
+      contents: read
+
     timeout-minutes: 10
     env:
       MASTER_BRANCH: main
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v3
-      - name: gh auth login
-        env:
-          # secrets.GITHUB_TOKENはworkflowが実施されるたびに自動で生成される
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: echo ${GH_TOKEN} | gh auth login --hostname {ホスト名} --with-token
+
+      - name: Ensure authentication
+        run: gh auth status
 
       - name: check label of PR to main
-        # エラーの場合でも次のログアウトの処理を実行。結果ではエラーのマークは出ないので、PRが作成されなかった場合はActionsのページから詳細を確認。
         continue-on-error: false
-        env:
-          TZ: "Asia/Tokyo"
         run: |
-          # forループを使用して配列内の各要素をチェック
           i=0
-          items=$(gh pr view ${{ github.event.number }} --json labels -q '.labels[]')
-          # 配列をループで処理
-          IFS=$'\n' # 改行で区切る
-          for item in $items; do
-            name=`echo $item | jq -r '.name'`
-            echo ${name}
-            case "${name}" in
+          
+          # PRのラベル情報を取得
+          items=$(GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh pr view ${{ github.event.number }} --repo "${{ github.repository }}" --json labels -q '.labels')
+
+          # ラベルが付いていない場合のチェック
+          if [ -z "$items" ] || [ "$items" = "[]" ]; then
+              echo "エラー: PR にラベルが付いていません"
+              exit 1
+          fi
+
+          IFS=$'\n'
+          for item in $(echo "$items" | jq -r 'map(.name) | .[]'); do
+              case "${item}" in
                   "major"|"minor"|"patch")
-                          i=`expr $i + 1`
+                      (( ++i ))
                       ;;
               esac
           done
-          if [ ${i} -eq 0 ]; then
-              echo "更新するリリースバージョンのlabelを付けてください( major or minor or patch )"
-              exit 1;
+
+          # ラベルの数をチェック
+          if [ $i -eq 0 ]; then
+              echo "エラー: 更新するリリースバージョンのラベルを付けてください (major, minor, patch のいずれか)"
+              exit 1
           fi
-          if [ ${i} -gt 1 ]; then
-              echo "リリースバージョンのlabelを2つ以上つけないでください"
-              exit 1;
+          if [ $i -gt 1 ]; then
+              echo "エラー: リリースバージョンのラベルを2つ以上つけないでください"
+              exit 1
           fi
-          echo "finish"
-      - name: gh auth logout
-        # ランナーのインスタンスは他のプロダクトでも使用されているのでログアウトする。
-        run: gh auth logout --hostname {ホスト名}
+
+          echo "✅ チェック完了: 適切なラベルが1つ設定されています。"
