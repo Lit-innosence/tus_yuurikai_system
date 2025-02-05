@@ -34,13 +34,13 @@ jobs:
       - name: Fetch latest tags
         run: git fetch --prune --tags -f
 
-      - name: Create release tag and generate combined release notes
+      - name: Create release tag and generate release notes
         continue-on-error: false
         env:
           USE_ORIGINAL_TAG: false
           NEW_TAG_NAME: "original_tag"
         run: |
-          # 最新のタグ取得 (タグがない場合は v0.0.0 を基点とする)
+          # 最新のタグ取得 (タグがない場合は v0.0.0 を設定)
           LATEST_TAG_COMMIT=$(git rev-list --tags --max-count=1)
           if [ -z "$LATEST_TAG_COMMIT" ]; then
               echo "No existing tags found. Using v0.0.0 as base."
@@ -56,7 +56,7 @@ jobs:
             MINOR_VER=$(echo "${NOW_TAG}" | awk -F. '{print $2}')
             PATCH_VER=$(echo "${NOW_TAG}" | awk -F. '{print $3}')
 
-            # PR のラベルからバージョンアップの種類 (major, minor, patch) を取得
+            # PR のラベルからバージョンアップの種類を取得
             UP_VER=""
             items=$(GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh pr view ${{ github.event.number }} --repo "${{ github.repository }}" --json labels -q '.labels')
 
@@ -104,21 +104,32 @@ jobs:
 
           echo "NEW_TAG is ${NEW_TAG}"
 
-          # PR の本文（実際の内容）を取得してファイルに出力
-          PR_BODY=$(GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh pr view ${{ github.event.number }} --repo "${{ github.repository }}" --json body -q '.body')
-          echo "$PR_BODY" > combined_release_notes.txt
+          # PR の body 情報を取得
+          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh pr view ${{ github.event.number }} --repo "${{ github.repository }}" --json body -q '.body' > pr_body.txt
 
-          # GitHub Release Notes 自動生成 API を使って追加のリリースノートを生成
-          AUTO_NOTES=$(GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh api repos/${{ github.repository }}/releases/generate-notes \
-              -F tag_name="${NEW_TAG}" \
-              -F target_commitish="${MASTER_BRANCH}" \
-              -F previous_tag_name="${NOW_TAG}" \
-              --jq .body)
-          # PR の本文の下に自動生成されたリリースノートを追記
-          echo "" >> combined_release_notes.txt
-          echo "$AUTO_NOTES" >> combined_release_notes.txt
+          # GitHub Release Notes の自動生成（前回のタグがない場合は previous_tag_name を送信しない）
+          if [ "$NOW_TAG" = "v0.0.0" ]; then
+              echo "Generating release notes without previous_tag_name..."
+              GENERATED_NOTES=$(GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh api repos/${{ github.repository }}/releases/generate-notes \
+                  -F tag_name="${NEW_TAG}" \
+                  -F target_commitish="${MASTER_BRANCH}" \
+                  --jq .body)
+          else
+              echo "Generating release notes with previous_tag_name ${NOW_TAG}..."
+              GENERATED_NOTES=$(GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh api repos/${{ github.repository }}/releases/generate-notes \
+                  -F tag_name="${NEW_TAG}" \
+                  -F target_commitish="${MASTER_BRANCH}" \
+                  -F previous_tag_name="${NOW_TAG}" \
+                  --jq .body)
+          fi
+          echo "$GENERATED_NOTES" > generated_notes.txt
+
+          # PR の body と自動生成されたリリースノートを結合
+          cat pr_body.txt > release_notes.txt
+          echo -e "\n---\n" >> release_notes.txt
+          cat generated_notes.txt >> release_notes.txt
 
           today=$(date +'%Y/%m/%d')
 
           # タグとリリースを作成
-          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release create ${NEW_TAG} --notes-start-tag ${NOW_TAG} --latest --target ${{ env.MASTER_BRANCH }} -F combined_release_notes.txt -t "${today} リリース"
+          GH_TOKEN=${{ secrets.GITHUB_TOKEN }} gh release create ${NEW_TAG} --notes-start-tag ${NOW_TAG} --latest --target ${{ env.MASTER_BRANCH }} -F release_notes.txt -t "${today} リリース"
