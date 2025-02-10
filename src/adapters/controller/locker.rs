@@ -14,8 +14,8 @@ use std::{env, collections::HashSet};
 use uuid::Uuid;
 use dotenv::dotenv;
 use rocket::{get, http::{Status, RawStr, Cookie, CookieJar, SameSite}, post, serde::json::Json, State};
-use chrono::Duration;
-
+use rocket::time::Duration as RocketDuration;
+use chrono::Duration as ChronoDuration;
 
 // token生成、メール送信API
 #[utoipa::path(context_path = "/api/locker")]
@@ -349,7 +349,7 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
         return Status::InternalServerError
     }
 
-    let token = encode_jwt(&request.username, Duration::hours(1), &key);
+    let token = encode_jwt(&request.username, ChronoDuration::hours(1), &key);
 
     // cookieを作成
     let cookie = Cookie::build(("token", token))
@@ -361,6 +361,24 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
     jar.add(cookie);
 
     return Status::Created
+}
+
+/// ### 管理者ログアウトAPI
+#[utoipa::path(context_path = "/api")]
+#[post("/logout")]
+pub async fn logout(jar: &CookieJar<'_>) -> Status {
+
+    let expired_cookie = Cookie::build(("token", ""))
+        .path("/")
+        .secure(true)
+        .same_site(SameSite::None)
+        .http_only(true)
+        .max_age(RocketDuration::seconds(0)) // 即無効化する
+        .build();
+
+    jar.add(expired_cookie);
+
+    Status::Ok
 }
 
 /// ロッカー利用者検索API

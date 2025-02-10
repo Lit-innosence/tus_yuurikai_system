@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, Typography, Layout, Input, message, Modal, Button, Select } from 'antd';
 import { ExportOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import CustomHeader from '../component/CustomHeader';
+import CustomAdminHeader from '../component/CustomAdminHeader';
 import CustomFooter from '../component/CustomFooter';
 import constants from '../constants';
 
@@ -267,7 +267,7 @@ const CircleList: React.FC = () => {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <CustomHeader />
+            <CustomAdminHeader />
             <Content
                 style={{
                     padding: '50px',

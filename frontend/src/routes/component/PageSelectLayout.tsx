@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout, List, Button } from 'antd';
 import CustomHeader from './CustomHeader';
+import CustomAdminHeader from './CustomAdminHeader';
 import CustomFooter from './CustomFooter';
 
 const { Content } = Layout;
@@ -11,17 +12,19 @@ type ContentItem = {
     route: string;
 };
 
-type AdminLayoutProps = {
+type SelectLayoutProps = {
     content: ContentItem[];
+    kind?: 'admin' | 'user';
 };
 
-const AdminLayout: React.FC<AdminLayoutProps> = ({ content }) => {
+const SelectLayout: React.FC<SelectLayoutProps> = ({ content, kind = 'user' }) => {
     const navigate = useNavigate();
+    const HeaderComponent = kind === 'admin' ? CustomAdminHeader : CustomHeader;
 
     return (
         <React.Fragment>
             <Layout style={{ minHeight: '100vh' }}>
-                <CustomHeader />
+                <HeaderComponent />
                 <Content style={{ padding: '50px 50px', minHeight: '80vh' }}>
                     <List
                         itemLayout="horizontal"
@@ -46,4 +49,4 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ content }) => {
     );
 };
 
-export default AdminLayout;
+export default SelectLayout;
