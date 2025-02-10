@@ -3,6 +3,7 @@ import axios from 'axios';
 import { createContext, useContext, useState, useEffect } from 'react';
 import constants from '../constants';
 import { LoginFormData } from '../types';
+import Cookies from 'js-cookie'; 
 
 type AuthState = {
   loggedIn: boolean;
@@ -29,9 +30,9 @@ const AuthProvider: React.FC<AuthProviderProps> = (props) => {
 
   axios.defaults.withCredentials = true;
 
-  // 初回レンダリング時にトークンの有無を確認
+  // 初回レンダリング時にCookie内のトークンの有無を確認
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
+    const token = Cookies.get('authToken');
     if (token) {
       setLoggedIn(true);
     }
@@ -44,7 +45,8 @@ const AuthProvider: React.FC<AuthProviderProps> = (props) => {
       return response.data;
     },
     onSuccess: (data) => {
-      localStorage.setItem('authToken', data.token); // トークンを保存
+      // Cookieにトークンを保存
+      Cookies.set('authToken', data.token, { expires: 0.042, secure: true });
       setLoggedIn(true);
     },
   });
@@ -62,7 +64,7 @@ const AuthProvider: React.FC<AuthProviderProps> = (props) => {
     }
   };
 
-  // ログアウト処理（トークン削除）
+  // ログアウト処理（Cookieからトークン削除）
   const handleLogout = async (): Promise<void> => {
     try {
       await axios.post(`${constants.backendApiEndpoint}/api/logout`, {}, { withCredentials: true });
@@ -70,7 +72,7 @@ const AuthProvider: React.FC<AuthProviderProps> = (props) => {
       console.error('ログアウトAPIの呼び出しに失敗しました', error);
     }
     
-    localStorage.removeItem('authToken');
+    Cookies.remove('authToken');
     setLoggedIn(false);
   };  
 
