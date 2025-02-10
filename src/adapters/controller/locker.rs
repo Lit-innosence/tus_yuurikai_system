@@ -8,6 +8,7 @@ use crate::usecase::{
                     auth::AuthUsecase,
                     locker::LockerUsecase,
                     admin::AdminUsecase};
+use crate::utils::verify_password::verify_password_hash;
 use crate::utils::{decode_jwt::decode_jwt, encode_jwt::encode_jwt};
 
 use std::{env, collections::HashSet};
@@ -318,7 +319,7 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
         ご不明点がございましたら、お問い合わせください。\n\n\
         よろしくお願いいたします。\n",
         assignment.locker_id
-    );    
+    );
     let subject = "ロッカーシステム ロッカー登録通知";
 
     // メールの送信
@@ -340,14 +341,17 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
         Err(_) => return Status::InternalServerError,
     };
 
+    // passwordの検証
+    match verify_password_hash(request.password.clone(), credential.password) {
+        Ok(_) => {},
+        Err(err) => {
+            println!("{}", err);
+            return Status::BadRequest},
+    }
+
     // 環境変数TOKEN_KEYを取得
     dotenv().ok();
     let key = env::var("TOKEN_KEY").expect("token key must be set.");
-
-    // passwordの検証
-    if request.password != credential.password {
-        return Status::InternalServerError
-    }
 
     let token = encode_jwt(&request.username, Duration::hours(1), &key);
 
@@ -483,9 +487,12 @@ pub async fn reset(request: Json<LockerResetRequest>, jar: &CookieJar<'_>, app: 
         Some(_) => {
             // passwordの検証
             dotenv().ok();
-            let password = env::var("LOCKER_RESET_PASSWORD").expect("locker reset password must be set");
-            if password != request.password {
-                return (Status::Unauthorized, "request password does not match")
+            let password = env::var("LOCKER_RESET_PASSWORD_HASH").expect("locker reset password hash must be set");
+            match verify_password_hash(request.password.clone(), password) {
+                Ok(_) => {},
+                Err(err) => {
+                    println!("{}", err);
+                    return (Status::BadRequest, "invalid password")},
             }
 
             if app.locker.reset_status().await.is_err() {
