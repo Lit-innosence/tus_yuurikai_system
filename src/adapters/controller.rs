@@ -19,6 +19,7 @@ use utoipa::OpenApi;
         auth_check,
         locker_register,
         login,
+        logout,
         user_search,
         availability,
         reset,

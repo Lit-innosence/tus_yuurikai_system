@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Layout, Input, Button, Form, Typography, Card, Table, message } from 'antd';
-import CustomHeader from '../component/CustomHeader';
+import CustomAdminHeader from '../component/CustomAdminHeader';
 import CustomFooter from '../component/CustomFooter';
 import axios from 'axios';
 import constants from '../constants';
@@ -84,7 +84,7 @@ const LockerUserSearch: React.FC = () => {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <CustomHeader />
+            <CustomAdminHeader />
             <Content style={{ padding: '50px 50px', background: '#fff' }}>
                 <Card style={{ maxWidth: 800, margin: '20px auto', padding: '20px' }}>
                     <Title level={3}>ロッカー利用者検索</Title>

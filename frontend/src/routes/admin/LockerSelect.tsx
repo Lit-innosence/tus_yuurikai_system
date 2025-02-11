@@ -7,7 +7,7 @@ const content = [
 ];
 
 const LockerSelect: React.FC = () => {
-    return <SelectLayout content={content} />;
+    return <SelectLayout content={content} kind="admin"/>;
 };
 
 export default LockerSelect;

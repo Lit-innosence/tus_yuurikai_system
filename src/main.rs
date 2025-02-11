@@ -43,6 +43,7 @@ async fn main() -> Result<(), rocket::Error> {
                 get_healthcheck,
                 post_healthcheck,
                 login,
+                logout,
             ]
         )
         .mount(

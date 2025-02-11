@@ -3,7 +3,7 @@ import { Form, DatePicker, TimePicker, Button, message, Card, Layout, Row, Col }
 import axios from 'axios';
 import dayjs, { Dayjs } from 'dayjs';
 import constants from '../constants';
-import CustomHeader from '../component/CustomHeader';
+import CustomAdminHeader from '../component/CustomAdminHeader';
 import CustomFooter from '../component/CustomFooter';
 
 const AccessRestrictionPage: React.FC = () => {
@@ -100,7 +100,7 @@ const AccessRestrictionPage: React.FC = () => {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <CustomHeader />
+            <CustomAdminHeader />
             <Layout
                 style={{
                     padding: '50px',
