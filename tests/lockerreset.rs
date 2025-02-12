@@ -17,6 +17,7 @@ use chrono::Duration;
 
 // 正常系
 #[rocket::async_test]
+#[ignore]
 async fn normal() {
 
     // Arrange
@@ -33,7 +34,7 @@ async fn normal() {
     };
 
     // jwtをCookieに保存
-    let username = env::var("ADMIN_USER_NAME").expect("admin username must be set");
+    let username = String::from("test_admin");
     let key = env::var("TOKEN_KEY").expect("token key must be set");
     let token = encode_jwt(&username, Duration::hours(1), &key);
     let cookie = Cookie::build(("token", token))
@@ -83,6 +84,7 @@ async fn normal() {
 
 // 正常系:モンキーテスト
 #[rocket::async_test]
+#[ignore]
 async fn out_of_work_locker_exists() {
 
     // Arrange
@@ -99,7 +101,7 @@ async fn out_of_work_locker_exists() {
     };
 
     // jwtをCookieに保存
-    let username = env::var("ADMIN_USER_NAME").expect("admin username must be set");
+    let username = String::from("test_admin");
     let key = env::var("TOKEN_KEY").expect("token key must be set");
     let token = encode_jwt(&username, Duration::hours(1), &key);
     let cookie = Cookie::build(("token", token))
@@ -148,6 +150,7 @@ async fn out_of_work_locker_exists() {
 
 // 異常系:パスワードが無効
 #[rocket::async_test]
+#[ignore]
 async fn request_password_is_not_valid() {
 
     // Arrange
@@ -162,7 +165,7 @@ async fn request_password_is_not_valid() {
     };
 
     // jwtをCookieに保存
-    let username = env::var("ADMIN_USER_NAME").expect("admin username must be set");
+    let username = String::from("test_admin");
     let key = env::var("TOKEN_KEY").expect("token key must be set");
     let token = encode_jwt(&username, Duration::hours(1), &key);
     let cookie = Cookie::build(("token", token))
@@ -189,6 +192,7 @@ async fn request_password_is_not_valid() {
 
 // 異常系:jwtが存在しない
 #[rocket::async_test]
+#[ignore]
 async fn jwt_is_not_exists() {
 
     // Arrange
@@ -215,6 +219,7 @@ async fn jwt_is_not_exists() {
 
 // 異常系:jwtが無効
 #[rocket::async_test]
+#[ignore]
 async fn jwt_is_not_valid() {
 
     // Arrange

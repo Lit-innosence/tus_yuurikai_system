@@ -68,7 +68,15 @@ async fn normal() {
 
     dotenv().ok();
 
-    let username = env::var("ADMIN_USER_NAME").expect("admin username must be set");
+    let username = String::from("user000");
+    let password = String::from("0000");
+
+    let password_hash = utils::password_hash::compute_password_hash(password.clone()).unwrap();
+    match app.admin.admin_repository.insert(&username, &password_hash).await {
+        Ok(_) => {},
+        Err(err) => {panic!{"{}", err}},
+    }
+
     let key = env::var("TOKEN_KEY").expect("token key must be set");
     let token = encode_jwt(&username, Duration::hours(1), &key);
     let cookie = Cookie::build(("token", token))
@@ -93,6 +101,11 @@ async fn normal() {
             year: Local::now().year(),
         }]
     };
+
+    match app.admin.admin_repository.delete_by_name(&username).await {
+        Ok(_) => {},
+        Err(err) => {panic!{"{}",err}}
+    }
 
     // Assert
     assert_eq!(response.status(), Status::Ok);
@@ -152,7 +165,15 @@ async fn given_name_is_not_requested() {
 
     dotenv().ok();
 
-    let username = env::var("ADMIN_USER_NAME").expect("admin username must be set");
+    let username = String::from("user000");
+    let password = String::from("0000");
+
+    let password_hash = utils::password_hash::compute_password_hash(password.clone()).unwrap();
+    match app.admin.admin_repository.insert(&username, &password_hash).await {
+        Ok(_) => {},
+        Err(err) => {panic!{"{}", err}},
+    }
+
     let key = env::var("TOKEN_KEY").expect("token key must be set");
     let token = encode_jwt(&username, Duration::hours(1), &key);
     let cookie = Cookie::build(("token", token))
@@ -178,6 +199,11 @@ async fn given_name_is_not_requested() {
             year: Local::now().year(),
         }]
     };
+
+    match app.admin.admin_repository.delete_by_name(&username).await {
+        Ok(_) => {},
+        Err(err) => {panic!{"{}",err}}
+    }
 
     // Assert
     assert_eq!(response.status(), Status::Ok);
@@ -237,7 +263,15 @@ async fn family_name_is_not_requested() {
 
     dotenv().ok();
 
-    let username = env::var("ADMIN_USER_NAME").expect("admin username must be set");
+    let username = String::from("user000");
+    let password = String::from("0000");
+
+    let password_hash = utils::password_hash::compute_password_hash(password.clone()).unwrap();
+    match app.admin.admin_repository.insert(&username, &password_hash).await {
+        Ok(_) => {},
+        Err(err) => {panic!{"{}", err}},
+    }
+
     let key = env::var("TOKEN_KEY").expect("token key must be set");
     let token = encode_jwt(&username, Duration::hours(1), &key);
     let cookie = Cookie::build(("token", token))
@@ -262,6 +296,11 @@ async fn family_name_is_not_requested() {
             year: Local::now().year(),
         }]
     };
+
+    match app.admin.admin_repository.delete_by_name(&username).await {
+        Ok(_) => {},
+        Err(err) => {panic!{"{}",err}}
+    }
 
     // Assert
     assert_eq!(response.status(), Status::Ok);
@@ -321,7 +360,15 @@ async fn name_is_not_requested() {
 
     dotenv().ok();
 
-    let username = env::var("ADMIN_USER_NAME").expect("admin username must be set");
+    let username = String::from("user000");
+    let password = String::from("0000");
+
+    let password_hash = utils::password_hash::compute_password_hash(password.clone()).unwrap();
+    match app.admin.admin_repository.insert(&username, &password_hash).await {
+        Ok(_) => {},
+        Err(err) => {panic!{"{}", err}},
+    }
+
     let key = env::var("TOKEN_KEY").expect("token key must be set");
     let token = encode_jwt(&username, Duration::hours(1), &key);
     let cookie = Cookie::build(("token", token))
@@ -346,6 +393,11 @@ async fn name_is_not_requested() {
             year: Local::now().year(),
         }]
     };
+
+    match app.admin.admin_repository.delete_by_name(&username).await {
+        Ok(_) => {},
+        Err(err) => {panic!{"{}",err}}
+    }
 
     // Assert
     assert_eq!(response.status(), Status::Ok);
