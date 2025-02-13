@@ -32,7 +32,7 @@ const AuthProvider: React.FC<AuthProviderProps> = (props) => {
 
   // 初回レンダリング時にCookie内のトークンの有無を確認
   useEffect(() => {
-    const token = Cookies.get('authToken');
+    const token = Cookies.get('token');
     if (token) {
       setLoggedIn(true);
     }
