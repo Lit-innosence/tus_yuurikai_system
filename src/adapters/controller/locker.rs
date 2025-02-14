@@ -343,7 +343,7 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
     // passwordの検証
     match verify_password_hash(request.password.clone(), credential.password) {
         Ok(_) => {},
-        Err(err) => {
+        Err(_) => {
             return Status::BadRequest},
     }
 
@@ -512,7 +512,7 @@ pub async fn reset(request: Json<LockerResetRequest>, jar: &CookieJar<'_>, app: 
             let password = env::var("LOCKER_RESET_PASSWORD_HASH").expect("locker reset password hash must be set");
             match verify_password_hash(request.password.clone(), password) {
                 Ok(_) => {},
-                Err(err) => {
+                Err(_) => {
                     return (Status::BadRequest, "invalid password")},
             }
 
