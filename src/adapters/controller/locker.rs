@@ -14,8 +14,8 @@ use std::{env, collections::HashSet};
 use uuid::Uuid;
 use dotenv::dotenv;
 use rocket::{get, http::{Status, RawStr, Cookie, CookieJar, SameSite}, post, serde::json::Json, State};
-use chrono::Duration;
-
+use rocket::time::Duration as RocketDuration;
+use chrono::Duration as ChronoDuration;
 
 // token生成、メール送信API
 #[utoipa::path(context_path = "/api/locker")]
@@ -344,26 +344,49 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
     match verify_password_hash(request.password.clone(), credential.password) {
         Ok(_) => {},
         Err(err) => {
-            println!("{}", err);
             return Status::BadRequest},
     }
 
     // 環境変数TOKEN_KEYを取得
     dotenv().ok();
     let key = env::var("TOKEN_KEY").expect("token key must be set.");
+    let domain = env::var("DOMAIN").expect("domain must be set.");
 
-    let token = encode_jwt(&request.username, Duration::hours(1), &key);
+    let token = encode_jwt(&request.username, ChronoDuration::hours(1), &key);
 
     // cookieを作成
     let cookie = Cookie::build(("token", token))
         .path("/")
+        .domain(domain)
+        .max_age(RocketDuration::hours(1))
         .secure(true)
-        .same_site(SameSite::None)
+        .same_site(SameSite::Strict)
         .http_only(true);
 
     jar.add(cookie);
 
     return Status::Created
+}
+
+/// ### 管理者ログアウトAPI
+#[utoipa::path(context_path = "/api")]
+#[post("/logout")]
+pub async fn logout(jar: &CookieJar<'_>) -> Status {
+
+    dotenv().ok();
+    let domain = env::var("DOMAIN").expect("domain must be set.");
+
+    let expired_cookie = Cookie::build(("token", ""))
+        .path("/")
+        .domain(domain)
+        .max_age(RocketDuration::seconds(0)) // 即無効化する
+        .secure(true)
+        .same_site(SameSite::Strict)
+        .http_only(true);
+
+    jar.add(expired_cookie);
+
+    Status::Ok
 }
 
 /// ロッカー利用者検索API
@@ -490,7 +513,6 @@ pub async fn reset(request: Json<LockerResetRequest>, jar: &CookieJar<'_>, app: 
             match verify_password_hash(request.password.clone(), password) {
                 Ok(_) => {},
                 Err(err) => {
-                    println!("{}", err);
                     return (Status::BadRequest, "invalid password")},
             }
 

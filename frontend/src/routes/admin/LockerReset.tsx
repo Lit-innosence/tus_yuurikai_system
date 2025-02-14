@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Layout, Button, Modal, Input, message } from 'antd';
 import axios from 'axios';
-import CustomHeader from '../component/CustomHeader';
+import CustomAdminHeader from '../component/CustomAdminHeader';
 import CustomFooter from '../component/CustomFooter';
 import constants from '../constants';
 
@@ -42,7 +42,7 @@ const LockerReset: React.FC = () => {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <CustomHeader />
+            <CustomAdminHeader />
             <Content style={{ padding: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 {/* 黄色と黒の縞模様の背景 */}
                 <div style={{
