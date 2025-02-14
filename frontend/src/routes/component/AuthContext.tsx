@@ -32,21 +32,19 @@ const AuthProvider: React.FC<AuthProviderProps> = (props) => {
 
   // 初回レンダリング時にCookie内のトークンの有無を確認
   useEffect(() => {
-    const token = Cookies.get('authToken');
+    const token = Cookies.get('token');
     if (token) {
       setLoggedIn(true);
     }
   }, []);
 
   // ログイン処理
-  const loginMutation = useMutation<{ token: string }, Error, LoginFormData>({
+  const loginMutation = useMutation< void , Error, LoginFormData>({
     mutationFn: async (formData: LoginFormData) => {
-      const response = await axios.post(`${constants.backendApiEndpoint}/api/login`, formData);
-      return response.data;
+      await axios.post(`${constants.backendApiEndpoint}/api/login`, formData);
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Cookieにトークンを保存
-      Cookies.set('authToken', data.token, { expires: 0.042, secure: true });
       setLoggedIn(true);
     },
   });
@@ -72,7 +70,6 @@ const AuthProvider: React.FC<AuthProviderProps> = (props) => {
       console.error('ログアウトAPIの呼び出しに失敗しました', error);
     }
     
-    Cookies.remove('authToken');
     setLoggedIn(false);
   };  
 

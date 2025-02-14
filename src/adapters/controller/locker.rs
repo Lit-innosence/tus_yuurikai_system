@@ -343,6 +343,7 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
     // 環境変数TOKEN_KEYを取得
     dotenv().ok();
     let key = env::var("TOKEN_KEY").expect("token key must be set.");
+    let domain = env::var("DOMAIN").expect("domain must be set.");
 
     // passwordの検証
     if request.password != credential.password {
@@ -354,8 +355,10 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
     // cookieを作成
     let cookie = Cookie::build(("token", token))
         .path("/")
+        .domain(domain)
+        .max_age(RocketDuration::hours(1))
         .secure(true)
-        .same_site(SameSite::None)
+        .same_site(SameSite::Strict)
         .http_only(true);
 
     jar.add(cookie);
@@ -368,13 +371,16 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
 #[post("/logout")]
 pub async fn logout(jar: &CookieJar<'_>) -> Status {
 
+    dotenv().ok();
+    let domain = env::var("DOMAIN").expect("domain must be set.");
+
     let expired_cookie = Cookie::build(("token", ""))
         .path("/")
-        .secure(true)
-        .same_site(SameSite::None)
-        .http_only(true)
+        .domain(domain)
         .max_age(RocketDuration::seconds(0)) // 即無効化する
-        .build();
+        .secure(true)
+        .same_site(SameSite::Strict)
+        .http_only(true);
 
     jar.add(expired_cookie);
 
