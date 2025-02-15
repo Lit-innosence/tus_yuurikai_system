@@ -26,12 +26,13 @@ const LockerUserSearch: React.FC = () => {
             query += `?${params.toString()}`;
         }
 
-        console.log('Generated Query:', query);
-
         try {
             // APIからデータを取得
             const response = await axios.get(query, { withCredentials: true });
             setSearchResults(response.data.data);
+            if (response.data.data.length === 0) {
+                message.warning('該当するデータが見つかりませんでした。');
+            }
         } catch (error: any) {
             if (axios.isAxiosError(error)) {
                 if (error.response?.status === 401 || error.response?.status === 400) {
