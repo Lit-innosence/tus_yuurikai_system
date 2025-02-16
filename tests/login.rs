@@ -49,6 +49,7 @@ pub async fn normal() {
     assert_eq!(response.status(), Status::Created);
     assert_ne!(response.cookies().get("token"), None);
 
+    setup_db(&app).await;
 }
 
 // 異常系=存在しないusernameである
@@ -89,6 +90,8 @@ pub async fn username_does_not_exist() {
     // Assert
     assert_eq!(response.status(), Status::InternalServerError);
     assert_eq!(response.cookies().get("token"), None);
+
+    setup_db(&app).await;
 }
 
 // 異常系=passwordが異なる
@@ -131,4 +134,5 @@ pub async fn password_is_wrong() {
     assert_eq!(response.status(), Status::BadRequest);
     assert_eq!(response.cookies().get("token"), None);
 
+    setup_db(&app).await;
 }

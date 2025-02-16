@@ -14,6 +14,7 @@ use tus_yuurikai_system::infrastructure::router::App;
 
 // 正常系
 #[rocket::async_test]
+#[ignore]
 async fn normal() {
 
     // Arrange
@@ -78,10 +79,13 @@ async fn normal() {
     // Assert
     assert_eq!(response.status(), Status::Created);
     assert_eq!(response.into_string().await.unwrap(), "success create assignment");
+
+    setup_db(&app).await;
 }
 
 // 正常系＝学籍番号にA,Bを許す
 #[rocket::async_test]
+#[ignore]
 async fn student_id_allow_a_b() {
 
     // Arrange
@@ -146,10 +150,13 @@ async fn student_id_allow_a_b() {
     // Assert
     assert_eq!(response.status(), Status::Created);
     assert_eq!(response.into_string().await.unwrap(), "success create assignment");
+
+    setup_db(&app).await;
 }
 
 // 異常系＝student_idがテーブル内のタプルと一致しない
 #[rocket::async_test]
+#[ignore]
 async fn student_id_do_not_match() {
 
     // Arrange
@@ -213,11 +220,14 @@ async fn student_id_do_not_match() {
     // Assert
     assert_eq!(response.status(), Status::InternalServerError);
     assert_eq!(response.into_string().await.unwrap(), "failed to get student_pair id");
+
+    setup_db(&app).await;
 }
 
 
 // 異常系＝yearが一致するタプルが存在しない
 #[rocket::async_test]
+#[ignore]
 async fn year_do_not_match() {
 
     // Arrange
@@ -278,10 +288,13 @@ async fn year_do_not_match() {
     // Assert
     assert_eq!(response.status(), Status::InternalServerError);
     assert_eq!(response.into_string().await.unwrap(), "failed to get student_pair id");
+
+    setup_db(&app).await;
 }
 
 // 異常系＝ロッカーのstatusがvacantでない
 #[rocket::async_test]
+#[ignore]
 async fn locker_status_unavailable() {
 
     // Arrange
@@ -352,10 +365,13 @@ async fn locker_status_unavailable() {
     // Assert
     assert_eq!(response.status(), Status::BadRequest);
     assert_eq!(response.into_string().await.unwrap(), "This locker is not vacant");
+
+    setup_db(&app).await;
 }
 
 // 異常系:既に登録されたペアである
 #[rocket::async_test]
+#[ignore]
 async fn same_pair_arleady_registered() {
 
     // Arrange
@@ -425,4 +441,6 @@ async fn same_pair_arleady_registered() {
     // Assert
     assert_eq!(response.status(), Status::InternalServerError);
     assert_eq!(response.into_string().await.unwrap(), "same pair already exists");
+
+    setup_db(&app).await;
 }

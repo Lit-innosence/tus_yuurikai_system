@@ -41,6 +41,8 @@ pub async fn normal() {
     // Assert
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.into_json::<LockerStatusResponse>().await.unwrap(), expected_result);
+
+    setup_db(&app).await;
 }
 
 // 正常系=floorが指定されていない
@@ -75,4 +77,6 @@ pub async fn floor_is_not_requested() {
     // Assert
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.into_json::<LockerStatusResponse>().await.unwrap(), expected_result);
+
+    setup_db(&app).await;
 }
