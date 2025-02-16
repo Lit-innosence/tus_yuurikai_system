@@ -4,15 +4,19 @@ import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import constants from './routes/constants';
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <GoogleReCaptchaProvider reCaptchaKey={constants.recaptchaSiteKey}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </GoogleReCaptchaProvider>
   </React.StrictMode>
 );
 

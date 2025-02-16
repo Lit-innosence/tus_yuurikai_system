@@ -24,6 +24,41 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
 
     let data = &request.data;
 
+    dotenv().ok();
+
+    // recaptchaの検証
+    let recaptcha_token = &request.recaptcha_token;
+    let recaptcha_secret = env::var("RECAPTCHA_SECRET_KEY").expect("RECAPTCHA_SECRET_KEY must be set.");
+
+    let client = reqwest::Client::new();
+    let params = [("secret", recaptcha_secret), ("response", recaptcha_token.to_string())];
+    let verification_response = client
+        .post("https://www.google.com/recaptcha/api/siteverify")
+        .form(&params)
+        .send()
+        .await;
+
+    let recaptcha_result: RecaptchaResponse = match verification_response {
+        Ok(resp) => {
+            if resp.status() != reqwest::StatusCode::OK {
+                return Status::InternalServerError;
+            }
+            match resp.json().await {
+                Ok(json) => json,
+                Err(_) => return Status::InternalServerError,
+            }
+        },
+        Err(_) => return Status::InternalServerError,
+    };
+
+    if !recaptcha_result.success 
+        || recaptcha_result.score.unwrap_or(0.0) < 0.5 
+        || recaptcha_result.action.unwrap_or_default() != "confirm_page" {
+        return Status::Unauthorized;
+    }
+
+
+    // tokenの生成
     let token = match app.auth.locker_register(&data.main_user.clone(), &data.co_user.clone(), &String::from("main_auth"), false).await{
         Ok(auth) => auth.main_auth_token,
         Err(_) => return Status::InternalServerError,
@@ -32,7 +67,6 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
     // メール内容の作成
     let main_user = &data.main_user;
 
-    dotenv().ok();
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
 
     let user_address = format!("{}@ed.tus.ac.jp", main_user.student_id);
