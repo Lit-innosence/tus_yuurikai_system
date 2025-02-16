@@ -110,6 +110,8 @@ async fn normal() {
     // Assert
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.into_json::<UserSearchResponse>().await.unwrap(), expected_data);
+
+    setup_db(&app).await;
 }
 
 // 正常系:given_nameが指定されていない
@@ -208,6 +210,8 @@ async fn given_name_is_not_requested() {
     // Assert
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.into_json::<UserSearchResponse>().await.unwrap(), expected_data);
+
+    setup_db(&app).await;
 }
 
 // 正常系:family_nameが指定されていない
@@ -305,6 +309,8 @@ async fn family_name_is_not_requested() {
     // Assert
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.into_json::<UserSearchResponse>().await.unwrap(), expected_data);
+
+    setup_db(&app).await;
 }
 
 // 正常系:nameが指定されていない
@@ -402,6 +408,8 @@ async fn name_is_not_requested() {
     // Assert
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.into_json::<UserSearchResponse>().await.unwrap(), expected_data);
+
+    setup_db(&app).await;
 }
 
 // 異常系:jwtを所持していない
@@ -464,4 +472,6 @@ async fn jwt_does_not_exist() {
 
     // Assert
     assert_eq!(response.status(), Status::BadRequest);
+
+    setup_db(&app).await;
 }

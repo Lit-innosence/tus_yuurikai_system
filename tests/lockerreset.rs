@@ -80,6 +80,8 @@ async fn normal() {
 
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.into_string().await.unwrap(), "successfully reset locker");
+
+    setup_db(&app).await;
 }
 
 // 正常系:モンキーテスト
@@ -146,6 +148,8 @@ async fn out_of_work_locker_exists() {
 
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.into_string().await.unwrap(), "successfully reset locker");
+
+    setup_db(&app).await;
 }
 
 // 異常系:パスワードが無効
@@ -188,6 +192,8 @@ async fn request_password_is_not_valid() {
     // Assert
     assert_eq!(response.status(), Status::Unauthorized);
     assert_eq!(response.into_string().await.unwrap(), "request password does not match");
+
+    setup_db(&app).await;
 }
 
 // 異常系:jwtが存在しない
@@ -215,6 +221,8 @@ async fn jwt_is_not_exists() {
     // Assert
     assert_eq!(response.status(), Status::Unauthorized);
     assert_eq!(response.into_string().await.unwrap(), "request is unauthorized");
+
+    setup_db(&app).await;
 }
 
 // 異常系:jwtが無効
@@ -257,4 +265,6 @@ async fn jwt_is_not_valid() {
     // Assert
     assert_eq!(response.status(), Status::Unauthorized);
     assert_eq!(response.into_string().await.unwrap(), "request token is not valid");
+
+    setup_db(&app).await;
 }
