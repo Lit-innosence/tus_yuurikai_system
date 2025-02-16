@@ -14,33 +14,16 @@ const LockerRegisterConfirm: React.FC = () => {
     const { lockerId, pairInfo: initialPairInfo, authId } = location.state || {};
 
     const [isChecked, setIsChecked] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [pairInfo, setPairInfo] = useState(initialPairInfo);
-
-    const mockPairInfo = {
-        mainUser: {
-            studentId: '9999999',
-            familyName: '山田',
-            givenName: '太郎',
-        },
-        coUser: {
-            studentId: '8888888',
-            familyName: '佐藤',
-            givenName: '次郎',
-        },
-    };
-
-    // pairInfoがundefinedの場合にモックデータをセット
-    useEffect(() => {
-        if (!initialPairInfo) {
-            setPairInfo(mockPairInfo);
-        }
-    }, [initialPairInfo]);
 
     const handleCheckboxChange = (e: any) => {
         setIsChecked(e.target.checked);
     };
 
     const handleConfirm = async () => {
+        setLoading(true); 
+
         const postData = {
             data: {
                 studentId: pairInfo.mainUser.studentId,
@@ -57,6 +40,8 @@ const LockerRegisterConfirm: React.FC = () => {
         } catch (error) {
             console.error('エラー:', error);
             message.error('ロッカーの登録に失敗しました');
+        } finally {
+            setLoading(false); 
         }
     };
 
@@ -94,7 +79,12 @@ const LockerRegisterConfirm: React.FC = () => {
                             </div>
 
                             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px' }}>
-                                <Button type="primary" onClick={handleConfirm} disabled={!isChecked}>
+                                <Button 
+                                    type="primary" 
+                                    onClick={handleConfirm} 
+                                    disabled={!isChecked || loading} 
+                                    loading={loading}
+                                >
                                     確認して登録
                                 </Button>
                             </div>

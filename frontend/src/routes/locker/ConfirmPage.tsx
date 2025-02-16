@@ -15,12 +15,16 @@ const ConfirmPage: React.FC = () => {
 
     // チェックボックスの状態を管理
     const [isChecked, setIsChecked] = useState(false);
+    // ローディング状態を管理
+    const [loading, setLoading] = useState(false);
 
     const handleCheckboxChange = (e: any) => {
         setIsChecked(e.target.checked);
     };
 
     const handleConfirm = async () => {
+        setLoading(true);
+
         const formattedData = {
             data: {
                 mainUser: {
@@ -44,6 +48,8 @@ const ConfirmPage: React.FC = () => {
         } catch (error) {
             console.error('エラー:', error);
             message.error('送信に失敗しました');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -74,7 +80,12 @@ const ConfirmPage: React.FC = () => {
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px' }}>
-                        <Button type="primary" onClick={handleConfirm} disabled={!isChecked}>
+                        <Button 
+                            type="primary" 
+                            onClick={handleConfirm} 
+                            disabled={!isChecked || loading} 
+                            loading={loading}
+                        >
                             確認して登録
                         </Button>
                     </div>
