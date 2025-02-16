@@ -17,13 +17,22 @@ const ConfirmPage: React.FC = () => {
     const [isChecked, setIsChecked] = useState(false);
     // ローディング状態を管理
     const [loading, setLoading] = useState(false);
+    // 最後のクリック時刻を記録する state
+    const [lastClicked, setLastClicked] = useState<number | null>(null);
 
     const handleCheckboxChange = (e: any) => {
         setIsChecked(e.target.checked);
     };
 
     const handleConfirm = async () => {
-        setLoading(true);
+        const now = Date.now();
+        if (lastClicked && now - lastClicked < 20000) {
+            message.warning('連続してクリックしないでください。20秒待ってから再度お試しください。');
+            return;
+        }
+        setLastClicked(now);
+
+        setLoading(true); // Loading状態にする
 
         const formattedData = {
             data: {

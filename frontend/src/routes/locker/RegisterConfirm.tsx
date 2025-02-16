@@ -16,13 +16,20 @@ const LockerRegisterConfirm: React.FC = () => {
     const [isChecked, setIsChecked] = useState(false);
     const [loading, setLoading] = useState(false);
     const [pairInfo, setPairInfo] = useState(initialPairInfo);
+    const [lastClicked, setLastClicked] = useState<number | null>(null);
 
     const handleCheckboxChange = (e: any) => {
         setIsChecked(e.target.checked);
     };
 
     const handleConfirm = async () => {
-        setLoading(true); 
+        const now = Date.now();
+        if (lastClicked && now - lastClicked < 20000) {
+            message.warning('20秒のクールダウン中です。しばらくお待ちください。');
+            return;
+        }
+        setLastClicked(now);
+        setLoading(true); // Loading状態にする
 
         const postData = {
             data: {
