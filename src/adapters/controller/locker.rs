@@ -417,14 +417,14 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
 
             let match_user = match app.student.get_by_name(&family_name_val, &given_name_val).await {
                 Ok(student) => student,
-                Err(_) => return Err(Status::NotFound),
+                Err(_) => return Err(Status::InternalServerError),
             };
 
             let mut user_pairs= Vec::new();
             for element in match_user {
                 let user_pair = match app.student_pair.get_by_id(&element.student_id).await {
                     Ok(student_pair) => student_pair,
-                    Err(_) => return Err(Status::NotFound),
+                    Err(_) => return Err(Status::InternalServerError),
                 };
                 user_pairs.push(user_pair)
             }
@@ -435,7 +435,7 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
             for element in unique_user_pair {
                 let mut get_result = match app.assignment_record.get(&year, floor, &element.pair_id).await {
                     Ok(res) => res,
-                    Err(_) => return Err(Status::NotFound),
+                    Err(_) => return Err(Status::InternalServerError),
                 };
                 matched_record.append(&mut get_result);
             }
@@ -445,17 +445,17 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
             for element in matched_record {
                 let pair = match app.student_pair.get_by_pair_id(&element.pair_id).await {
                     Ok(studentpair) => studentpair,
-                    Err(_) => return Err(Status::NotFound),
+                    Err(_) => return Err(Status::InternalServerError),
                 };
 
                 let main_user = match app.student.get_by_id(&pair.student_id1).await {
                     Ok(student) => student,
-                    Err(_) => return Err(Status::NotFound),
+                    Err(_) => return Err(Status::InternalServerError),
                 };
 
                 let co_user = match app.student.get_by_id(&pair.student_id2).await {
                     Ok(student) => student,
-                    Err(_) => return Err(Status::NotFound),
+                    Err(_) => return Err(Status::InternalServerError),
                 };
 
                 let main_user_info = UserInfo {

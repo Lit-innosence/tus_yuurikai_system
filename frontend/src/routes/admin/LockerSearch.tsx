@@ -38,8 +38,6 @@ const LockerUserSearch: React.FC = () => {
                 if (error.response?.status === 401 || error.response?.status === 400) {
                     message.error('認証エラーです。再度ログインしてください。');
                     window.location.href = '/login';
-                } else if (error.response?.status === 404) {
-                    message.warning('該当するデータが見つかりませんでした。');
                 } else {
                     console.error('データの取得に失敗しました:', error);
                     message.error('データの取得に失敗しました。');
