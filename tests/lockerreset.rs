@@ -10,7 +10,7 @@ use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType, Cookie};
 use dotenv::dotenv;
 use tus_yuurikai_system::adapters::{controller::locker, httpmodels::LockerResetRequest};
-use tus_yuurikai_system::utils::encode_jwt::encode_jwt;
+use tus_yuurikai_system::utils::jwt::encode_jwt;
 use tus_yuurikai_system::infrastructure::router::App;
 use chrono::Duration;
 

@@ -8,7 +8,7 @@ use crate::usecase::{
                     organization::OrganizationUsecase,
                     registration::RegistrationUsecase,
                     };
-use crate::utils::decode_jwt::decode_jwt;
+use crate::utils::jwt::decode_jwt;
 use crate::utils::oauth_authentication::refresh_access_token;
 
 use std::env;

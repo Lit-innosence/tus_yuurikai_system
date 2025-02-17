@@ -8,7 +8,7 @@ use crate::usecase::{
                     auth::AuthUsecase,
                     locker::LockerUsecase,
                     admin::AdminUsecase};
-use crate::utils::{decode_jwt::decode_jwt, encode_jwt::encode_jwt, verify_password::verify_password_hash};
+use crate::utils::{jwt::{encode_jwt, decode_jwt}, verify_password::verify_password_hash};
 
 use std::{env, collections::HashSet};
 use uuid::Uuid;
