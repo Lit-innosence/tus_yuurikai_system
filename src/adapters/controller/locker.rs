@@ -8,7 +8,7 @@ use crate::usecase::{
                     auth::AuthUsecase,
                     locker::LockerUsecase,
                     admin::AdminUsecase};
-use crate::utils::{decode_jwt::decode_jwt, encode_jwt::encode_jwt, verify_password::verify_password_hash};
+use crate::utils::{decode_jwt::decode_jwt, encode_jwt::encode_jwt, verify_password::verify_password_hash, verify_recaptcha::verify_recaptcha};
 
 use std::{env, collections::HashSet};
 use uuid::Uuid;
@@ -27,33 +27,7 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
     dotenv().ok();
 
     // recaptchaの検証
-    let recaptcha_token = &request.recaptcha_token;
-    let recaptcha_secret = env::var("RECAPTCHA_SECRET_KEY").expect("RECAPTCHA_SECRET_KEY must be set.");
-
-    let client = reqwest::Client::new();
-    let params = [("secret", recaptcha_secret), ("response", recaptcha_token.to_string())];
-    let verification_response = client
-        .post("https://www.google.com/recaptcha/api/siteverify")
-        .form(&params)
-        .send()
-        .await;
-
-    let recaptcha_result: RecaptchaResponse = match verification_response {
-        Ok(resp) => {
-            if resp.status() != reqwest::StatusCode::OK {
-                return Status::InternalServerError;
-            }
-            match resp.json().await {
-                Ok(json) => json,
-                Err(_) => return Status::InternalServerError,
-            }
-        },
-        Err(_) => return Status::InternalServerError,
-    };
-
-    if !recaptcha_result.success 
-        || recaptcha_result.score.unwrap_or(0.0) < 0.5 
-        || recaptcha_result.action.unwrap_or_default() != "confirm_page" {
+    if !verify_recaptcha(&request.recaptcha_token).await.unwrap_or(false) {
         return Status::Unauthorized;
     }
 
@@ -70,7 +44,7 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
 
     let user_address = format!("{}@ed.tus.ac.jp", main_user.student_id);
-    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?method=1&token={}", main_user.family_name, main_user.given_name, app_url, token);
+    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n\n{}/locker/user-register?method=1&token={}", main_user.family_name, main_user.given_name, app_url, token);
     let subject = "ロッカーシステム メール認証";
 
     if app.auth.mail_sender(user_address, content, subject).await.is_err(){
@@ -125,7 +99,7 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
 
     let user_address = format!("{}@ed.tus.ac.jp", co_user.student_id);
-    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?method=0&token={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token);
+    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n\n{}/locker/user-register?method=0&token={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token);
     let subject = "ロッカーシステム メール認証";
 
     // メールの送信

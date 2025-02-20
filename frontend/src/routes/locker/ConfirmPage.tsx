@@ -38,7 +38,7 @@ const ConfirmPage: React.FC = () => {
 
         const now = Date.now();
         if (lastClicked && now - lastClicked < 20000) {
-            message.warning('連続してクリックしないでください。20秒待ってから再度お試しください。');
+            message.warning('20秒のクールダウン中です。しばらくお待ちください。');
             return;
         }
         setLastClicked(now);

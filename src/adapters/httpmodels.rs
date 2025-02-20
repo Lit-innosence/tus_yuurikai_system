@@ -23,20 +23,6 @@ pub struct LockerTokenGenRequest {
     pub recaptcha_token: String,
 }
 
-#[derive(Deserialize, ToSchema)]
-pub struct RecaptchaResponse {
-    pub success: bool,
-    #[serde(default)]
-    pub score: Option<f64>,
-    #[serde(default)]
-    pub action: Option<String>,
-    pub challenge_ts: Option<String>,
-    pub hostname: Option<String>,
-    #[serde(rename = "error-codes")]
-    pub error_codes: Option<Vec<String>>,
-}
-
-
 /// ### CircleTokenGenRequest
 ///
 /// 団体登録システムにおいてtoken生成、メール送信APIのリクエストに使用
