@@ -20,6 +20,7 @@ pub struct HealthCheckRequest {
 #[serde(rename_all = "camelCase")]
 pub struct LockerTokenGenRequest {
     pub data: PairInfo,
+    pub recaptcha_token: String,
 }
 
 /// ### CircleTokenGenRequest
