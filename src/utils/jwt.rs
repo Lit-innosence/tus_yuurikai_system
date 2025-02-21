@@ -1,8 +1,11 @@
-use jsonwebtoken::{encode, Header, Algorithm, EncodingKey};
+use jsonwebtoken::{encode, decode, Header, Algorithm, EncodingKey, DecodingKey, Validation};
 use chrono::{Utc, TimeDelta};
 use serde::{Deserialize, Serialize};
+use dotenv::dotenv;
+use std::env;
 
-/// ### JWTペイロードに指定する構造体
+/// ### Claims
+/// JWTペイロードに指定する構造体
 ///
 /// subject     : tokenの持ち主
 ///
@@ -16,8 +19,15 @@ pub struct Claims{
     pub iat: usize,
 }
 
+/// ### encode_jwt
+/// JWTを発行する
+///
+/// username    : jwtの持ち主
+///
+/// exp         : jwtの持続時間
+///
+/// key         : jwtの鍵
 pub fn encode_jwt(username: &String, exp: TimeDelta, key: &String) -> String {
-    // jwtの発行
 
     // headerの宣言
     let mut header = Header::default();
@@ -40,4 +50,21 @@ pub fn encode_jwt(username: &String, exp: TimeDelta, key: &String) -> String {
 
     // jwtを発行
     return encode(&header, &admin_claims, &EncodingKey::from_secret(key.as_ref())).unwrap()
+}
+
+/// ### decode_jwt
+/// JWTを検証する
+///
+/// jwt     : 検証するjwt
+pub fn decode_jwt(jwt: &String) -> Option<Claims> {
+
+    let validation = Validation::default();
+
+    dotenv().ok();
+    let secret = env::var("TOKEN_KEY").expect("token key must be set");
+
+    match decode::<Claims>(&jwt, &DecodingKey::from_secret(secret.as_ref()), &validation) {
+        Ok(token) => Option::Some(token.claims),
+        _ => Option::None,
+    }
 }

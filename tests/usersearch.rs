@@ -12,7 +12,7 @@ use tus_yuurikai_system::adapters::httpmodels::{UserSearchResponse, UserSearchRe
 use tus_yuurikai_system::domain::{assignment::AssignmentInfo, student_pair::PairInfo, student::UserInfo};
 use tus_yuurikai_system::usecase::{assignment_record::AssignmentRecordUsecase, student_pair::StudentPairUsecase, student::StudentUsecase};
 use tus_yuurikai_system::infrastructure::router::App;
-use tus_yuurikai_system::utils::encode_jwt::encode_jwt;
+use tus_yuurikai_system::utils::jwt::encode_jwt;
 use chrono::{Datelike, Local, Duration};
 
 // 正常系
