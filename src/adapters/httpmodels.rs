@@ -130,10 +130,17 @@ pub struct LockerResetRequest {
 #[derive(Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct CircleUpdateRequest {
+    #[schema(example = "C00000")]
+    pub organization_id: String,
+    #[schema(example = "ロケット団")]
     pub organization_name: String,
+    #[schema(example = "佐藤")]
     pub family_name: String,
+    #[schema(example = "太郎")]
     pub given_name: String,
+    #[schema(example = "4622999")]
     pub student_id: String,
+    #[schema(example = "example@example.com")]
     pub email: String,
 }
 

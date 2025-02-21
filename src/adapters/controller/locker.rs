@@ -16,6 +16,7 @@ use dotenv::dotenv;
 use rocket::{get, http::{Status, RawStr, Cookie, CookieJar, SameSite}, post, serde::json::Json, State};
 use rocket::time::Duration as RocketDuration;
 use chrono::Duration as ChronoDuration;
+use regex::Regex;
 
 // token生成、メール送信API
 #[utoipa::path(context_path = "/api/locker")]
@@ -23,6 +24,32 @@ use chrono::Duration as ChronoDuration;
 pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<App>) -> Status {
 
     let data = &request.data;
+
+    // データのバリデーション
+
+    // 学籍番号についてのバリデーション
+    let re = Regex::new(r"[0-9AB]{7}").unwrap();
+    if !(re.is_match(data.main_user.student_id.clone().as_str())) {
+        return Status::BadRequest;
+    }
+    if !(re.is_match(data.co_user.student_id.clone().as_str())) {
+        return Status::BadRequest;
+    }
+
+    // 氏名についてのバリデーション
+    let re = Regex::new(r"[^A-Za-z\p{Kana}\p{Hira}\p{Han}]").unwrap();
+    if !(re.is_match(data.main_user.family_name.clone().as_str())) {
+        return Status::BadRequest;
+    }
+    if !(re.is_match(data.main_user.given_name.clone().as_str())) {
+        return Status::BadRequest;
+    }
+    if !(re.is_match(data.co_user.family_name.clone().as_str())) {
+        return Status::BadRequest;
+    }
+    if !(re.is_match(data.co_user.given_name.clone().as_str())) {
+        return Status::BadRequest;
+    }
 
     let token = match app.auth.locker_register(&data.main_user.clone(), &data.co_user.clone(), &String::from("main_auth"), false).await{
         Ok(auth) => auth.main_auth_token,
