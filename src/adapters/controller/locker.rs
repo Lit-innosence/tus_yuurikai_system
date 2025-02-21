@@ -28,7 +28,7 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
     // データのバリデーション
 
     // 学籍番号についてのバリデーション
-    let re = Regex::new(r"[0-9AB]{7}").unwrap();
+    let re = Regex::new(r"[48][1-6]\d{5}").unwrap();
     if !(re.is_match(data.main_user.student_id.clone().as_str())) {
         return Status::BadRequest;
     }
@@ -37,17 +37,17 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
     }
 
     // 氏名についてのバリデーション
-    let re = Regex::new(r"[^A-Za-z\p{Kana}\p{Hira}\p{Han}]").unwrap();
-    if !(re.is_match(data.main_user.family_name.clone().as_str())) {
+    let re = Regex::new(r"[^A-Za-z\p{Kana}\p{Hira}\p{Han}々]+").unwrap();
+    if re.is_match(data.main_user.family_name.clone().as_str()) {
         return Status::BadRequest;
     }
-    if !(re.is_match(data.main_user.given_name.clone().as_str())) {
+    if re.is_match(data.main_user.given_name.clone().as_str()) {
         return Status::BadRequest;
     }
-    if !(re.is_match(data.co_user.family_name.clone().as_str())) {
+    if re.is_match(data.co_user.family_name.clone().as_str()) {
         return Status::BadRequest;
     }
-    if !(re.is_match(data.co_user.given_name.clone().as_str())) {
+    if re.is_match(data.co_user.given_name.clone().as_str()) {
         return Status::BadRequest;
     }
 
