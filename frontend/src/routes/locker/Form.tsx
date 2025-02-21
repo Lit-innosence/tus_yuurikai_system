@@ -7,7 +7,7 @@ import CustomFooter from '../component/CustomFooter';
 const { Content } = Layout;
 
 const LockerForm: React.FC = () => {
-    const navigate = useNavigate();  
+    const navigate = useNavigate();
 
     const onFinish = (values: any) => {
         // 入力内容を確認ページに渡す
@@ -31,8 +31,8 @@ const LockerForm: React.FC = () => {
                         rules={[
                             { required: true, message: '学籍番号を入力してください' },
                             {
-                                pattern: /^[0-9AB]+$/,
-                                message: '学籍番号は0~9, A, Bの文字のみで入力してください。'
+                                pattern: /^[48][1-6]\d{5}$/,
+                                message: '有効な学籍番号を入力してください。'
                             }
                         ]}
                     >
@@ -47,7 +47,7 @@ const LockerForm: React.FC = () => {
                                 rules={[
                                     { required: true, message: '姓を入力してください' },
                                     {
-                                        pattern: /^[A-Za-z\u3040-\u30FF\u4E00-\u9FFF]+$/,  
+                                        pattern: /^[A-Za-z\p{sc=Kana}\p{sc=Hira}\p{sc=Han}]+$/u,
                                         message: '姓は日本語、もしくは英語で入力してください'
                                     }
                                 ]}
@@ -60,7 +60,7 @@ const LockerForm: React.FC = () => {
                                 rules={[
                                     { required: true, message: '名を入力してください' },
                                     {
-                                        pattern: /^[A-Za-z\u3040-\u30FF\u4E00-\u9FFF]+$/,  
+                                        pattern: /^[A-Za-z\p{sc=Kana}\p{sc=Hira}\p{sc=Han}]+$/u,
                                         message: '名は日本語、もしくは英語で入力してください'
                                     }
                                 ]}
@@ -77,8 +77,8 @@ const LockerForm: React.FC = () => {
                         rules={[
                             { required: true, message: '共同使用者の学籍番号を入力してください' },
                             {
-                                pattern: /^[0-9AB]+$/,
-                                message: '学籍番号は0~9, A, Bの文字のみで入力してください。'
+                                pattern: /^[48][1-6]\d{5}$/,
+                                message: '有効な学籍番号を入力してください。'
                             }
                         ]}
                     >
@@ -93,7 +93,7 @@ const LockerForm: React.FC = () => {
                                 rules={[
                                     { required: true, message: '共同使用者の姓を入力してください' },
                                     {
-                                        pattern: /^[A-Za-z\u3040-\u30FF\u4E00-\u9FFF]+$/,  
+                                        pattern: /^[A-Za-z\p{sc=Kana}\p{sc=Hira}\p{sc=Han}]+$/u,
                                         message: '共同使用者の姓は日本語、もしくは英語で入力してください'
                                     }
                                 ]}
@@ -106,7 +106,7 @@ const LockerForm: React.FC = () => {
                                 rules={[
                                     { required: true, message: '共同使用者の名を入力してください' },
                                     {
-                                        pattern: /^[A-Za-z\u3040-\u30FF\u4E00-\u9FFF]+$/,  
+                                        pattern: /^[A-Za-z\p{sc=Kana}\p{sc=Hira}\p{sc=Han}]+$/u,
                                         message: '共同使用者の名は日本語、もしくは英語で入力してください'
                                     }
                                 ]}
