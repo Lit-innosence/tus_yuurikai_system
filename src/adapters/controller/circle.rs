@@ -36,13 +36,13 @@ pub async fn update_entry(request: Json<CircleUpdateRequest>, app: &State<App>) 
         return (Status::BadRequest, "request data is not valid");
     }
 
-    // 代表者学籍番号
+    // 旧代表者学籍番号
     let re = Regex::new(r"[48][1-6]\d{5}").unwrap();
     if !(re.is_match(&request.student_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
-    // 代表者氏名
+    // 旧代表者氏名
     let re = Regex::new(r"[^a-zA-Z\p{Kana}\p{Hira}\p{Han}々]+").unwrap();
     println!("{}", re);
     if re.is_match(&request.family_name.as_str()) {
@@ -52,7 +52,7 @@ pub async fn update_entry(request: Json<CircleUpdateRequest>, app: &State<App>) 
         return (Status::BadRequest, "request data is not valid");
     }
 
-    // 代表者メールアドレス
+    // 旧代表者メールアドレス
     let re = Regex::new(r"[a-zA-Z0-9_.+-]+@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}").unwrap();
     if !(re.is_match(&request.email.as_str())) {
         return (Status::BadRequest, "request data is not valid");
@@ -263,6 +263,19 @@ pub async fn register_token_generator(request: Json<CircleTokenGenRequest>, app:
 #[post("/main-auth?<token>&<id>")]
 pub async fn circle_main_auth(token: String, id: Option<String>, app:&State<App>) -> (Status, &'static str) {
 
+    // データのバリデーション
+
+    // 団体ID
+    match id.clone() {
+        Some(id) => {
+            let re = Regex::new(r"C\d{5}").unwrap();
+            if !(re.is_match(id.as_str())) {
+                return (Status::BadRequest, "request parameter is not valid");
+            }
+        },
+        None => {}
+    }
+
     // tokenが一致するレコードを取得
     let auth = match app.auth.token_check(token, true).await{
         Ok(auth) => auth,
@@ -329,6 +342,19 @@ pub async fn circle_main_auth(token: String, id: Option<String>, app:&State<App>
 #[utoipa::path(context_path = "/api/circle")]
 #[post("/co-auth?<token>&<id>")]
 pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) -> (Status, &'static str) {
+
+    // データのバリデーション
+
+    // 団体ID
+    match id.clone() {
+        Some(id) => {
+            let re = Regex::new(r"C\d{5}").unwrap();
+            if !(re.is_match(&id.as_str())) {
+                return (Status::BadRequest, "request parameter is not valid")
+            }
+        },
+        None => {}
+    }
 
     // tokenが一致するレコードを取得
     let auth = match app.auth.token_check(token, false).await{
@@ -643,13 +669,40 @@ pub async fn circle_status_update(request: Json<OrganizationStatusUpdateRequest>
         None => return (Status::Unauthorized, "request token is not valid"),
         Some(_) => {
 
-             // organization_idの整形
+            // データのバリデーション
+
+            let mut validation_passing: bool = true;
+
+            // organization_idの整形
             let re = Regex::new(r"[1-9]+").unwrap();
             let organization_id = match re.find(request.organization_id.as_str()) {
                 Some(m) => m.as_str().parse::<i32>().unwrap(),
                 None => {return (Status::InternalServerError, "can't get valid organization_id")}
             };
 
+            // 受理ステータス
+            if request.status_acceptance.as_str() != "pending" && request.status_acceptance.as_str() != "accepted" {
+                validation_passing = false;
+            }
+
+            // 認証ステータス
+            if request.status_authentication.as_str() != "not_authenticated" && request.status_authentication.as_str() != "authenticated" {
+                validation_passing = false;
+            }
+
+            // 書類受理ステータス
+            if request.status_form_confirmation.as_str() != "not_confirmed" && request.status_form_confirmation.as_str() != "confirmed" {
+                validation_passing = false;
+            }
+
+            // 登録完了ステータス
+            if request.status_registration_complete.as_str() != "incomplete" && request.status_registration_complete.as_str() != "completed" {
+                validation_passing = false;
+            }
+
+            if !validation_passing {
+                return (Status::BadRequest, "request data is not valid");
+            }
 
             if app.registration.update_status(&organization_id, &request.status_acceptance, &request.status_authentication, &request.status_form_confirmation, &request.status_registration_complete).await.is_err() {
                 return (Status::InternalServerError, "failed to update status")
