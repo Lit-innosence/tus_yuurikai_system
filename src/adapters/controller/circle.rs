@@ -30,30 +30,28 @@ pub async fn update_entry(request: Json<CircleUpdateRequest>, app: &State<App>) 
     // データのバリデーション
 
     // 団体ID
-    let re = Regex::new(r"C\d{5}").unwrap();
+    let re = Regex::new(r"^C\d{5}$").unwrap();
     if !(re.is_match(&request.organization_id.as_str())) {
-        println!("err");
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 旧代表者学籍番号
-    let re = Regex::new(r"[48][1-6]\d{5}").unwrap();
+    let re = Regex::new(r"^[1-46-9][1-9]\d{5}$").unwrap();
     if !(re.is_match(&request.student_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 旧代表者氏名
-    let re = Regex::new(r"[^a-zA-Z\p{Kana}\p{Hira}\p{Han}々]+").unwrap();
-    println!("{}", re);
-    if re.is_match(&request.family_name.as_str()) {
+    let re = Regex::new(r"^[a-zA-Z\p{Kana}\p{Hira}\p{Han}々]+$").unwrap();
+    if !(re.is_match(&request.family_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if re.is_match(&request.given_name.as_str()) {
+    if !(re.is_match(&request.given_name.as_str()) ){
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 旧代表者メールアドレス
-    let re = Regex::new(r"[a-zA-Z0-9_.+-]+@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}").unwrap();
+    let re = Regex::new(r"^[a-zA-Z0-9_.+-]+@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$").unwrap();
     if !(re.is_match(&request.email.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
@@ -85,13 +83,13 @@ pub async fn update_token_generator(request: Json<CircleUpdateTokenGenRequest>, 
     // データのバリデーション
 
     // 団体ID
-    let re = Regex::new(r"C\d{5}").unwrap();
+    let re = Regex::new(r"^C\d{5}$").unwrap();
     if !(re.is_match(&data.organization_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 学籍番号
-    let re = Regex::new(r"[48][1-6][0-9]{5}").unwrap();
+    let re = Regex::new(r"^[1-46-9][1-9]\d{5}$").unwrap();
     if !(re.is_match(&data.main_user.student_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
@@ -100,22 +98,22 @@ pub async fn update_token_generator(request: Json<CircleUpdateTokenGenRequest>, 
     }
 
     // 氏名
-    let re = Regex::new(r"[^A-Za-z\p{Kana}\p{Hira}\p{Han}々]+").unwrap();
-    if re.is_match(&data.main_user.family_name.as_str()) {
+    let re = Regex::new(r"^[A-Za-z\p{Kana}\p{Hira}\p{Han}]+$").unwrap();
+    if !(re.is_match(&data.main_user.family_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if re.is_match(&data.main_user.given_name.as_str()) {
+    if !(re.is_match(&data.main_user.given_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if re.is_match(&data.co_user.family_name.as_str()) {
+    if !(re.is_match(&data.co_user.family_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if re.is_match(&data.co_user.given_name.as_str()) {
+    if !(re.is_match(&data.co_user.given_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 電話番号
-    let re = Regex::new(r"0[789]0\d{8}").unwrap();
+    let re = Regex::new(r"^0[789]0\d{8}$").unwrap();
     if !(re.is_match(&data.main_user.phone_number.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
@@ -124,7 +122,7 @@ pub async fn update_token_generator(request: Json<CircleUpdateTokenGenRequest>, 
     }
 
     // メールアドレス
-    let re = Regex::new(r"[a-zA-Z0-9_.+-]+@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}").unwrap();
+    let re = Regex::new(r"^[a-zA-Z0-9_.+-]+@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$").unwrap();
     if !(re.is_match(&&data.main_user.email.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
@@ -184,22 +182,22 @@ pub async fn register_token_generator(request: Json<CircleTokenGenRequest>, app:
     // データのバリデーション
 
     // 氏名
-    let re = Regex::new(r"[^A-Za-z\p{Kana}\p{Hira}\p{Han}々]+").unwrap();
-    if re.is_match(&data.main_user.family_name.as_str()) {
+    let re = Regex::new(r"^[A-Za-z\p{Kana}\p{Hira}\p{Han}]+$").unwrap();
+    if !(re.is_match(&data.main_user.family_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if re.is_match(&data.main_user.given_name.as_str()) {
+    if !(re.is_match(&data.main_user.given_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if re.is_match(&data.co_user.family_name.as_str()) {
+    if !(re.is_match(&data.co_user.family_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if re.is_match(&data.co_user.given_name.as_str()) {
+    if !(re.is_match(&data.co_user.given_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 学籍番号
-    let re = Regex::new(r"[48][1-6]\d{5}").unwrap();
+    let re = Regex::new(r"^[1-46-9][1-9]\d{5}$").unwrap();
     if !(re.is_match(&data.main_user.student_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
@@ -208,13 +206,13 @@ pub async fn register_token_generator(request: Json<CircleTokenGenRequest>, app:
     }
 
     // 団体名ふりがな
-    let re = Regex::new(r"[^\p{Hira}]+").unwrap();
+    let re = Regex::new(r"^[\p{Hira}]+$").unwrap();
     if !(re.is_match(&data.organization.organization_ruby.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // メールアドレス
-    let re = Regex::new(r"[a-zA-Z0-9_.+-]+@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}").unwrap();
+    let re = Regex::new(r"^[a-zA-Z0-9_.+-]+@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$").unwrap();
     if !(re.is_match(&data.organization.organization_email.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
@@ -226,7 +224,7 @@ pub async fn register_token_generator(request: Json<CircleTokenGenRequest>, app:
     }
 
     // 電話番号
-    let re = Regex::new(r"0[789]0\d{8}").unwrap();
+    let re = Regex::new(r"^0[789]0\d{8}$").unwrap();
     if !(re.is_match(&data.main_user.phone_number.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
@@ -268,7 +266,7 @@ pub async fn circle_main_auth(token: String, id: Option<String>, app:&State<App>
     // 団体ID
     match id.clone() {
         Some(id) => {
-            let re = Regex::new(r"C\d{5}").unwrap();
+            let re = Regex::new(r"^C\d{5}$").unwrap();
             if !(re.is_match(id.as_str())) {
                 return (Status::BadRequest, "request parameter is not valid");
             }
@@ -277,7 +275,7 @@ pub async fn circle_main_auth(token: String, id: Option<String>, app:&State<App>
     }
 
     // token
-    let re = Regex::new(r"[a-zA-Z0-9]{16}").unwrap();
+    let re = Regex::new(r"^[a-zA-Z0-9]{16}$").unwrap();
     if !(re.is_match(&token.as_str())) {
         return (Status::BadRequest, "request parameter is not valid");
     }
@@ -354,13 +352,20 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
     // 団体ID
     match id.clone() {
         Some(id) => {
-            let re = Regex::new(r"C\d{5}").unwrap();
+            let re = Regex::new(r"^C\d{5}$").unwrap();
             if !(re.is_match(&id.as_str())) {
                 return (Status::BadRequest, "request parameter is not valid")
             }
         },
         None => {}
     }
+
+    // token
+    let re = Regex::new(r"^[a-zA-Z0-9]{16}$").unwrap();
+    if !(re.is_match(&token.as_str())) {
+        return (Status::BadRequest, "request parameter is not valid");
+    }
+
 
     // tokenが一致するレコードを取得
     let auth = match app.auth.token_check(token, false).await{

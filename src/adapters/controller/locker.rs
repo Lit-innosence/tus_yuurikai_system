@@ -15,7 +15,7 @@ use uuid::Uuid;
 use dotenv::dotenv;
 use rocket::{get, http::{Status, RawStr, Cookie, CookieJar, SameSite}, post, serde::json::Json, State};
 use rocket::time::Duration as RocketDuration;
-use chrono::{Datelike, Duration as ChronoDuration, Local};
+use chrono::Duration as ChronoDuration;
 use regex::Regex;
 
 // token生成、メール送信API
@@ -28,7 +28,7 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
     // データのバリデーション
 
     // 学籍番号についてのバリデーション
-    let re = Regex::new(r"[48][1-6]\d{5}").unwrap();
+    let re = Regex::new(r"^[48][1-6]\d{5}$").unwrap();
     if !(re.is_match(data.main_user.student_id.clone().as_str())) {
         return Status::BadRequest;
     }
@@ -37,17 +37,17 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
     }
 
     // 氏名についてのバリデーション
-    let re = Regex::new(r"[^A-Za-z\p{Kana}\p{Hira}\p{Han}々]+").unwrap();
-    if re.is_match(data.main_user.family_name.clone().as_str()) {
+    let re = Regex::new(r"^[A-Za-z\p{Kana}\p{Hira}\p{Han}]+$").unwrap();
+    if !(re.is_match(data.main_user.family_name.clone().as_str())) {
         return Status::BadRequest;
     }
-    if re.is_match(data.main_user.given_name.clone().as_str()) {
+    if !(re.is_match(data.main_user.given_name.clone().as_str())) {
         return Status::BadRequest;
     }
-    if re.is_match(data.co_user.family_name.clone().as_str()) {
+    if !(re.is_match(data.co_user.family_name.clone().as_str())) {
         return Status::BadRequest;
     }
-    if re.is_match(data.co_user.given_name.clone().as_str()) {
+    if !(re.is_match(data.co_user.given_name.clone().as_str())) {
         return Status::BadRequest;
     }
 
@@ -81,7 +81,7 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
 
     // token
 
-    let re = Regex::new(r"[a-zA-Z0-9]{16}").unwrap();
+    let re = Regex::new(r"^[a-zA-Z0-9]{16}$").unwrap();
     if !(re.is_match(&token.as_str())) {
         return Status::BadRequest;
     }
@@ -151,7 +151,7 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
 
     // token
 
-    let re = Regex::new(r"[a-zA-Z0-9]{16}").unwrap();
+    let re = Regex::new(r"^[a-zA-Z0-9]{16}$").unwrap();
     if !(re.is_match(&token.as_str())) {
         return Status::BadRequest;
     }
@@ -237,7 +237,7 @@ pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthChec
 
     // token
 
-    let re = Regex::new(r"[a-zA-Z0-9]{16}").unwrap();
+    let re = Regex::new(r"^[a-zA-Z0-9]{16}$").unwrap();
     if !(re.is_match(&token.as_str())) {
         return Err(Status::BadRequest);
     }
@@ -293,7 +293,7 @@ pub async fn availability(floor: Option<i8>, app: &State<App>) -> Result<Json<Lo
     // floor
     match floor {
         Some(floor) => {
-            let re = Regex::new(r"[2-6]").unwrap();
+            let re = Regex::new(r"^[2-6]$").unwrap();
             if !(re.is_match(&floor.to_string())) {
                 return Err(Status::BadRequest);
             }
@@ -331,13 +331,13 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     //データのバリデーション
 
     // 代表者学籍番号
-    let re = Regex::new(r"[48][1-9]\d{5}").unwrap();
+    let re = Regex::new(r"^[48][1-6]\d{5}$").unwrap();
     if !(re.is_match(&assignment.student_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // ロッカー番号
-    let re = Regex::new(r"[2-6]\d{3}").unwrap();
+    let re = Regex::new(r"^[2-6]\d{3}$").unwrap();
     if !(re.is_match(&assignment.locker_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
@@ -502,7 +502,7 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
             // floor
             match floor {
                 Some(floor) => {
-                    if (floor < 2) && (floor > 6) {
+                    if (floor < 2) || (floor > 6) {
                         return Err(Status::BadRequest);
                     }
                 },
@@ -513,7 +513,7 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
                 None => String::from(""),
                 Some(x) => {
                     let name = String::from(RawStr::new(&x).url_decode().unwrap());
-                    let re = Regex::new(r"[A-Za-z\p{Kana}\p{Hira}\p{Han}]").unwrap();
+                    let re = Regex::new(r"^[A-Za-z\p{Kana}\p{Hira}\p{Han}]+$").unwrap();
                     if !(re.is_match(&name.as_str())) {
                         return Err(Status::BadRequest);
                     }
@@ -527,7 +527,7 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
                 None => String::from(""),
                 Some(x) => {
                     let name = String::from(RawStr::new(&x).url_decode().unwrap());
-                    let re = Regex::new(r"[A-Za-z\p{Kana}\p{Hira}\p{Han}]").unwrap();
+                    let re = Regex::new(r"^[A-Za-z\p{Kana}\p{Hira}\p{Han}]+$").unwrap();
                     if !(re.is_match(&name.as_str())) {
                         return Err(Status::BadRequest);
                     }
