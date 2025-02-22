@@ -419,6 +419,19 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
 #[utoipa::path(context_path = "/api")]
 #[post("/login", data = "<request>")]
 pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &State<App>) -> Status {
+    // バリデーション
+
+    // username
+    let re = Regex::new(r"^[A-Za-z\d_-]+$").unwrap();
+    if !(re.is_match(&request.username.as_str())) {
+        return Status::BadRequest;
+    }
+
+    // password
+    let re = Regex::new(r"^[A-Za-z\d]+$").unwrap();
+    if !(re.is_match(&request.password.as_str())) {
+        return Status::BadRequest;
+    }
 
     // usernameが一致するレコードをadminテーブルから取得
     let credential = match app.admin.get_by_name(&request.username).await {
@@ -618,6 +631,13 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
 #[utoipa::path(context_path = "/api/admin/locker")]
 #[post("/reset", data = "<request>")]
 pub async fn reset(request: Json<LockerResetRequest>, jar: &CookieJar<'_>, app: &State<App>) -> (Status, &'static str) {
+    // バリデーション
+
+    // password
+    let re = Regex::new(r"^[A-Za-z\d]+$").unwrap();
+    if !(re.is_match(&request.password.as_str())) {
+        return (Status::BadRequest, "request data is not valid");
+    }
 
     // Cookieからjwtの取得
     let jwt = match jar.get("token").map(|c| c.value()) {
