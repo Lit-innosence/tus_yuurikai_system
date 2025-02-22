@@ -85,7 +85,7 @@ pub async fn update_token_generator(request: Json<CircleUpdateTokenGenRequest>, 
     // データのバリデーション
 
     // 団体ID
-    let re = Regex::new(r"C\d{4}").unwrap();
+    let re = Regex::new(r"C\d{5}").unwrap();
     if !(re.is_match(&data.organization_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
@@ -274,6 +274,12 @@ pub async fn circle_main_auth(token: String, id: Option<String>, app:&State<App>
             }
         },
         None => {}
+    }
+
+    // token
+    let re = Regex::new(r"[a-zA-Z0-9]{16}").unwrap();
+    if !(re.is_match(&token.as_str())) {
+        return (Status::BadRequest, "request parameter is not valid");
     }
 
     // tokenが一致するレコードを取得
@@ -671,8 +677,6 @@ pub async fn circle_status_update(request: Json<OrganizationStatusUpdateRequest>
 
             // データのバリデーション
 
-            let mut validation_passing: bool = true;
-
             // organization_idの整形
             let re = Regex::new(r"[1-9]+").unwrap();
             let organization_id = match re.find(request.organization_id.as_str()) {
@@ -682,25 +686,21 @@ pub async fn circle_status_update(request: Json<OrganizationStatusUpdateRequest>
 
             // 受理ステータス
             if request.status_acceptance.as_str() != "pending" && request.status_acceptance.as_str() != "accepted" {
-                validation_passing = false;
+                return (Status::BadRequest, "request data is not valid");
             }
 
             // 認証ステータス
             if request.status_authentication.as_str() != "not_authenticated" && request.status_authentication.as_str() != "authenticated" {
-                validation_passing = false;
+                return (Status::BadRequest, "request data is not valid");
             }
 
             // 書類受理ステータス
             if request.status_form_confirmation.as_str() != "not_confirmed" && request.status_form_confirmation.as_str() != "confirmed" {
-                validation_passing = false;
+                return (Status::BadRequest, "request data is not valid");
             }
 
             // 登録完了ステータス
             if request.status_registration_complete.as_str() != "incomplete" && request.status_registration_complete.as_str() != "completed" {
-                validation_passing = false;
-            }
-
-            if !validation_passing {
                 return (Status::BadRequest, "request data is not valid");
             }
 

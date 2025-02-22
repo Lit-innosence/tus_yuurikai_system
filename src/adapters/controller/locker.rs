@@ -15,7 +15,7 @@ use uuid::Uuid;
 use dotenv::dotenv;
 use rocket::{get, http::{Status, RawStr, Cookie, CookieJar, SameSite}, post, serde::json::Json, State};
 use rocket::time::Duration as RocketDuration;
-use chrono::Duration as ChronoDuration;
+use chrono::{Datelike, Duration as ChronoDuration, Local};
 use regex::Regex;
 
 // token生成、メール送信API
@@ -77,6 +77,15 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
 #[utoipa::path(context_path = "/api/locker")]
 #[get("/main-auth?<token>")]
 pub async fn main_auth(token: String, app: &State<App>) -> Status {
+    //データのバリデーション
+
+    // token
+
+    let re = Regex::new(r"[a-zA-Z0-9]{16}").unwrap();
+    if !(re.is_match(&token.as_str())) {
+        return Status::BadRequest;
+    }
+
     // tokenが一致するレコードを取得
     let auth = match app.auth.token_check(token, true).await{
         Ok(auth) => auth,
@@ -138,6 +147,15 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
 #[utoipa::path(context_path = "/api/locker")]
 #[get("/co-auth?<token>")]
 pub async fn co_auth(token: String, app: &State<App>) -> Status {
+    //データのバリデーション
+
+    // token
+
+    let re = Regex::new(r"[a-zA-Z0-9]{16}").unwrap();
+    if !(re.is_match(&token.as_str())) {
+        return Status::BadRequest;
+    }
+
     // tokenが一致するレコードを取得
     let auth = match app.auth.token_check(token, false).await{
         Ok(auth) => auth,
@@ -215,6 +233,15 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
 #[utoipa::path(context_path = "/api/locker")]
 #[get("/auth-check?<token>")]
 pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthCheckResponse>, Status> {
+    //データのバリデーション
+
+    // token
+
+    let re = Regex::new(r"[a-zA-Z0-9]{16}").unwrap();
+    if !(re.is_match(&token.as_str())) {
+        return Err(Status::BadRequest);
+    }
+
     // tokenを取得
     let auth = match app.auth.token_check(token, true).await{
         Ok(auth) => auth,
@@ -261,6 +288,19 @@ pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthChec
 #[utoipa::path(context_path = "/api/locker")]
 #[get("/availability?<floor>")]
 pub async fn availability(floor: Option<i8>, app: &State<App>) -> Result<Json<LockerStatusResponse>, Status> {
+    // データのバリデーション
+
+    // floor
+    match floor {
+        Some(floor) => {
+            let re = Regex::new(r"[2-6]").unwrap();
+            if !(re.is_match(&floor.to_string())) {
+                return Err(Status::BadRequest);
+            }
+        },
+        None => {}
+    }
+
     // 指定階数のlockerレコードの取得
     let result = app.locker.get_by_floor(&floor).await.unwrap();
 
@@ -287,7 +327,26 @@ pub async fn availability(floor: Option<i8>, app: &State<App>) -> Result<Json<Lo
 pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<App>) -> (Status, &'static str) {
 
     let assignment = &request.data;
-    let auth_id = Uuid::parse_str(&request.auth_id).unwrap();
+
+    //データのバリデーション
+
+    // 代表者学籍番号
+    let re = Regex::new(r"[48][1-9]\d{5}").unwrap();
+    if !(re.is_match(&assignment.student_id.as_str())) {
+        return (Status::BadRequest, "request data is not valid");
+    }
+
+    // ロッカー番号
+    let re = Regex::new(r"[2-6]\d{3}").unwrap();
+    if !(re.is_match(&assignment.locker_id.as_str())) {
+        return (Status::BadRequest, "request data is not valid");
+    }
+
+    // authID
+    let auth_id = match Uuid::parse_str(&request.auth_id) {
+        Ok(uuid) => {uuid},
+        Err(_) => {return (Status::BadRequest, "request auth_id is not valid");}
+    };
     println!("{}", auth_id.to_string());
 
     // pair_idの検索
@@ -433,13 +492,49 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
     match decode_jwt(&jwt) {
         None => return Err(Status::BadRequest),
         Some(_) => {
+            // データのバリデーション
+
+            // year
+            if year < 2024 {
+                return Err(Status::BadRequest);
+            }
+
+            // floor
+            match floor {
+                Some(floor) => {
+                    if (floor < 2) && (floor > 6) {
+                        return Err(Status::BadRequest);
+                    }
+                },
+                None => {}
+            }
+            // familyname
             let family_name_val = match familyname {
                 None => String::from(""),
-                Some(x) => String::from(RawStr::new(&x).url_decode().unwrap()),
+                Some(x) => {
+                    let name = String::from(RawStr::new(&x).url_decode().unwrap());
+                    let re = Regex::new(r"[A-Za-z\p{Kana}\p{Hira}\p{Han}]").unwrap();
+                    if !(re.is_match(&name.as_str())) {
+                        return Err(Status::BadRequest);
+                    }
+                    else {
+                        name
+                    }
+                },
             };
+            // givenname
             let given_name_val = match givenname {
                 None => String::from(""),
-                Some(x) => String::from(RawStr::new(&x).url_decode().unwrap()),
+                Some(x) => {
+                    let name = String::from(RawStr::new(&x).url_decode().unwrap());
+                    let re = Regex::new(r"[A-Za-z\p{Kana}\p{Hira}\p{Han}]").unwrap();
+                    if !(re.is_match(&name.as_str())) {
+                        return Err(Status::BadRequest);
+                    }
+                    else {
+                        name
+                    }
+                },
             };
 
             let match_user = match app.student.get_by_name(&family_name_val, &given_name_val).await {
