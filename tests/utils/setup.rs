@@ -17,6 +17,10 @@ pub async fn setup_db(app: &App) {
         Ok(_) => {},
         Err(err) => panic!("{}", err),
     }
+    match app.auth.circle_auth_info_repository.delete_all().await {
+        Ok(_) => {},
+        Err(err) => panic!("{}", err),
+    }
     match app.auth.auth_repository.delete_all().await {
         Ok(_) => {},
         Err(err) => panic!("{}", err),
