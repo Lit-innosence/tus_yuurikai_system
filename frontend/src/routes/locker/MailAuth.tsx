@@ -55,7 +55,6 @@ const LockerMailAuth = () => {
                     navigate('/locker/nopage');
                 }
             } catch (error) {
-                console.error('Error fetching data:', error);
                 navigate('/locker/nopage');
             }
         };

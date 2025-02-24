@@ -67,7 +67,7 @@ const AuthProvider: React.FC<AuthProviderProps> = (props) => {
     try {
       await axios.post(`${constants.backendApiEndpoint}/api/logout`, {}, { withCredentials: true });
     } catch (error) {
-      console.error('ログアウトAPIの呼び出しに失敗しました', error);
+      console.error('ログアウトAPIの呼び出しに失敗しました');
     }
     
     setLoggedIn(false);

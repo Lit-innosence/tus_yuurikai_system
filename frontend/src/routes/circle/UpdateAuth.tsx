@@ -45,7 +45,6 @@ const CircleMailAuth = () => {
                     navigate('/circle/nopage');
                 }
             } catch (error) {
-                console.error('Error fetching data:', error);
                 navigate('/circle/nopage');
             }
         };

@@ -46,7 +46,6 @@ const AccessRestrictionPage: React.FC = () => {
                 throw new Error('Unexpected response structure');
             }
         } catch (error) {
-            console.error('Failed to fetch current settings:', error);
             message.error('現在の設定を取得できませんでした。');
         }
     };
@@ -91,7 +90,6 @@ const AccessRestrictionPage: React.FC = () => {
                 message.error('サーバーエラーが発生しました。もう一度実行してください。');
             }
         } catch (error) {
-            console.error(error);
             message.error('内部エラーが生じました。管理者にお問い合わせください。');
         } finally {
             setLoading(false);

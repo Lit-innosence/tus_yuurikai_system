@@ -39,7 +39,6 @@ const LockerUserSearch: React.FC = () => {
                     message.error('認証エラーです。再度ログインしてください。');
                     window.location.href = '/login';
                 } else {
-                    console.error('データの取得に失敗しました:', error);
                     message.error('データの取得に失敗しました。');
                 }
             }
