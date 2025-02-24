@@ -12,8 +12,9 @@ const LockerMailAuth = () => {
         const token = queryParams.get('token');
         const method = queryParams.get('method');
 
+        const tokenRegex = /^[a-zA-Z0-9]{16}$/;
         const validMethods = ['0', '1', '2'];
-        if (!token || !method || !validMethods.includes(method)) {
+        if (!token || !tokenRegex.test(token) || !method || !validMethods.includes(method)) {
             navigate('/locker/nopage');
             return;
         }

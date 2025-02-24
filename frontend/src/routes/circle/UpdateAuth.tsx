@@ -14,8 +14,10 @@ const CircleMailAuth = () => {
         const method = queryParams.get('method');
         const id = queryParams.get('id');
 
+        const tokenRegex = /^[a-zA-Z0-9]{16}$/;
+        const idRegex = /^C\d{5}$/;
         const validMethods = ['0', '1'];
-        if (!token || !method || !id || !validMethods.includes(method)) {
+        if (!token || !tokenRegex.test(token) || !id || !idRegex.test(id) || !method || !validMethods.includes(method)) {
             navigate('/circle/nopage');
             return;
         }
