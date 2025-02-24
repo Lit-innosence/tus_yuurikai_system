@@ -8,7 +8,7 @@ use crate::usecase::{
                     auth::AuthUsecase,
                     locker::LockerUsecase,
                     admin::AdminUsecase};
-use crate::utils::{jwt::{encode_jwt, decode_jwt}, verify_password::verify_password_hash};
+use crate::utils::{jwt::{encode_jwt, decode_jwt}, verify_password::verify_password_hash, verify_recaptcha::verify_recaptcha};
 
 use std::{env, collections::HashSet};
 use uuid::Uuid;
@@ -51,6 +51,15 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
         return Status::BadRequest;
     }
 
+    dotenv().ok();
+
+    // recaptchaの検証
+    if !verify_recaptcha(&request.recaptcha_token).await.unwrap_or(false) {
+        return Status::Unauthorized;
+    }
+
+
+    // tokenの生成
     let token = match app.auth.locker_register(&data.main_user.clone(), &data.co_user.clone(), &String::from("main_auth"), false).await{
         Ok(auth) => auth.main_auth_token,
         Err(_) => return Status::InternalServerError,
@@ -59,11 +68,10 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
     // メール内容の作成
     let main_user = &data.main_user;
 
-    dotenv().ok();
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
 
     let user_address = format!("{}@ed.tus.ac.jp", main_user.student_id);
-    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?method=1&token={}", main_user.family_name, main_user.given_name, app_url, token);
+    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n\n{}/locker/user-register?method=1&token={}", main_user.family_name, main_user.given_name, app_url, token);
     let subject = "ロッカーシステム メール認証";
 
     if app.auth.mail_sender(user_address, content, subject).await.is_err(){
@@ -127,7 +135,7 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
 
     let user_address = format!("{}@ed.tus.ac.jp", co_user.student_id);
-    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/locker/user-register?method=0&token={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token);
+    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n\n{}/locker/user-register?method=0&token={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token);
     let subject = "ロッカーシステム メール認証";
 
     // メールの送信

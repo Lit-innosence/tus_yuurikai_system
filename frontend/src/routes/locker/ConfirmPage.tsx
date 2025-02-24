@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Button, Layout, Card, Checkbox, message } from 'antd';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import CustomHeader from '../component/CustomHeader';
 import CustomFooter from '../component/CustomFooter';
 import constants from '../constants';
@@ -13,14 +14,37 @@ const ConfirmPage: React.FC = () => {
     const location = useLocation();
     const { formData } = location.state as { formData: any };
 
+    // reCAPTCHA v3 のフック
+    const { executeRecaptcha } = useGoogleReCaptcha();
+
     // チェックボックスの状態を管理
     const [isChecked, setIsChecked] = useState(false);
+    // ローディング状態を管理
+    const [loading, setLoading] = useState(false);
+    // 最後のクリック時刻を記録する state
+    const [lastClicked, setLastClicked] = useState<number | null>(null);
 
     const handleCheckboxChange = (e: any) => {
         setIsChecked(e.target.checked);
     };
 
     const handleConfirm = async () => {
+        // reCAPTCHA v3 を実行してトークンを取得
+        if (!executeRecaptcha) {
+            message.error("reCAPTCHAがまだ読み込まれていません。");
+            return;
+        }
+        const token = await executeRecaptcha('confirm_page');
+
+        const now = Date.now();
+        if (lastClicked && now - lastClicked < 20000) {
+            message.warning('20秒のクールダウン中です。しばらくお待ちください。');
+            return;
+        }
+        setLastClicked(now);
+        setLoading(true);
+
+        // reCAPTCHAトークンを含むデータを整形
         const formattedData = {
             data: {
                 mainUser: {
@@ -34,16 +58,17 @@ const ConfirmPage: React.FC = () => {
                     givenName: formData.coUserFirstName,
                 },
             },
+            recaptchaToken: token,
         };
 
         try {
             const response = await axios.post(`${constants.backendApiEndpoint}/api/locker/token-gen`, formattedData);
-            console.log('成功:', response.data);
             message.success('フォームが正常に送信されました');
             navigate('/locker/form/complete');
         } catch (error) {
-            console.error('エラー:', error);
             message.error('送信に失敗しました');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -74,7 +99,12 @@ const ConfirmPage: React.FC = () => {
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px' }}>
-                        <Button type="primary" onClick={handleConfirm} disabled={!isChecked}>
+                        <Button 
+                            type="primary" 
+                            onClick={handleConfirm} 
+                            disabled={!isChecked || loading} 
+                            loading={loading}
+                        >
                             確認して登録
                         </Button>
                     </div>
