@@ -17,7 +17,6 @@ const LoginForm: React.FC = () => {
             message.success('ログインに成功しました');
             navigate('/admin'); 
         } catch (error: any) {
-            console.error('ログインに失敗しました:', error);
             message.error(error.message);
         }
     };

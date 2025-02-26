@@ -45,7 +45,6 @@ const LockerRegisterConfirm: React.FC = () => {
             message.success('ロッカーが正常に登録されました');
             navigate('/locker/register/complete', { state: { lockerId } });
         } catch (error) {
-            console.error('エラー:', error);
             message.error('ロッカーの登録に失敗しました');
         } finally {
             setLoading(false); 
