@@ -49,7 +49,6 @@ const Register: React.FC = () => {
                 setLockers(filteredLockers);
                 setLoading(false);
             } catch (error) {
-                console.error('Error fetching locker data:', error);
                 setLoading(false);
             }
         };

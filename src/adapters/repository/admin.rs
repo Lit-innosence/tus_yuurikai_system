@@ -21,6 +21,11 @@ pub trait AdminRepository: Send + Sync {
         username: &String,
     ) -> Result<Admin, Error>;
 
+    async fn delete_by_name(
+        &self,
+        username: &String,
+    ) -> Result<usize, Error>;
+
     async fn delete_all(
         &self
     ) -> Result<usize, Error>;
@@ -60,6 +65,15 @@ impl AdminRepository for AdminRepositorySqlImpl {
         let mut conn = self.pool.get().unwrap();
         admin::table.filter(admin::username.eq(username))
             .first(&mut conn)
+    }
+
+    async fn delete_by_name(
+            &self,
+            username: &String,
+        ) -> Result<usize, Error> {
+        let mut conn = self.pool.get().unwrap();
+        diesel::delete(admin::table.find(username))
+            .execute(&mut conn)
     }
 
     async fn delete_all(

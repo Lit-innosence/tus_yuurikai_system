@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Layout, Input, Button, Form, Typography, Card, Table, message } from 'antd';
-import CustomHeader from '../component/CustomHeader';
+import CustomAdminHeader from '../component/CustomAdminHeader';
 import CustomFooter from '../component/CustomFooter';
 import axios from 'axios';
 import constants from '../constants';
@@ -26,21 +26,19 @@ const LockerUserSearch: React.FC = () => {
             query += `?${params.toString()}`;
         }
 
-        console.log('Generated Query:', query);
-
         try {
             // APIからデータを取得
             const response = await axios.get(query, { withCredentials: true });
             setSearchResults(response.data.data);
+            if (response.data.data.length === 0) {
+                message.warning('該当するデータが見つかりませんでした。');
+            }
         } catch (error: any) {
             if (axios.isAxiosError(error)) {
                 if (error.response?.status === 401 || error.response?.status === 400) {
                     message.error('認証エラーです。再度ログインしてください。');
                     window.location.href = '/login';
-                } else if (error.response?.status === 404) {
-                    message.warning('該当するデータが見つかりませんでした。');
                 } else {
-                    console.error('データの取得に失敗しました:', error);
                     message.error('データの取得に失敗しました。');
                 }
             }
@@ -84,7 +82,7 @@ const LockerUserSearch: React.FC = () => {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <CustomHeader />
+            <CustomAdminHeader />
             <Content style={{ padding: '50px 50px', background: '#fff' }}>
                 <Card style={{ maxWidth: 800, margin: '20px auto', padding: '20px' }}>
                     <Title level={3}>ロッカー利用者検索</Title>

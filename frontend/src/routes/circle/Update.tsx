@@ -52,7 +52,8 @@ const CircleUpdate: React.FC = () => {
                                 name="familyName"
                                 noStyle
                                 rules={[
-                                    { required: true, message: '旧代表者の名字を入力してください' }
+                                    { required: true, message: '旧代表者の名字を入力してください' },
+                                    { pattern: /^[a-zA-Z\p{sc=Kana}\p{sc=Hira}\p{sc=Han}]+$/u, message: '苗字は日本語、もしくは英語で入力してください'}
                                 ]}
                             >
                                 <Input style={{ width: '50%' }} placeholder="名字" />
@@ -61,7 +62,8 @@ const CircleUpdate: React.FC = () => {
                                 name="givenName"
                                 noStyle
                                 rules={[
-                                    { required: true, message: '旧代表者の名前を入力してください' }
+                                    { required: true, message: '旧代表者の名前を入力してください' },
+                                    { pattern: /^[a-zA-Z\p{sc=Kana}\p{sc=Hira}\p{sc=Han}]+$/u, message: '苗字は日本語、もしくは英語で入力してください'}
                                 ]}
                             >
                                 <Input style={{ width: '50%' }} placeholder="名前" />
@@ -74,7 +76,7 @@ const CircleUpdate: React.FC = () => {
                         name="studentId"
                         rules={[
                             { required: true, message: '旧代表者の学籍番号を入力してください' },
-                            { pattern: /^[0-9AB]+$/, message: '学籍番号は0~9, A, Bの文字のみで入力してください。' }
+                            { pattern: /^[1-4678][1-9ab]\d{5}$/, message: '有効な学籍番号を入力してください。' }
                         ]}
                     >
                         <Input placeholder="旧代表者の学籍番号を入力" />

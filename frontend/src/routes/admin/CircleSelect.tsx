@@ -7,7 +7,7 @@ const content = [
 ];
 
 const CircleSelect: React.FC = () => {
-    return <SelectLayout content={content} />;
+    return <SelectLayout content={content} kind="admin"/>;
 };
 
 export default CircleSelect;

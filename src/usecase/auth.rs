@@ -9,6 +9,7 @@ use dotenv::dotenv;
 use uuid::Uuid;
 use lettre::message::header::ContentType;
 use lettre::transport::smtp::authentication::Credentials;
+use lettre::transport::smtp::client::{Tls, TlsParameters};
 use lettre::{Message, SmtpTransport, Transport};
 use rocket::http::Status;
 use async_trait::async_trait;
@@ -118,11 +119,19 @@ impl AuthUsecase for AuthUsecaseImpl {
             .body(content)
             .map_err(|_| Status::InternalServerError)?;
 
+        // SMTP認証情報
         let creds = Credentials::new(sender_address.to_owned(), appkey.to_owned());
+
+        // TLSパラメータを生成
+        let tls_parameters = TlsParameters::builder("smtp.gmail.com".to_string())
+        .build()
+        .map_err(|_| Status::InternalServerError)?;
 
         // Gmailにsmtp接続する
         let mailer = SmtpTransport::relay("smtp.gmail.com")
             .map_err(|_| Status::InternalServerError)?
+            .port(587)
+            .tls(Tls::Required(tls_parameters)) 
             .credentials(creds)
             .build();
 

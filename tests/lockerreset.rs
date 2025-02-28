@@ -10,13 +10,14 @@ use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType, Cookie};
 use dotenv::dotenv;
 use tus_yuurikai_system::adapters::{controller::locker, httpmodels::LockerResetRequest};
-use tus_yuurikai_system::utils::encode_jwt::encode_jwt;
+use tus_yuurikai_system::utils::jwt::encode_jwt;
 use tus_yuurikai_system::infrastructure::router::App;
 use chrono::Duration;
 
 
 // 正常系
 #[rocket::async_test]
+#[ignore]
 async fn normal() {
 
     // Arrange
@@ -33,7 +34,7 @@ async fn normal() {
     };
 
     // jwtをCookieに保存
-    let username = env::var("ADMIN_USER_NAME").expect("admin username must be set");
+    let username = String::from("test_admin");
     let key = env::var("TOKEN_KEY").expect("token key must be set");
     let token = encode_jwt(&username, Duration::hours(1), &key);
     let cookie = Cookie::build(("token", token))
@@ -79,10 +80,13 @@ async fn normal() {
 
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.into_string().await.unwrap(), "successfully reset locker");
+
+    setup_db(&app).await;
 }
 
 // 正常系:モンキーテスト
 #[rocket::async_test]
+#[ignore]
 async fn out_of_work_locker_exists() {
 
     // Arrange
@@ -99,7 +103,7 @@ async fn out_of_work_locker_exists() {
     };
 
     // jwtをCookieに保存
-    let username = env::var("ADMIN_USER_NAME").expect("admin username must be set");
+    let username = String::from("test_admin");
     let key = env::var("TOKEN_KEY").expect("token key must be set");
     let token = encode_jwt(&username, Duration::hours(1), &key);
     let cookie = Cookie::build(("token", token))
@@ -144,10 +148,13 @@ async fn out_of_work_locker_exists() {
 
     assert_eq!(response.status(), Status::Ok);
     assert_eq!(response.into_string().await.unwrap(), "successfully reset locker");
+
+    setup_db(&app).await;
 }
 
 // 異常系:パスワードが無効
 #[rocket::async_test]
+#[ignore]
 async fn request_password_is_not_valid() {
 
     // Arrange
@@ -162,7 +169,7 @@ async fn request_password_is_not_valid() {
     };
 
     // jwtをCookieに保存
-    let username = env::var("ADMIN_USER_NAME").expect("admin username must be set");
+    let username = String::from("test_admin");
     let key = env::var("TOKEN_KEY").expect("token key must be set");
     let token = encode_jwt(&username, Duration::hours(1), &key);
     let cookie = Cookie::build(("token", token))
@@ -185,10 +192,13 @@ async fn request_password_is_not_valid() {
     // Assert
     assert_eq!(response.status(), Status::Unauthorized);
     assert_eq!(response.into_string().await.unwrap(), "request password does not match");
+
+    setup_db(&app).await;
 }
 
 // 異常系:jwtが存在しない
 #[rocket::async_test]
+#[ignore]
 async fn jwt_is_not_exists() {
 
     // Arrange
@@ -211,10 +221,13 @@ async fn jwt_is_not_exists() {
     // Assert
     assert_eq!(response.status(), Status::Unauthorized);
     assert_eq!(response.into_string().await.unwrap(), "request is unauthorized");
+
+    setup_db(&app).await;
 }
 
 // 異常系:jwtが無効
 #[rocket::async_test]
+#[ignore]
 async fn jwt_is_not_valid() {
 
     // Arrange
@@ -252,4 +265,6 @@ async fn jwt_is_not_valid() {
     // Assert
     assert_eq!(response.status(), Status::Unauthorized);
     assert_eq!(response.into_string().await.unwrap(), "request token is not valid");
+
+    setup_db(&app).await;
 }

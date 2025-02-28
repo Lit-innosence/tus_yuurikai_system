@@ -4,7 +4,7 @@ extern crate tus_yuurikai_system;
 
 mod utils;
 
-use std::env;
+use utils::password_hash::compute_password_hash;
 use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType};
@@ -22,11 +22,17 @@ pub async fn normal() {
     dotenv().ok();
 
     let request = LoginFormRequest{
-        username: env::var("ADMIN_USER_NAME").expect("admin username must be set"),
-        password: env::var("ADMIN_PASSWORD").expect("admin password must be set"),
+        username: String::from("user000"),
+        password: String::from("0000"),
     };
 
     setup_db(&app).await;
+
+    let password_hash = compute_password_hash(request.password.clone()).unwrap();
+    match app.admin.admin_repository.insert(&request.username, &password_hash).await {
+        Ok(_) => {},
+        Err(err) => {panic!{"{}", err}},
+    }
 
     // Act
     let response = client.post(uri!("/api", locker::login))
@@ -34,9 +40,16 @@ pub async fn normal() {
         .json(&request)
         .dispatch().await;
 
+    match app.admin.admin_repository.delete_by_name(&request.username).await {
+        Ok(_) => {},
+        Err(err) => {panic!{"{}",err}}
+    }
+
     // Assert
     assert_eq!(response.status(), Status::Created);
     assert_ne!(response.cookies().get("token"), None);
+
+    setup_db(&app).await;
 }
 
 // 異常系=存在しないusernameである
@@ -48,12 +61,20 @@ pub async fn username_does_not_exist() {
 
     dotenv().ok();
 
+    let correct_username = String::from("user000");
+
     let request = LoginFormRequest{
         username: String::from("user111"),
-        password: env::var("ADMIN_PASSWORD").expect("admin password must be set"),
+        password: String::from("0000"),
     };
 
     setup_db(&app).await;
+
+    let password_hash = compute_password_hash(request.password.clone()).unwrap();
+    match app.admin.admin_repository.insert(&correct_username, &password_hash).await {
+        Ok(_) => {},
+        Err(err) => {panic!{"{}", err}},
+    }
 
     // Act
     let response = client.post(uri!("/api", locker::login))
@@ -61,9 +82,16 @@ pub async fn username_does_not_exist() {
         .json(&request)
         .dispatch().await;
 
+    match app.admin.admin_repository.delete_by_name(&correct_username).await {
+        Ok(_) => {},
+        Err(err) => {panic!{"{}",err}}
+    }
+
     // Assert
     assert_eq!(response.status(), Status::InternalServerError);
     assert_eq!(response.cookies().get("token"), None);
+
+    setup_db(&app).await;
 }
 
 // 異常系=passwordが異なる
@@ -75,10 +103,19 @@ pub async fn password_is_wrong() {
 
     dotenv().ok();
 
+    let correct_password = String::from("0000");
+    let wrong_password = String::from("1111");
+
     let request = LoginFormRequest{
-        username: env::var("ADMIN_USER_NAME").expect("admin username must be set"),
-        password: String::from("1111"),
+        username: String::from("user000"),
+        password: wrong_password,
     };
+
+    let password_hash = compute_password_hash(correct_password.clone()).unwrap();
+    match app.admin.admin_repository.insert(&request.username, &password_hash).await {
+        Ok(_) => {},
+        Err(err) => {panic!{"{}", err}},
+    }
 
     setup_db(&app).await;
 
@@ -88,7 +125,14 @@ pub async fn password_is_wrong() {
         .json(&request)
         .dispatch().await;
 
+    match app.admin.admin_repository.delete_by_name(&request.username).await {
+        Ok(_) => {},
+        Err(err) => {panic!{"{}",err}},
+    }
+
     // Assert
-    assert_eq!(response.status(), Status::InternalServerError);
+    assert_eq!(response.status(), Status::BadRequest);
     assert_eq!(response.cookies().get("token"), None);
+
+    setup_db(&app).await;
 }

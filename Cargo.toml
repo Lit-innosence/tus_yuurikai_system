@@ -11,7 +11,7 @@ serde = { version = "1.0.206", features = ["derive"] }
 serde_json = "1.0.122"
 utoipa = { version = "4", features = ["rocket_extras"]}
 utoipa-swagger-ui = { version = "7", features = ["rocket"]}
-diesel = { version = "2.2.0", features = ["postgres", "chrono", "uuid", "r2d2"] }
+diesel = { version = "2.2.7", features = ["postgres", "chrono", "uuid", "r2d2"] }
 dotenv = "0.15.0"
 chrono = "0.4.38"
 uuid = "1.10.0"
@@ -22,3 +22,4 @@ jsonwebtoken = "9"
 rocket_cors = "0.6.0"
 reqwest = { version = "0.12.12", features = ["json"]}
 regex = "1.11.1"
+argon2 = { version = "0.5.3", features = ["password-hash"] }
