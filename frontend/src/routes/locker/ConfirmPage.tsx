@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Button, Layout, Card, Checkbox, message } from 'antd';
@@ -12,23 +12,30 @@ const { Content } = Layout;
 const ConfirmPage: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { formData } = location.state as { formData: any };
+    const formData = location.state?.formData; 
 
-    // reCAPTCHA v3 のフック
-    const { executeRecaptcha } = useGoogleReCaptcha();
+    const { executeRecaptcha } = useGoogleReCaptcha(); // reCAPTCHA v3 のフック
+    const [isChecked, setIsChecked] = useState(false); // チェックボックスの状態を管理
+    const [loading, setLoading] = useState(false); // ローディング状態を管理
+    const [lastClicked, setLastClicked] = useState<number | null>(null); // 最後のクリック時刻を記録する state
 
-    // チェックボックスの状態を管理
-    const [isChecked, setIsChecked] = useState(false);
-    // ローディング状態を管理
-    const [loading, setLoading] = useState(false);
-    // 最後のクリック時刻を記録する state
-    const [lastClicked, setLastClicked] = useState<number | null>(null);
+    // ページ読み込み時に formData が存在しなければ /nopage へ遷移
+    useEffect(() => {
+        if (!formData) {
+            navigate('/locker/nopage');
+        }
+    }, [formData, navigate]);
 
+    if (!formData) return null;
+
+    // チェックボックスの状態が変更された時の処理
     const handleCheckboxChange = (e: any) => {
         setIsChecked(e.target.checked);
     };
 
+    // 確認ボタンがクリックされた時の処理
     const handleConfirm = async () => {
+
         // reCAPTCHA v3 を実行してトークンを取得
         if (!executeRecaptcha) {
             message.error("reCAPTCHAがまだ読み込まれていません。");
@@ -36,6 +43,7 @@ const ConfirmPage: React.FC = () => {
         }
         const token = await executeRecaptcha('confirm_page');
 
+        // クールダウンタイムの確認
         const now = Date.now();
         if (lastClicked && now - lastClicked < 20000) {
             message.warning('20秒のクールダウン中です。しばらくお待ちください。');
@@ -44,7 +52,7 @@ const ConfirmPage: React.FC = () => {
         setLastClicked(now);
         setLoading(true);
 
-        // reCAPTCHAトークンを含むデータを整形
+        // データの整形 (reCAPTCHAトークンを含む)
         const formattedData = {
             data: {
                 mainUser: {
@@ -62,7 +70,7 @@ const ConfirmPage: React.FC = () => {
         };
 
         try {
-            const response = await axios.post(`${constants.backendApiEndpoint}/api/locker/token-gen`, formattedData);
+            await axios.post(`${constants.backendApiEndpoint}/api/locker/token-gen`, formattedData);
             message.success('フォームが正常に送信されました');
             navigate('/locker/form/complete');
         } catch (error) {
