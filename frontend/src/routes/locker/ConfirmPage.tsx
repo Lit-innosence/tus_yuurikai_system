@@ -36,6 +36,8 @@ const ConfirmPage: React.FC = () => {
     // 確認ボタンがクリックされた時の処理
     const handleConfirm = async () => {
 
+        setLoading(true);
+
         // reCAPTCHA v3 を実行してトークンを取得
         if (!executeRecaptcha) {
             message.error("reCAPTCHAがまだ読み込まれていません。");
@@ -50,7 +52,6 @@ const ConfirmPage: React.FC = () => {
             return;
         }
         setLastClicked(now);
-        setLoading(true);
 
         // データの整形 (reCAPTCHAトークンを含む)
         const formattedData = {

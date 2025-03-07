@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button, Layout, Card, Checkbox, message } from 'antd';
 import axios from 'axios';
@@ -10,15 +10,36 @@ const { Content } = Layout;
 const CircleUpdateConfirm: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { formData } = location.state as { formData: any };
+    const formData = location.state?.formData; 
 
     const [isChecked, setIsChecked] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [lastClicked, setLastClicked] = useState<number | null>(null);
+
+    // 前のページからのデータがなければ nopage に遷移する
+    useEffect(() => {
+        if (!formData) {
+            navigate('/circle/nopage');
+        }
+    }, [formData, navigate]);
+
+    if (!formData) {
+        return null;
+    }
 
     const handleCheckboxChange = (e: any) => {
         setIsChecked(e.target.checked);
     };
 
     const handleConfirm = async () => {
+        const now = Date.now();
+        // 20秒のクールダウンチェック
+        if (lastClicked && now - lastClicked < 20000) {
+            message.warning('20秒のクールダウン中です。しばらくお待ちください。');
+            return;
+        }
+        setLastClicked(now);
+        setLoading(true);
         try {
             const response = await axios.post('/api/circle/update/entry', formData);
             if (response.status === 200) {
@@ -27,6 +48,8 @@ const CircleUpdateConfirm: React.FC = () => {
             }
         } catch (error) {
             message.error('団体情報の更新に失敗しました');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -58,7 +81,12 @@ const CircleUpdateConfirm: React.FC = () => {
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px' }}>
-                        <Button type="primary" onClick={handleConfirm} disabled={!isChecked}>
+                        <Button 
+                            type="primary" 
+                            onClick={handleConfirm} 
+                            disabled={!isChecked || loading} 
+                            loading={loading}
+                        >
                             確認して更新
                         </Button>
                     </div>

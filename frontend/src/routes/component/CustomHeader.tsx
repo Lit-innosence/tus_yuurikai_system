@@ -25,6 +25,8 @@ const CustomHeader: React.FC = () => {
                 type="primary"
                 onClick={handleGoBack}
                 style={{
+                    color: '#003149',
+                    backgroundColor: 'white',
                     position: 'absolute',
                     left: '20px',
                     top: '50%',
@@ -44,7 +46,7 @@ const CustomHeader: React.FC = () => {
                     fontSize: '16px'
                 }}
             >
-                TUS YURIKAI SYSTEM
+                TUS YUURIKAI SYSTEM
             </div>
         </Header>
     );

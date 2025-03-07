@@ -36,6 +36,8 @@ const LockerRegisterConfirm: React.FC = () => {
 
     const handleConfirm = async () => {
 
+        setLoading(true); // Loading状態にする
+        
         // クールダウンタイムの確認
         const now = Date.now();
         if (lastClicked && now - lastClicked < 20000) {
@@ -43,7 +45,6 @@ const LockerRegisterConfirm: React.FC = () => {
             return;
         }
         setLastClicked(now);
-        setLoading(true); // Loading状態にする
 
         // データの整形
         const postData = {

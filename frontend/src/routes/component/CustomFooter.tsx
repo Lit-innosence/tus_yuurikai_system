@@ -7,7 +7,7 @@ const CustomFooter: React.FC = () => {
     const currentYear = new Date().getFullYear();
     return (
         <Footer style={{ textAlign: 'center', backgroundColor: 'white' }}>
-            © 2024-{currentYear} TUS YURIKAI SYSTEM All Rights Reserved.
+            © 2024-{currentYear} TUS YUURIKAI SYSTEM All Rights Reserved.
         </Footer>
     );
 };

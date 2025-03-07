@@ -24,7 +24,7 @@ const AdminCustomHeader: React.FC = () => {
             alignItems: 'center',
             position: 'relative'
         }}>
-            <span style={{ fontSize: '18px' }}>TUS YURIKAI SYSTEM</span>
+            <span style={{ fontSize: '18px' }}>TUS YUURIKAI SYSTEM</span>
             <Button 
                 type="primary" 
                 onClick={handleLogoutClick} 
