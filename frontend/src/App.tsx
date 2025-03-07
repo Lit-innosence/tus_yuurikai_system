@@ -6,7 +6,8 @@ import Page404 from './routes/Page404';
 import AuthProvider from './routes/component/AuthContext';
 import Login from './routes/Login';
 import Admin from './routes/admin/Admin';
-import PrivateRoute from './routes/component/PrivateRouter';
+import PrivateRouter from './routes/component/PrivateRouter';
+import TimeRouter from './routes/component/TimeRouter';
 import LockerMailAuth from './routes/locker/MailAuth';
 import CircleRegisterAuth from './routes/circle/RegisterAuth';
 import CircleUpdateAuth from './routes/circle/UpdateAuth';
@@ -70,27 +71,27 @@ function App() {
             <Route path='/locker/register/confirm' element={<LockerRegisterConfirm />} />
             <Route path='/locker/register/complete' element={<LockerRegisterComplete />} />
 
-            <Route path='/circle' element={<CircleSelect />} />
-            <Route path='/circle/register/status' element={<CircleRegister />} />
-            <Route path='/circle/register/auth' element={<CircleRegisterAuth />} />
-            <Route path='/circle/register/complete' element={<CircleRegisterAuthComp />} />
-            <Route path='/circle/register/process' element={<CircleRegisterProcess />} />
-            <Route path='/circle/update' element={<CircleUpdate />} />
-            <Route path='/circle/update/auth' element={<CircleUpdateAuth />} />
-            <Route path='/circle/update/confirm' element={<CircleUpdateConfirm />} />
-            <Route path='/circle/update/complete' element={<CircleUpdateComplete />} />
-            <Route path='/circle/update/process' element={<CircleUpdateProcess />} />
+            <Route path='/circle' element={<TimeRouter><CircleSelect /></TimeRouter>} />
+            <Route path='/circle/register/status' element={<TimeRouter><CircleRegister /></TimeRouter>} />
+            <Route path='/circle/register/auth' element={<TimeRouter><CircleRegisterAuth /></TimeRouter>} />
+            <Route path='/circle/register/complete' element={<TimeRouter><CircleRegisterAuthComp /></TimeRouter>} />
+            <Route path='/circle/register/process' element={<TimeRouter><CircleRegisterProcess /></TimeRouter>} />
+            <Route path='/circle/update' element={<TimeRouter><CircleUpdate /></TimeRouter>} />
+            <Route path='/circle/update/auth' element={<TimeRouter><CircleUpdateAuth /></TimeRouter>} />
+            <Route path='/circle/update/confirm' element={<TimeRouter><CircleUpdateConfirm /></TimeRouter>} />
+            <Route path='/circle/update/complete' element={<TimeRouter><CircleUpdateComplete /></TimeRouter>} />
+            <Route path='/circle/update/process' element={<TimeRouter><CircleUpdateProcess /></TimeRouter>} />
             
             <Route path='/redirect/*' element={<Redirect />} />
 
             <Route path='/login' element={<Login />} />
-            <Route path='/admin' element={<PrivateRoute><Admin /></PrivateRoute>} />
-            <Route path='/admin/locker' element={<PrivateRoute><AdminLockerSelect/></PrivateRoute>} />
-            <Route path='/admin/circle' element={<PrivateRoute><AdminCircleSelect/></PrivateRoute>} />
-            <Route path='/admin/locker/reset' element={<PrivateRoute><LockerReset /></PrivateRoute>} />
-            <Route path='/admin/locker/search' element={<PrivateRoute><LockerSearch /></PrivateRoute>} />
-            <Route path='/admin/circle/access' element={<PrivateRoute><CircleAccessLimit /></PrivateRoute>} />
-            <Route path='/admin/circle/list' element={<PrivateRoute><CircleList /></PrivateRoute>} />
+            <Route path='/admin' element={<PrivateRouter><Admin /></PrivateRouter>} />
+            <Route path='/admin/locker' element={<PrivateRouter><AdminLockerSelect/></PrivateRouter>} />
+            <Route path='/admin/circle' element={<PrivateRouter><AdminCircleSelect/></PrivateRouter>} />
+            <Route path='/admin/locker/reset' element={<PrivateRouter><LockerReset /></PrivateRouter>} />
+            <Route path='/admin/locker/search' element={<PrivateRouter><LockerSearch /></PrivateRouter>} />
+            <Route path='/admin/circle/access' element={<PrivateRouter><CircleAccessLimit /></PrivateRouter>} />
+            <Route path='/admin/circle/list' element={<PrivateRouter><CircleList /></PrivateRouter>} />
 
             <Route path='/locker/nopage' element={<Page404 />} />
             <Route path='/circle/nopage' element={<Page404 />} />
