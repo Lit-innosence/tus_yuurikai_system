@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout, List, Button } from 'antd';
-import CustomAdminHeader from './component/CustomAdminHeader';
+import CustomHeader from './component/CustomHeader';
 import CustomFooter from './component/CustomFooter';
 import axios from 'axios';
 import constants from './constants';
@@ -45,7 +45,7 @@ const Toppage: React.FC = () => {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <CustomAdminHeader />
+            <CustomHeader />
             <Content style={{ padding: '50px 50px', minHeight: '80vh' }}>
                 <List
                     itemLayout="horizontal"
