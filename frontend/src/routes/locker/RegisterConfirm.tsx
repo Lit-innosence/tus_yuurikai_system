@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Button, Layout, Card, Checkbox, message } from 'antd';
 import CustomHeader from '../../components/CustomHeader';
 import CustomFooter from '../../components/CustomFooter';
+import MovieButton from '../../components/MovieButton';
 import constants from '../constants';
 
 const { Content } = Layout;
@@ -70,6 +71,7 @@ const LockerRegisterConfirm: React.FC = () => {
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <CustomHeader />
+            <MovieButton />
             <Content style={{ padding: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Card
                     title="入力内容の確認"

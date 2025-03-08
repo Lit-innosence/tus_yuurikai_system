@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Form, Input, Button, Layout } from 'antd';
 import CustomHeader from '../../components/CustomHeader';
 import CustomFooter from '../../components/CustomFooter';
+import MovieButton from '../../components/MovieButton';
 
 const { Content } = Layout;
 
@@ -17,6 +18,7 @@ const LockerForm: React.FC = () => {
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <CustomHeader />
+            <MovieButton />
             <Content style={{ padding: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Form
                     name="lockerForm"

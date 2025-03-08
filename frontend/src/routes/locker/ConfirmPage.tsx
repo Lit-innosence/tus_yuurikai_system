@@ -6,6 +6,7 @@ import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import CustomHeader from '../../components/CustomHeader';
 import CustomFooter from '../../components/CustomFooter';
 import constants from '../constants';
+import MovieButton from '../../components/MovieButton';
 
 const { Content } = Layout;
 
@@ -84,6 +85,7 @@ const ConfirmPage: React.FC = () => {
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <CustomHeader />
+            <MovieButton />
             <Content style={{ padding: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Card
                     title="入力内容の確認"

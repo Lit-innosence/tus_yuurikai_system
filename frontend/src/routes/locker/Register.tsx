@@ -6,6 +6,7 @@ import CustomHeader from '../../components/CustomHeader';
 import CustomFooter from '../../components/CustomFooter';
 import Loading from '../Loading';
 import constants from '../constants';
+import MovieButton from '../../components/MovieButton';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -74,6 +75,7 @@ const Register: React.FC = () => {
     return (
         <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <CustomHeader />
+            <MovieButton />
             <Content style={{ flex: 1, padding: '50px 50px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Card style={{ maxWidth: 800, width: '100%', flexGrow: 1 }}>
                     <Title level={3}>ロッカーを選択してください</Title>
