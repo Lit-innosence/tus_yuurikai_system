@@ -72,10 +72,10 @@ const Register: React.FC = () => {
     };
 
     return (
-        <Layout style={{ minHeight: '100vh' }}>
+        <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <CustomHeader />
-            <Content style={{ padding: '50px 50px' }}>
-                <Card style={{ maxWidth: 800, margin: '20px auto' }}>
+            <Content style={{ flex: 1, padding: '50px 50px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Card style={{ maxWidth: 800, width: '100%', flexGrow: 1 }}>
                     <Title level={3}>ロッカーを選択してください</Title>
 
                     <Select
@@ -127,14 +127,26 @@ const Register: React.FC = () => {
                             )}
                         />
                     )}
-
-                    {selectedLocker && (
-                        <Button type="primary" block onClick={handleRegister}>
-                            ロッカー登録
-                        </Button>
-                    )}
                 </Card>
             </Content>
+
+            {selectedLocker && (
+                <div style={{
+                    position: 'fixed',
+                    bottom: 0,
+                    left: 0,
+                    width: '100%',
+                    background: '#fff',
+                    padding: '10px 20px',
+                    boxShadow: '0 -2px 5px rgba(0,0,0,0.1)',
+                    textAlign: 'center',
+                }}>
+                    <Button type="primary" block onClick={handleRegister} style={{ maxWidth: 800 }}>
+                        ロッカー登録
+                    </Button>
+                </div>
+            )}
+
             <CustomFooter />
         </Layout>
     );
