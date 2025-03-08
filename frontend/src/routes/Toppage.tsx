@@ -5,6 +5,7 @@ import CustomHeader from '../components/CustomHeader';
 import CustomFooter from '../components/CustomFooter';
 import axios from 'axios';
 import constants from './constants';
+import AdImage from '../assets/shinkan_v1.png';
 
 const { Content } = Layout;
 
@@ -28,7 +29,7 @@ const Toppage: React.FC = () => {
                 const now = new Date();
                 const startTime = new Date(start);
                 const endTime = new Date(end);
-                // 現在時刻がアクセス可能時間内かどうか判定
+                
                 if (now >= startTime && now <= endTime) {
                     setIsCircleRegistrationAllowed(true);
                 } else {
@@ -67,6 +68,20 @@ const Toppage: React.FC = () => {
                         </List.Item>
                     )}
                 />
+                {/* 広告画像を配置 */}
+                <div style={{ marginTop: '30px', textAlign: 'center' }}>
+                    <a
+                        href="https://example.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <img
+                            src={AdImage}
+                            alt="AdImage"
+                            style={{ maxWidth: '70%', height: 'auto' }}
+                        />
+                    </a>
+                </div>
             </Content>
             <CustomFooter />
         </Layout>
