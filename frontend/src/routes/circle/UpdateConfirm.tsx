@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button, Layout, Card, Checkbox, message } from 'antd';
 import axios from 'axios';
-import CustomHeader from '../component/CustomHeader';
-import CustomFooter from '../component/CustomFooter';
+import CustomHeader from '../../component/CustomHeader';
+import CustomFooter from '../../component/CustomFooter';
 
 const { Content } = Layout;
 

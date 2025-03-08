@@ -3,8 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Button, Layout, Card, Checkbox, message } from 'antd';
 import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
-import CustomHeader from '../component/CustomHeader';
-import CustomFooter from '../component/CustomFooter';
+import CustomHeader from '../../component/CustomHeader';
+import CustomFooter from '../../component/CustomFooter';
 import constants from '../constants';
 
 const { Content } = Layout;

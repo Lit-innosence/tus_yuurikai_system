@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Checkbox, Button, Card, Layout, Typography } from 'antd';
-import CustomHeader from '../component/CustomHeader';
-import CustomFooter from '../component/CustomFooter';
+import CustomHeader from '../../component/CustomHeader';
+import CustomFooter from '../../component/CustomFooter';
 
 const { Content } = Layout;
 const { Paragraph, Text } = Typography;

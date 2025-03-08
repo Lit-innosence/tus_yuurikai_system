@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Input, Button, Layout } from 'antd';
-import CustomHeader from '../component/CustomHeader';
-import CustomFooter from '../component/CustomFooter';
+import CustomHeader from '../../component/CustomHeader';
+import CustomFooter from '../../component/CustomFooter';
 
 const { Content } = Layout;
 

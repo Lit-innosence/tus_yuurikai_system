@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { List, Button, Card, Typography, Select, Layout } from 'antd';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
-import CustomHeader from '../component/CustomHeader';
-import CustomFooter from '../component/CustomFooter';
+import CustomHeader from '../../component/CustomHeader';
+import CustomFooter from '../../component/CustomFooter';
 import Loading from '../Loading';
 import constants from '../constants';
 
