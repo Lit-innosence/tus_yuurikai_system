@@ -1,5 +1,5 @@
 import React from 'react';
-import SelectLayout from '../component/PageSelectLayout';
+import SelectLayout from '../../components/PageSelectLayout';
 
 const content = [
     { title: 'アクセス制限', route: '/admin/circle/access' },

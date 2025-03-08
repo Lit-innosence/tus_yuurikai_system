@@ -1,9 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Input, Button, Layout, message } from 'antd';
-import { useAuth } from './component/AuthContext';
-import CustomHeader from './component/CustomHeader';
-import CustomFooter from './component/CustomFooter';
+import { useAuth } from '../components/AuthContext';
+import CustomHeader from '../components/CustomHeader';
+import CustomFooter from '../components/CustomFooter';
 
 const { Content } = Layout;
 

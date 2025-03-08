@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Layout, Input, Button, Form, Typography, Card, Table, message } from 'antd';
-import CustomAdminHeader from '../component/CustomAdminHeader';
-import CustomFooter from '../component/CustomFooter';
+import CustomAdminHeader from '../../components/CustomAdminHeader';
+import CustomFooter from '../../components/CustomFooter';
 import axios from 'axios';
 import constants from '../constants';
 

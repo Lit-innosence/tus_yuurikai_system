@@ -3,8 +3,8 @@ import { Form, DatePicker, TimePicker, Button, message, Card, Layout, Row, Col }
 import axios from 'axios';
 import dayjs, { Dayjs } from 'dayjs';
 import constants from '../constants';
-import CustomAdminHeader from '../component/CustomAdminHeader';
-import CustomFooter from '../component/CustomFooter';
+import CustomAdminHeader from '../../components/CustomAdminHeader';
+import CustomFooter from '../../components/CustomFooter';
 
 const AccessRestrictionPage: React.FC = () => {
     const [loading, setLoading] = useState(false);

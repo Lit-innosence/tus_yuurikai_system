@@ -1,7 +1,7 @@
 import React from 'react';
 import { Timeline, Layout, Card } from 'antd';
-import CustomHeader from '../../component/CustomHeader';
-import CustomFooter from '../../component/CustomFooter';
+import CustomHeader from '../../components/CustomHeader';
+import CustomFooter from '../../components/CustomFooter';
 
 const { Content } = Layout;
 
