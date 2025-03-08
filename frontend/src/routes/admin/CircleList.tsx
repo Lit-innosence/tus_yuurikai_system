@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Table, Typography, Layout, Input, message, Modal, Button, Select } from 'antd';
 import { ExportOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import CustomAdminHeader from '../component/CustomAdminHeader';
-import CustomFooter from '../component/CustomFooter';
+import CustomAdminHeader from '../../components/CustomAdminHeader';
+import CustomFooter from '../../components/CustomFooter';
 import constants from '../constants';
 
 const { Title } = Typography;

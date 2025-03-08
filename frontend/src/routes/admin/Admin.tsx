@@ -1,5 +1,5 @@
 import React from 'react';
-import SelectLayout from '../component/PageSelectLayout';
+import SelectLayout from '../../components/PageSelectLayout';
 
 const content = [
     { title: 'ロッカー設定', route: '/admin/locker' },
