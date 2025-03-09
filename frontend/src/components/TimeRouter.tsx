@@ -48,7 +48,6 @@ useEffect(() => {
         setAccessSettings(null);
         }
     } catch (error) {
-        console.error('設定の取得に失敗:', error);
         setAccessible(false);
         setAccessSettings(null);
     } finally {
