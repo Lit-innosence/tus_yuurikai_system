@@ -98,7 +98,7 @@ const LockerTerms: React.FC = () => {
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <CustomHeader />
-            <MovieButton />
+            <MovieButton first={true}/>
             <Content style={contentStyle}>
                 <Card title="利用規約" bordered={true} style={cardStyle}>
                     {termsContent}
