@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Layout, Button, Modal, Input, message } from 'antd';
 import axios from 'axios';
-import CustomAdminHeader from '../component/CustomAdminHeader';
-import CustomFooter from '../component/CustomFooter';
+import CustomAdminHeader from '../../components/CustomAdminHeader';
+import CustomFooter from '../../components/CustomFooter';
 import constants from '../constants';
 
 const { Content } = Layout;
