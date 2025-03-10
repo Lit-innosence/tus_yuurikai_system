@@ -4,9 +4,10 @@ import { Layout } from 'antd';
 const { Footer } = Layout;
 
 const CustomFooter: React.FC = () => {
+    const currentYear = new Date().getFullYear();
     return (
         <Footer style={{ textAlign: 'center', backgroundColor: 'white' }}>
-            TUS YURIKAI SYSTEM ©2024
+            © 2024-{currentYear} TUS YUURIKAI SYSTEM All Rights Reserved.
         </Footer>
     );
 };

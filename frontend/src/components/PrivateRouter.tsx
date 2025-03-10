@@ -6,7 +6,7 @@ type PrivateRouteProps = {
     children?: React.ReactNode;
 };
 
-const PrivateRoute: React.FC<PrivateRouteProps> = (props) => {
+const PrivateRouter: React.FC<PrivateRouteProps> = (props) => {
     const { loggedIn } = useAuth();
 
     if (!loggedIn) {
@@ -16,4 +16,4 @@ const PrivateRoute: React.FC<PrivateRouteProps> = (props) => {
     return <>{props.children}</>;
 };
 
-export default PrivateRoute;
+export default PrivateRouter;

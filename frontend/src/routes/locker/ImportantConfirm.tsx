@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Checkbox, Button, Card, Layout, Typography } from 'antd';
-import CustomHeader from '../component/CustomHeader';
-import CustomFooter from '../component/CustomFooter';
+import CustomHeader from '../../components/CustomHeader';
+import CustomFooter from '../../components/CustomFooter';
+import MovieButton from '../../components/MovieButton';
 
 const { Content } = Layout;
 const { Paragraph, Text } = Typography;
@@ -35,6 +36,7 @@ const ImportantConfirm: React.FC = () => {
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <CustomHeader />
+            <MovieButton />
             <Content style={contentStyle}>
                 <Card title="重要事項確認" bordered={true} style={cardStyle}>
                     <Paragraph strong style={{ fontSize: '16px', color: '#ff4d4f' }}>

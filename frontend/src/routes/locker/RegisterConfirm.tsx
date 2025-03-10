@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { Button, Layout, Card, Checkbox, message } from 'antd';
-import CustomHeader from '../component/CustomHeader';
-import CustomFooter from '../component/CustomFooter';
+import CustomHeader from '../../components/CustomHeader';
+import CustomFooter from '../../components/CustomFooter';
+import MovieButton from '../../components/MovieButton';
 import constants from '../constants';
 
 const { Content } = Layout;
@@ -13,24 +14,40 @@ const LockerRegisterConfirm: React.FC = () => {
     const location = useLocation();
     const { lockerId, pairInfo: initialPairInfo, authId } = location.state || {};
 
-    const [isChecked, setIsChecked] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [pairInfo, setPairInfo] = useState(initialPairInfo);
-    const [lastClicked, setLastClicked] = useState<number | null>(null);
+    const [isChecked, setIsChecked] = useState(false); // チェックボックスの状態を管理
+    const [loading, setLoading] = useState(false); // ローディング状態を管理
+    const [pairInfo, setPairInfo] = useState(initialPairInfo); // ペア情報を state で管理
+    const [lastClicked, setLastClicked] = useState<number | null>(null); // 最後のクリック時刻を記録する state
+
+    // ページ読み込み時に必要なデータが存在しなければ /locker/nopage にリダイレクト
+    useEffect(() => {
+        if (!lockerId || !initialPairInfo || !authId) {
+            navigate('/locker/nopage');
+        }
+    }, [lockerId, initialPairInfo, authId, navigate]);
+
+    // データが不足している場合は何もレンダリングしない
+    if (!lockerId || !initialPairInfo || !authId) {
+        return null;
+    }
 
     const handleCheckboxChange = (e: any) => {
         setIsChecked(e.target.checked);
     };
 
     const handleConfirm = async () => {
+
+        setLoading(true); // Loading状態にする
+        
+        // クールダウンタイムの確認
         const now = Date.now();
         if (lastClicked && now - lastClicked < 20000) {
             message.warning('20秒のクールダウン中です。しばらくお待ちください。');
             return;
         }
         setLastClicked(now);
-        setLoading(true); // Loading状態にする
 
+        // データの整形
         const postData = {
             data: {
                 studentId: pairInfo.mainUser.studentId,
@@ -54,6 +71,7 @@ const LockerRegisterConfirm: React.FC = () => {
     return (
         <Layout style={{ minHeight: '100vh' }}>
             <CustomHeader />
+            <MovieButton />
             <Content style={{ padding: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Card
                     title="入力内容の確認"

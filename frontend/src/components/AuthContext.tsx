@@ -1,8 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { createContext, useContext, useState, useEffect } from 'react';
-import constants from '../constants';
-import { LoginFormData } from '../types';
+import constants from '../routes/constants';
+import { LoginFormData } from '../routes/types';
 import Cookies from 'js-cookie'; 
 
 type AuthState = {
