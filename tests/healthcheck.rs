@@ -4,7 +4,7 @@ extern crate tus_yuurikai_system;
 
 mod utils;
 
-use tus_yuurikai_system::infrastructure::router::App;
+use tus_yuurikai_system::infrastructure::router::{App, AppOption};
 use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType};
@@ -31,7 +31,8 @@ async fn post_healthcheck_test() {
         text: String::from("Hello world from json!")
     };
 
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     setup_db(&app).await;
 

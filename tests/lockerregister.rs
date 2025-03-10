@@ -10,7 +10,7 @@ use rocket::http::{Status, ContentType};
 use tus_yuurikai_system::adapters::{controller::locker, httpmodels::LockerResisterRequest};
 use tus_yuurikai_system::domain::{assignment::AssignmentInfo, student_pair::PairInfo, student::UserInfo};
 use tus_yuurikai_system::usecase::{student_pair::StudentPairUsecase, student::StudentUsecase, auth::AuthUsecase};
-use tus_yuurikai_system::infrastructure::router::App;
+use tus_yuurikai_system::infrastructure::router::{App, AppOption};
 
 // 正常系
 #[rocket::async_test]
@@ -19,7 +19,8 @@ async fn normal() {
 
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
@@ -90,7 +91,8 @@ async fn student_id_allow_a_b() {
 
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     let mainuser = &UserInfo{
             student_id: String::from("3A22999"),
@@ -161,7 +163,8 @@ async fn student_id_do_not_match() {
 
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
@@ -232,7 +235,8 @@ async fn year_do_not_match() {
 
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
@@ -299,7 +303,8 @@ async fn locker_status_unavailable() {
 
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
@@ -376,7 +381,8 @@ async fn same_pair_arleady_registered() {
 
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),

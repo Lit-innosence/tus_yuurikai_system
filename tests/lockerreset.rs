@@ -11,7 +11,7 @@ use rocket::http::{Status, ContentType, Cookie};
 use dotenv::dotenv;
 use tus_yuurikai_system::adapters::{controller::locker, httpmodels::LockerResetRequest};
 use tus_yuurikai_system::utils::jwt::encode_jwt;
-use tus_yuurikai_system::infrastructure::router::App;
+use tus_yuurikai_system::infrastructure::router::{App, AppOption};
 use chrono::Duration;
 
 
@@ -22,7 +22,8 @@ async fn normal() {
 
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     // dbの初期化
     setup_db(&app).await;
@@ -91,7 +92,8 @@ async fn out_of_work_locker_exists() {
 
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     // dbの初期化
     setup_db(&app).await;
@@ -159,7 +161,8 @@ async fn request_password_is_not_valid() {
 
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     // dbの初期化
     setup_db(&app).await;
@@ -203,7 +206,8 @@ async fn jwt_is_not_exists() {
 
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     // dbの初期化
     setup_db(&app).await;
@@ -232,7 +236,8 @@ async fn jwt_is_not_valid() {
 
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     // dbの初期化
     setup_db(&app).await;

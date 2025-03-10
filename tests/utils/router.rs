@@ -1,6 +1,6 @@
 extern crate tus_yuurikai_system;
 
-use tus_yuurikai_system::{infrastructure::router::App, adapters::controller::ApiDoc};
+use tus_yuurikai_system::{infrastructure::router::{App, AppOption}, adapters::controller::ApiDoc};
 use tus_yuurikai_system::adapters::controller::{*, locker::*};
 
 use rocket::{routes, Rocket, Build};
@@ -8,7 +8,8 @@ use utoipa_swagger_ui::SwaggerUi;
 use utoipa::OpenApi;
 
 pub fn rocket() -> Rocket<Build> {
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
     let rocket = rocket::build()
         .manage(app)
         .mount(

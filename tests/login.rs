@@ -10,14 +10,15 @@ use rocket::local::asynchronous::Client;
 use rocket::http::{Status, ContentType};
 use dotenv::dotenv;
 use tus_yuurikai_system::adapters::{controller::locker, httpmodels::LoginFormRequest};
-use tus_yuurikai_system::infrastructure::router::App;
+use tus_yuurikai_system::infrastructure::router::{App, AppOption};
 
 // 正常系
 #[rocket::async_test]
 pub async fn normal() {
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     dotenv().ok();
 
@@ -57,7 +58,8 @@ pub async fn normal() {
 pub async fn username_does_not_exist() {
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     dotenv().ok();
 
@@ -99,7 +101,8 @@ pub async fn username_does_not_exist() {
 pub async fn password_is_wrong() {
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     dotenv().ok();
 

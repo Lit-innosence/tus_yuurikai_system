@@ -11,7 +11,7 @@ use dotenv::dotenv;
 use tus_yuurikai_system::adapters::httpmodels::{UserSearchResponse, UserSearchResult};
 use tus_yuurikai_system::domain::{assignment::AssignmentInfo, student_pair::PairInfo, student::UserInfo};
 use tus_yuurikai_system::usecase::{assignment_record::AssignmentRecordUsecase, student_pair::StudentPairUsecase, student::StudentUsecase};
-use tus_yuurikai_system::infrastructure::router::App;
+use tus_yuurikai_system::infrastructure::router::{App, AppOption};
 use tus_yuurikai_system::utils::jwt::encode_jwt;
 use chrono::{Datelike, Local, Duration};
 
@@ -20,7 +20,8 @@ use chrono::{Datelike, Local, Duration};
 async fn normal() {
     //Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
@@ -119,7 +120,8 @@ async fn normal() {
 async fn given_name_is_not_requested() {
     //Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
@@ -219,7 +221,8 @@ async fn given_name_is_not_requested() {
 async fn family_name_is_not_requested() {
     //Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
@@ -318,7 +321,8 @@ async fn family_name_is_not_requested() {
 async fn name_is_not_requested() {
     //Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
@@ -417,7 +421,8 @@ async fn name_is_not_requested() {
 async fn jwt_does_not_exist() {
     //Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     let mainuser = &UserInfo{
             student_id: String::from("4622999"),
