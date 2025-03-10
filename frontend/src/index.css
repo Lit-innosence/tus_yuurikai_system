@@ -11,3 +11,7 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.custom-popconfirm .ant-popover-inner {
+  background-color: #ffeff7 !important; /* 赤寄りのピンク */
+}

@@ -35,6 +35,7 @@ const MovieButton: React.FC<MovieButtonProps> = ({ first }) => {
                 open={isPopconfirmVisible}
                 showCancel={false}
                 okButtonProps={{ style: { display: 'none' } }}
+                overlayClassName="custom-popconfirm"
             >
                 <Button
                     type="primary"
