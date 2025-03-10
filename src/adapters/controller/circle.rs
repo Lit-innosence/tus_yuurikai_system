@@ -9,7 +9,7 @@ use crate::usecase::{
                     registration::RegistrationUsecase,
                     };
 use crate::utils::jwt::decode_jwt;
-use crate::utils::oauth_authentication::refresh_access_token;
+use crate::utils::oauth_authentication::{refresh_access_token, get_access_token};
 
 use std::env;
 use std::time::Duration;
@@ -212,7 +212,7 @@ pub async fn register_token_generator(request: Json<CircleTokenGenRequest>, app:
     }
 
     // メールアドレス
-    let re = Regex::new(r"^[a-zA-Z0-9_.+-]+@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$").unwrap();
+    let re = Regex::new(r"^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$").unwrap();
     if !(re.is_match(&data.organization.organization_email.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
@@ -425,7 +425,10 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
     let deploy_id = env::var("DEPLOY_ID").expect("deploy id must be set.");
 
     // refreshtokenからaccesstokenを取得
-    let api_tokens = refresh_access_token(refresh_token.as_str(), client_id.as_str(), client_secret.as_str()).await.unwrap();
+    // let api_tokens = refresh_access_token(refresh_token.as_str(), client_id.as_str(), client_secret.as_str()).await.unwrap();
+
+    // jwtを利用してaccesstokenを取得
+    let token = get_access_token().await.unwrap();
 
     // googleapi用のデータを格納
     let input = MakeContact {
@@ -450,7 +453,7 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
 
     // リクエストを送信
     let result = client.post(format!("https://script.googleapis.com/v1/scripts/{}:run", deploy_id.as_str()))
-        .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", api_tokens.access_token))
+        .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", token.access_token))
         .body(input_json)
         .send()
         .await.unwrap();
