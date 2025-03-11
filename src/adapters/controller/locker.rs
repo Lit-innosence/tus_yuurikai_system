@@ -35,6 +35,9 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
     if !(re.is_match(data.co_user.student_id.clone().as_str())) {
         return Status::BadRequest;
     }
+    if !app.option.same_student_enable && data.main_user.student_id.clone() == data.co_user.student_id.clone() {
+        return Status::BadRequest;
+    }
 
     // 氏名についてのバリデーション
     let re = Regex::new(r"^[A-Za-z\p{Kana}\p{Hira}\p{Han}]+$").unwrap();
