@@ -71,7 +71,7 @@ const Toppage: React.FC = () => {
                 {/* 広告画像を配置 */}
                 <div style={{ marginTop: '30px', textAlign: 'center' }}>
                     <a
-                        href="https://example.com"
+                        href={constants.advertisementUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                     >

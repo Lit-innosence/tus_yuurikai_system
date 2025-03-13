@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, Popconfirm } from 'antd';
 import { PlayCircleOutlined } from '@ant-design/icons';
+import constants from '../routes/constants';
 
 interface MovieButtonProps {
     first?: boolean;
@@ -74,7 +75,7 @@ const MovieButton: React.FC<MovieButtonProps> = ({ first }) => {
             >
                 <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
                     <iframe
-                        src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
+                        src={`https://www.youtube.com/embed/${constants.youtubeVideoId}`}
                         title="YouTube動画"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
