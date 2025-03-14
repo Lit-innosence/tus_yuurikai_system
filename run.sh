@@ -13,5 +13,5 @@ else
 
     cd ..
 
-    cargo run
+    cargo run --release
 fi

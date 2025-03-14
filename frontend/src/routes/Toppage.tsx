@@ -78,7 +78,7 @@ const Toppage: React.FC = () => {
                         <img
                             src={AdImage}
                             alt="AdImage"
-                            style={{ maxWidth: '70%', height: 'auto' }}
+                            style={{ maxWidth: '100%', height: 'auto' }}
                         />
                     </a>
                 </div>
