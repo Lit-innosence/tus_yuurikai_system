@@ -14,7 +14,7 @@ const Process: React.FC = () => {
             <Content style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '50px', minHeight: '70vh' }}>
                 <Card
                     style={{
-                        width: '60%',
+                        width: '95%',
                         maxWidth: '800px',
                         backgroundColor: 'white',
                         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
