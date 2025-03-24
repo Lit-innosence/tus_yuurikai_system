@@ -12,6 +12,7 @@ pub struct TimeUsecaseImpl {
 #[async_trait]
 pub trait TimeUsecase: Sync + Send {
     async fn register(&self, name: &String, start_time: &NaiveDateTime, end_time: &NaiveDateTime) -> Result<Time, Error>;
+    async fn get_all(&self) -> Result<Vec<Time>, Error>;
     async fn get_by_name(&self, name: &String) -> Result<Time, Error>;
 }
 
@@ -25,6 +26,10 @@ impl TimeUsecaseImpl {
 impl TimeUsecase for TimeUsecaseImpl {
     async fn register(&self, name: &String, start_time: &NaiveDateTime, end_time: &NaiveDateTime) -> Result<Time, Error> {
         self.time_repository.insert(name, start_time, end_time).await
+    }
+
+    async fn get_all(&self) -> Result<Vec<Time>, Error> {
+        self.time_repository.get_all().await
     }
 
     async fn get_by_name(&self, name: &String) -> Result<Time, Error> {

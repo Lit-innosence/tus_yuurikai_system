@@ -18,6 +18,10 @@ pub trait StudentRepository: Send + Sync {
         given_name: &String,
     ) -> Result<Student, Error>;
 
+    async fn get_all(
+        &self
+    ) -> Result<Vec<Student>, Error>;
+
     async fn get_by_id(
         &self,
         student_id: &String,
@@ -63,6 +67,14 @@ impl StudentRepository for StudentRepositorySqlImpl{
             .do_update()
             .set(student::updated_at.eq(diesel::dsl::now))
             .get_result(&mut conn)
+    }
+
+    async fn get_all(
+        &self
+    ) -> Result<Vec<Student>, Error> {
+        let mut conn = self.pool.get().unwrap();
+        student::table
+            .get_results(&mut conn)
     }
 
     async fn get_by_id(

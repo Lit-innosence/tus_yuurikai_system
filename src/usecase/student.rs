@@ -12,6 +12,7 @@ pub struct StudentUsecaseImpl {
 #[async_trait]
 pub trait StudentUsecase: Sync + Send {
     async fn register(&self, student: &UserInfo) -> Result<Student, Error>;
+    async fn get_all(&self) -> Result<Vec<Student>, Error>;
     async fn get_by_id(&self, student_id: &String) -> Result<Student, Error>;
     async fn get_by_name(&self, family_name: &String, given_name: &String) -> Result<Vec<Student>, Error>;
 }
@@ -26,6 +27,10 @@ impl StudentUsecaseImpl {
 impl StudentUsecase for StudentUsecaseImpl {
     async fn register(&self, student: &UserInfo) -> Result<Student, Error> {
         self.student_repository.insert(&student.student_id, &student.family_name, &student.given_name).await
+    }
+
+    async fn get_all(&self) -> Result<Vec<Student>, Error> {
+        self.student_repository.get_all().await
     }
 
     async  fn get_by_id(&self, student_id: &String) -> Result<Student, Error> {

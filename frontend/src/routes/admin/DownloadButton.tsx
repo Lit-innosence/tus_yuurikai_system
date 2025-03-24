@@ -8,47 +8,45 @@ const DownloadButton: React.FC = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [password, setPassword] = useState('');
 
-    const getFormattedTimestamp = () => {
-        const now = new Date();
-        const yy = String(now.getFullYear()).slice(-2);
-        const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const dd = String(now.getDate()).padStart(2, '0');
-        const hh = String(now.getHours()).padStart(2, '0');
-        const mi = String(now.getMinutes()).padStart(2, '0');
-        const ss = String(now.getSeconds()).padStart(2, '0');
-        return `${yy}${mm}${dd}${hh}${mi}${ss}`;
-    };
-
     const downloadFile = async (pwd: string) => {
         try {
-            const response = await axios.get(
-                `${constants.backendApiEndpoint}/api/download?password=${encodeURIComponent(pwd)}`,
-                {
-                    responseType: 'blob',
-                    withCredentials: true
-                }
+            // APIリクエスト
+            const response = await axios.post(
+                `${constants.backendApiEndpoint}/api/admin/download`,
+                { password: pwd },
+                { withCredentials: true}
             );
 
-            // 正常なZIPファイルが返ってきた場合のみダウンロードを実行
-            if (response.data && response.headers['content-type'] === 'application/zip') {
-                const blob = new Blob([response.data], { type: 'application/zip' });
-                const url = window.URL.createObjectURL(blob);
-                const timestamp = getFormattedTimestamp();
-                const filename = `all_data_${timestamp}.zip`;
+            // JSONデータをデコード
+            const filename = response.data.filename;
+            const zip_data = response.data.zipData;
 
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
+            // zip_data を Blob に変換
+            const blob = new Blob([new Uint8Array(zip_data)], { type: 'application/zip' });
+            const url = window.URL.createObjectURL(blob);
 
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-            } else {
-                message.error('ダウンロードに失敗しました。');
-            }
+            // ダウンロードリンクを作成してクリック
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            message.success('ダウンロードが完了しました。');
         } catch (error: any) {
-            message.error('ダウンロードに失敗しました。');
+            if (error.response) {
+                if (error.response.status === 400) {
+                    message.error('パスワードが違います');
+                } else if (error.response.status === 401) {
+                    message.error('認証に失敗しました。ログインしてください。');
+                } else {
+                    message.error('ダウンロードに失敗しました。');
+                }
+            } else {
+                message.error('ネットワークエラーが発生しました。');
+            }
         }
     };
 
@@ -98,7 +96,7 @@ const DownloadButton: React.FC = () => {
 
             <Modal
                 title="パスワード入力"
-                visible={isModalVisible}
+                open={isModalVisible}  // Ant Design v5 の `visible` → `open` に変更
                 onOk={handleOk}
                 onCancel={handleCancel}
                 okText="ダウンロード"

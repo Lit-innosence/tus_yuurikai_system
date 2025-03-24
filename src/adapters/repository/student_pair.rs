@@ -17,21 +17,29 @@ pub trait StudentPairRepository: Send + Sync {
         student_id2: &String,
         year: &i32,
     ) -> Result<StudentPair, Error>;
+
+    async fn get_all(
+        &self,
+    ) -> Result<Vec<StudentPair>, Error>;
+
     async fn get_by_student_id_and_year(
         &self,
         student_id: &String,
         year: &i32,
     ) -> Result<StudentPair, Error>;
+
     async fn get_by_main_id_and_year(
         &self,
         student_id: &String,
         year: &i32,
     ) -> Result<StudentPair, Error>;
+
     async fn get_by_pair_id_and_year(
         &self,
         pair_id : &Uuid,
         year: &i32,
     ) -> Result<StudentPair, Error>;
+
     async fn delete_all(
         &self
     ) -> Result<usize, Error>;
@@ -64,6 +72,14 @@ impl StudentPairRepository for StudentPairRepositorySqlImpl{
         diesel::insert_into(student_pair::table)
             .values(&new_studentpair)
             .get_result(&mut conn)
+    }
+
+    async fn get_all(
+        &self,
+    ) -> Result<Vec<StudentPair>, Error> {
+        let mut conn = self.pool.get().unwrap();
+        student_pair::table
+            .get_results(&mut conn)
     }
 
     async fn get_by_student_id_and_year(

@@ -18,6 +18,10 @@ pub trait AssignmentRecordRepository: Send + Sync {
         year: &i32,
     ) -> Result<AssignmentRecord, Error>;
 
+    async fn get_all(
+        &self,
+    ) -> Result<Vec<AssignmentRecord>, Error>;
+
     async fn get(
         &self,
         year: &i32,
@@ -63,6 +67,14 @@ impl AssignmentRecordRepository for AssignmentRecordRepositorySqlImpl {
         diesel::insert_into(assignment_record::table)
             .values(&new_assignmentrecord)
             .get_result(&mut conn)
+    }
+
+    async fn get_all(
+        &self,
+    ) -> Result<Vec<AssignmentRecord>, Error> {
+        let mut conn = self.pool.get().unwrap();
+        assignment_record::table
+            .get_results(&mut conn)
     }
 
     async fn get (

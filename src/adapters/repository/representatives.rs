@@ -19,6 +19,10 @@ pub trait RepresentativesRepository: Send + Sync {
         phone: &String,
     ) -> Result<Representatives, Error>;
 
+    async fn get_all(
+        &self,
+    ) -> Result<Vec<Representatives>, Error>;
+
     async fn get_by_id(
         &self,
         student_id: &String,
@@ -59,6 +63,14 @@ impl RepresentativesRepository for RepresentativesRepositorySqlImpl {
             .do_update()
             .set((representatives::updated_at.eq(diesel::dsl::now), representatives::email.eq(email), representatives::phone.eq(phone)))
             .get_result(&mut conn)
+    }
+
+    async fn get_all(
+            &self,
+        ) -> Result<Vec<Representatives>, Error> {
+        let mut conn = self.pool.get().unwrap();
+        representatives::table
+            .get_results(&mut conn)
     }
 
     async fn get_by_id(
