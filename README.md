@@ -9,7 +9,14 @@ TUS_YUURIKAI_SYSTEM は、システム認証を活用して安全にロッカー
 
 ### 1. Dockerイメージのビルド
 
-プロジェクトのルートディレクトリにある `Dockerfile` を利用して、Dockerイメージをビルドします。
+プロジェクトフォルダをダウンロードします。
+(git cloneを用いる例)
+```sh
+git clone [URL]
+```
+
+プロジェクトのルートディレクトリに移動します。
+ルートディレクトリにある `Dockerfile` を利用して、Dockerイメージをビルドします。
 
 ```sh
 docker build -t tus_yuurikai_system .
@@ -17,16 +24,172 @@ docker build -t tus_yuurikai_system .
 
 ### 2. Dockerコンテナの起動
 
-ビルドしたイメージを用いて、Dockerコンテナを起動します。例として、ホストのポート 8000 をコンテナの同一ポートにマッピングする場合は以下のように実行します。
-
+コンテナ同士の接続用にtus_network(仮称)を作成します
 ```sh
-docker run -p 8000:8000 tus_yuurikai_system
+docker network create tus_network
+```
+
+ビルドしたイメージを用いて、Dockerコンテナ(tus_app(仮称))を起動します。例として、ホストのポート 8000 をコンテナの同一ポートにマッピングする場合は以下のように実行します。
+```sh
+docker run -dit --name tus_app --network tus_network -p 8000:8000 tus_yuurikai_system tail -f /dev/null
 ```
 ※ ポート番号は必要に応じて変更してください。
 
-### 3. run.sh の実行
+プロジェクトファイルをデータベースコンテナ内/home/フォルダにコピーします。
+```sh
+docker cp [フォルダ名] tus_app:/home/[フォルダ名]
+```
 
+### 3. react-scripts の手動インストール
+
+アプリコンテナ内に接続します。
+```sh
+docker exec -it tus_app /bin/bash
+```
+プロジェクトのルートディレクトリ(/home/内)に移動し、
+react-scripts の手動インストールをします。
+(npmがインストールされていない場合)
+```sh
+apt install npm
+```
+```sh
+cd /home/app/frontend
+```
+```sh
+npm install react-scripts
+```
+```sh
+exit
+```
+
+### 4. postgreのdockerコンテナ作成
+データベース用のDockerコンテナ(db(仮称))を起動します。
+
+your_user : （任意のUSER名）
+
+your_password : （任意のパスワード）
+
+your_db : （任意のデータベース名）
+
+```sh
+docker run --name db \
+             -v webapi_mvp_db_data:/var/lib/postgresql/data \
+             --network tus_network \
+             -e POSTGRES_USER=your_user \
+             -e POSTGRES_PASSWORD=your_password \
+             -e POSTGRES_DB=your_db \
+             -p 5432:5432 \
+             postgres:15-bullseye
+```
+※ ポート番号は必要に応じて変更してください。
+
+### 5. データベースURLを環境変数に追加
+コンテナを起動します。
+```sh
+docker start db
+```
+```sh
+docker start tus_app
+```
+アプリコンテナ内に入ります。
+```sh
+docker exec -it tus_app /bin/bash
+```
+データベースURLを環境変数に追加します。
+```sh
+export DATABASE_URL=postgres://your_user:your_password@db:5432/your_db
+```
+(アプリをコンテナ外で動かす場合)
+```sh
+export DATABASE_URL=postgres://your_user:your_password@localhost:5432/your_db
+```
+
+### 6. .env.sampleファイルを用いて.envファイルを作成し必要情報を記入
+(2/24追記)
+プロジェクト設定に必要な各種キーは、.env ファイルに記述します。
+以下の手順で、サンプルファイルから.env ファイルを作成し、編集してください。
+
+```sh
+cd /home/app
+```
+
+.envファイルを作成します。
+```sh
+cp .env.sample .env
+```
+```sh
+apt install nano
+```
+.envファイルを編集します。
+```sh
+nano .env
+```
+(テキストエディタはnano,vim等お好みのものを使用してください。)
+echoで編集してもよい
+
+### 7. diesel関連のセットアップ
+その後、以下のようにdieselのセットアップをします。
+```sh
+diesel setup
+```
+```sh
+diesel migration run
+```
+schema.rs をsrc/infrastructure フォルダに移動します。
+```sh
+mv src/schema.rs src/infrastructure/schema.rs
+```
+diesel.toml ファイル内のfile = ... 欄をfile = "src/infrastructure/schema.rs" に書き換えます。
+```sh
+sed -i 's|^file = .*|file = "src/infrastructure/schema.rs"|' diesel.toml
+```
+
+### 8. 初期化用csvファイルのコピー
+初期化用csvファイルをコンテナ内のlockerテーブルにコピーします。
+プロジェクトのルートディレクトリに'lockerdata.csv'があると仮定します。
+
+アプリコンテナから抜けます。
+```sh
+exit
+```
+csvファイルをデータベースコンテナ内/tmp/フォルダにコピーします。
+```sh
+docker cp lockerdata.csv db:/tmp/lockerdata.csv
+```
+データベースコンテナ内のデータベースに接続します。
+```sh
+docker exec -it db psql -U your_user -d your_db
+```
+\copyコマンドを使ってlockerテーブルにコピーします。(COPY 1210と表示されたら成功)
+```sh
+\copy locker FROM '/tmp/lockerdata.csv' WITH csv
+```
+管理者用ログイン情報を登録します
+(1.0.0)
+```sh
+INSERT INTO admin VALUES ('[自分で決めたユーザーネーム]','[自分で決めたパスワード]');
+```
+(パスワード修正後)
+```sh
+INSERT INTO admin VALUES ('[自分で決めたユーザーネーム]','[自分で決めたパスワードのハッシュ値]');
+```
+接続を解除します。
+```sh
+\q
+```
+
+### 9. run.sh の実行
+アプリコンテナ内に再度接続します。
+```sh
+docker exec -it tus_app /bin/bash
+```
+```sh
+cd /home/app
+```
 その後、run.sh を実行します。
+```sh
+./run.sh
+```
 このスクリプトは以下の処理を行います。
 
     frontend ディレクトリに移動してフロントエンドのビルド (npm run build) を実行
