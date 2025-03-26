@@ -10,13 +10,12 @@ const { Content } = Layout;
 const CircleUpdateConfirm: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const formData = location.state?.formData; 
+    const formData = location.state?.formData;  
 
     const [isChecked, setIsChecked] = useState(false);
     const [loading, setLoading] = useState(false);
     const [lastClicked, setLastClicked] = useState<number | null>(null);
 
-    // 前のページからのデータがなければ nopage に遷移する
     useEffect(() => {
         if (!formData) {
             navigate('/circle/nopage');
@@ -33,7 +32,6 @@ const CircleUpdateConfirm: React.FC = () => {
 
     const handleConfirm = async () => {
         const now = Date.now();
-        // 20秒のクールダウンチェック
         if (lastClicked && now - lastClicked < 20000) {
             message.warning('20秒のクールダウン中です。しばらくお待ちください。');
             return;
