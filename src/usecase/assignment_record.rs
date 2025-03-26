@@ -14,6 +14,7 @@ pub struct AssignmentRecordUsecaseImpl {
 #[async_trait]
 pub trait AssignmentRecordUsecase: Sync + Send {
     async fn register(&self, student_pair: &StudentPair, assignment: &AssignmentInfo) -> Result<AssignmentRecord, Error>;
+    async fn get_all(&self) -> Result<Vec<AssignmentRecord>, Error>;
     async fn get(&self, year: &i32, floor: Option<i8>, pair_id: &Uuid) -> Result<Vec<AssignmentRecord>, Error>;
     async fn get_by_pair_id(&self, pair_id: &Uuid) -> Result<AssignmentRecord, Error>;
 }
@@ -29,6 +30,10 @@ impl AssignmentRecordUsecase for AssignmentRecordUsecaseImpl {
     async fn register(&self, student_pair: &StudentPair, assignment: &AssignmentInfo) -> Result<AssignmentRecord, Error> {
         let year = Local::now().year();
         self.assignment_record_repository.insert(&student_pair.pair_id, &assignment.locker_id, &year).await
+    }
+
+    async fn get_all(&self) -> Result<Vec<AssignmentRecord>, Error> {
+        self.assignment_record_repository.get_all().await
     }
 
     async fn get(&self, year: &i32, floor: Option<i8>, pair_id: &Uuid) -> Result<Vec<AssignmentRecord>, Error> {

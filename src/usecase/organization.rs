@@ -12,9 +12,8 @@ pub struct OrganizationUsecaseImpl {
 #[async_trait]
 pub trait OrganizationUsecase: Sync + Send {
     async fn register(&self, organization: &Organization) -> Result<models::Organization, Error>;
-
+    async fn get_all(&self) -> Result<Vec<models::Organization>, Error>;
     async fn update_email(&self, organization_id: &i32, organization_email: &String) -> Result<models::Organization, Error>;
-
     async fn get_by_id(&self, organization_id: &i32) -> Result<models::Organization, Error>;
 }
 
@@ -29,6 +28,10 @@ impl OrganizationUsecase for OrganizationUsecaseImpl {
     async fn register(&self, organization: &Organization) -> Result<models::Organization, Error> {
         // 団体情報の登録
         self.organization_repository.insert(&organization.organization_name, &organization.organization_ruby, &organization.organization_email).await
+    }
+
+    async fn get_all(&self) -> Result<Vec<models::Organization>, Error> {
+        self.organization_repository.get_all().await
     }
 
     async fn update_email(&self, organization_id: &i32, organization_email: &String) -> Result<models::Organization, Error> {

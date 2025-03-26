@@ -1,5 +1,5 @@
 import React from 'react';
-import SelectLayout from '../component/PageSelectLayout';
+import SelectLayout from '../../components/PageSelectLayout';
 
 const content = [
     { title: '登録情報更新', route: '/circle/update' },

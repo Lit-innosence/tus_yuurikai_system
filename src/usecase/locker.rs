@@ -11,6 +11,7 @@ pub struct LockerUsecaseImpl {
 
 #[async_trait]
 pub trait LockerUsecase: Sync + Send {
+    async fn get_all(&self) -> Result<Vec<Locker>, Error>;
     async fn get_by_id(&self, locker_id: &String) -> Result<Locker, Error>;
     async fn get_by_floor(&self, floor: &Option<i8>) -> Result<Vec<Locker>, Error>;
     async fn update_status(&self, locker_id: &String, status: &String) -> Result<usize, Error>;
@@ -25,6 +26,10 @@ impl LockerUsecaseImpl {
 
 #[async_trait]
 impl LockerUsecase for LockerUsecaseImpl {
+    async fn get_all(&self) -> Result<Vec<Locker>, Error> {
+        self.locker_repository.get_all().await
+    }
+    
     async fn get_by_id(&self, locker_id: &String) -> Result<Locker, Error> {
         self.locker_repository.get_by_id(locker_id).await
     }

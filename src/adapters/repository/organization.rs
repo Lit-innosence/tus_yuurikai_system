@@ -17,6 +17,10 @@ pub trait OrganizationRepository: Send + Sync {
         organization_email: &String,
     ) -> Result<Organization, Error>;
 
+    async fn get_all(
+        &self,
+    ) -> Result<Vec<Organization>, Error>;
+
     async fn get_by_id(
         &self,
         organization_id: &i32,
@@ -56,6 +60,14 @@ impl OrganizationRepository for OrganizationRepositorySqlImpl {
         diesel::insert_into(organization::table)
             .values(new_organization)
             .get_result(&mut conn)
+    }
+
+    async fn get_all(
+            &self,
+        ) -> Result<Vec<Organization>, Error> {
+        let mut conn = self.pool.get().unwrap();
+        organization::table
+            .get_results(&mut conn)
     }
 
     async  fn get_by_id(

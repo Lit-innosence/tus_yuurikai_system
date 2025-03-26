@@ -13,6 +13,25 @@ pub struct HealthCheckRequest {
     pub text: String,
 }
 
+/// ### DownloadRequest
+/// 
+/// ダウンロードリクエストのリクエストデータ
+#[derive(Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct DownloadRequest {
+    pub password: String,
+}
+
+/// ### DownloadResponse
+/// 
+/// zipダウンロードAPIのレスポンスに使用
+#[derive(Deserialize, Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct DownloadResponse {
+    pub zip_data: Vec<u8>,
+    pub filename: String,
+}
+
 /// ### LockerTokenGenRequest
 ///
 /// ロッカー予約システムにおいてtoken生成、メール送信APIのリクエストに使用

@@ -14,11 +14,8 @@ pub struct RegistrationUsecaseImpl {
 #[async_trait]
 pub trait RegistrationUsecase: Sync + Send {
     async fn register(&self, organization: &OrganizationInfo, organization_id: &i32) -> Result<Registration, Error>;
-
     async fn update_student(&self, organization_id: &i32, main_student_id: &String, co_student_id: &String) -> Result<Registration, Error>;
-
     async fn update_status(&self, organization_id: &i32, status_acceptance: &String, status_authentication: &String, status_form_confirmation: &String, status_registration_complete: &String) -> Result<Registration, Error>;
-
     async fn get_all(&self) -> Result<Vec<Registration>, Error>;
 }
 

@@ -7,14 +7,15 @@ use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
 use rocket::http::Status;
 use tus_yuurikai_system::adapters::httpmodels::{LockerStatus, LockerStatusResponse};
-use tus_yuurikai_system::infrastructure::router::App;
+use tus_yuurikai_system::infrastructure::router::{App, AppOption};
 
 // 正常系
 #[rocket::async_test]
 pub async fn normal() {
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     setup_db(&app).await;
 
@@ -50,7 +51,8 @@ pub async fn normal() {
 pub async fn floor_is_not_requested() {
     // Arrange
     let client = Client::tracked(rocket()).await.unwrap();
-    let app = App::new();
+    let app_option = AppOption::new();
+    let app = App::new(app_option);
 
     setup_db(&app).await;
 

@@ -1,5 +1,6 @@
 import React from 'react';
-import SelectLayout from '../component/PageSelectLayout';
+import SelectLayout from '../../components/PageSelectLayout';
+import DownloadButton from './DownloadButton';
 
 const content = [
     { title: 'ロッカー設定', route: '/admin/locker' },
@@ -7,7 +8,12 @@ const content = [
 ];
 
 const Admin: React.FC = () => {
-    return <SelectLayout content={content} kind="admin"/>;
+    return (
+        <>
+        <DownloadButton/>
+        <SelectLayout content={content} kind="admin"/>
+        </>
+    );
 };
 
 export default Admin;
