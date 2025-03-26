@@ -18,6 +18,10 @@ pub trait TimeRepository: Send + Sync {
         end_time: &NaiveDateTime,
     ) -> Result<Time, Error>;
 
+    async fn get_all(
+        &self,
+    ) -> Result<Vec<Time>, Error>;
+
     async fn get_by_name(
         &self,
         name: &String,
@@ -55,6 +59,15 @@ impl TimeRepository for TimeRepositorySqlImpl {
             .set((time::start_time.eq(start_time), time::end_time.eq(end_time), time::updated_at.eq(diesel::dsl::now)))
             .get_result(&mut conn)
     }
+
+    async fn get_all(
+            &self,
+        ) -> Result<Vec<Time>, Error> {
+        let mut conn = self.pool.get().unwrap();
+        time::table
+            .get_results(&mut conn)
+    }
+
     async fn get_by_name(
             &self,
             name: &String,

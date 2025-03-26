@@ -45,9 +45,12 @@ const RegisterComp: React.FC = () => {
                             </Paragraph>
                             <Paragraph>
                                 鍵の購入はこちら：
-                                <Link href="[URL]" target="_blank" style={{ fontWeight: 'bold' }}>
-                                    [URL]
+                                <Link href="https://www.univcoop.jp/rikadai/time/index.html#s02" target="_blank" style={{ fontWeight: 'bold' }}>
+                                    東京理科大学消費生活協同組合 葛飾店
                                 </Link>
+                            </Paragraph>
+                            <Paragraph>
+                            在庫が無い場合もあります。その場合は他店でご購入ください。
                             </Paragraph>
                         </Card>
                     </div>

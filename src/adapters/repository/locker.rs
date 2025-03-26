@@ -17,6 +17,10 @@ pub trait LockerRepository: Send + Sync {
         status: &String,
     ) -> Result<Locker, Error>;
 
+    async fn get_all(
+        &self,
+    ) -> Result<Vec<Locker>, Error>;
+
     async fn update_status(
         &self,
         floor: &String,
@@ -82,6 +86,14 @@ impl LockerRepository for LockerRepositorySqlImpl {
         diesel::insert_into(locker::table)
             .values(&new_locker)
             .get_result(&mut conn)
+    }
+
+    async fn get_all(
+        &self,
+    ) -> Result<Vec<Locker>, Error> {
+        let mut conn = self.pool.get().unwrap();
+        locker::table
+            .get_results(&mut conn)
     }
 
     async  fn update_status(

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::infrastructure::schema::*;
 // student
 
-#[derive(Queryable)]
+#[derive(Queryable, Serialize)]
 pub struct Student {
     pub student_id: String,
     pub family_name: String,
@@ -22,7 +22,7 @@ pub struct NewStudent<'a> {
 
 // student_pair
 
-#[derive(PartialEq, Eq, Hash, Queryable)]
+#[derive(PartialEq, Eq, Hash, Queryable, Serialize)]
 pub struct StudentPair {
     pub pair_id: uuid::Uuid,
     pub student_id1: String,
@@ -58,7 +58,7 @@ pub struct NewLocker<'a> {
 
 // assignment_record
 
-#[derive(Queryable)]
+#[derive(Queryable, Serialize)]
 pub struct AssignmentRecord {
     pub record_id: uuid::Uuid,
     pub pair_id: uuid::Uuid,
@@ -194,7 +194,7 @@ pub struct NewCircleAuthInfo<'a>{
 
 // organization
 
-#[derive(Queryable)]
+#[derive(Queryable, Serialize)]
 pub struct Organization{
     pub organization_id: i32,
     pub organization_name: String,
@@ -214,7 +214,7 @@ pub struct NewOrganization<'a>{
 
 // representatives
 
-#[derive(Clone, Queryable)]
+#[derive(Clone, Queryable, Serialize)]
 pub struct Representatives{
     pub student_id: String,
     pub family_name: String,
@@ -237,7 +237,7 @@ pub struct NewRepresentatives<'a>{
 
 // registration
 
-#[derive(Queryable)]
+#[derive(Queryable, Serialize)]
 pub struct Registration{
     pub organization_id: i32,
     pub year: i32,
@@ -272,7 +272,7 @@ pub struct NewRegistration<'a>{
 
 // time
 
-#[derive(Queryable)]
+#[derive(Queryable, Serialize)]
 pub struct Time{
     pub name: String,
     pub start_time: chrono::NaiveDateTime,
