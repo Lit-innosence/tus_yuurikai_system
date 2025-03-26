@@ -4,7 +4,11 @@ import { useNavigate } from 'react-router-dom';
 
 const { Header } = Layout;
 
-const CustomHeader: React.FC = () => {
+interface CustomHeaderProps {
+    first?: boolean;
+}
+
+const CustomHeader: React.FC<CustomHeaderProps> = ({ first = false }) => {
     const navigate = useNavigate();
 
     const handleGoBack = () => {
@@ -20,21 +24,23 @@ const CustomHeader: React.FC = () => {
                 padding: '0 20px'
             }}
         >
-            {/* 左側の戻るボタン */}
-            <Button
-                type="primary"
-                onClick={handleGoBack}
-                style={{
-                    color: '#003149',
-                    backgroundColor: 'white',
-                    position: 'absolute',
-                    left: '20px',
-                    top: '50%',
-                    transform: 'translateY(-50%)'
-                }}
-            >
-                戻る
-            </Button>
+            {/* 左側の戻るボタン（firstがtrueなら非表示） */}
+            {!first && (
+                <Button
+                    type="primary"
+                    onClick={handleGoBack}
+                    style={{
+                        color: '#003149',
+                        backgroundColor: 'white',
+                        position: 'absolute',
+                        left: '20px',
+                        top: '50%',
+                        transform: 'translateY(-50%)'
+                    }}
+                >
+                    戻る
+                </Button>
+            )}
             {/* 中央に固定されたタイトル */}
             <div
                 style={{
