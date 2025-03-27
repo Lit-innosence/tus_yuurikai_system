@@ -1,41 +1,50 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, Layout } from 'antd';
-import CustomHeader from '../../components/CustomHeader';
-import CustomFooter from '../../components/CustomFooter';
-import MovieButton from '../../components/MovieButton';
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Form, Input, Button, Layout } from "antd";
+import { useRecoilState } from "recoil";
+import { lockerFormState } from "../../recoil/LockerForm";
+import CustomHeader from "../../components/CustomHeader";
+import CustomFooter from "../../components/CustomFooter";
+import MovieButton from "../../components/MovieButton";
 
 const { Content } = Layout;
 
 const LockerForm: React.FC = () => {
     const navigate = useNavigate();
+    const [form] = Form.useForm();
+    const [formData, setFormData] = useRecoilState(lockerFormState);
+
+    useEffect(() => {
+        form.setFieldsValue(formData);
+    }, [form, formData]);
 
     const onFinish = (values: any) => {
-        // 入力内容を確認ページに渡す
-        navigate('/locker/form/confirm', { state: { formData: values } });
+        setFormData(values);
+        navigate("/locker/form/confirm", { state: { formData: values } });
     };
 
     return (
-        <Layout style={{ minHeight: '100vh' }}>
+        <Layout style={{ minHeight: "100vh" }}>
             <CustomHeader />
             <MovieButton />
-            <Content style={{ padding: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Content style={{ padding: "50px", display: "flex", justifyContent: "center", alignItems: "center" }}>
                 <Form
+                    form={form}
                     name="lockerForm"
                     layout="vertical"
                     onFinish={onFinish}
-                    style={{ maxWidth: '600px', width: '100%' }}
+                    style={{ maxWidth: "600px", width: "100%" }}
                 >
                     <h3>申請者の情報</h3>
                     <Form.Item
                         label="学籍番号"
                         name="studentId"
                         rules={[
-                            { required: true, message: '学籍番号を入力してください' },
+                            { required: true, message: "学籍番号を入力してください" },
                             {
                                 pattern: /^[48][1-6]\d{5}$/,
-                                message: '有効な学籍番号を入力してください。'
-                            }
+                                message: "有効な学籍番号を入力してください。",
+                            },
                         ]}
                     >
                         <Input placeholder="学籍番号を入力" />
@@ -47,27 +56,27 @@ const LockerForm: React.FC = () => {
                                 name="lastName"
                                 noStyle
                                 rules={[
-                                    { required: true, message: '姓を入力してください' },
+                                    { required: true, message: "姓を入力してください" },
                                     {
                                         pattern: /^[A-Za-z\p{sc=Kana}\p{sc=Hira}\p{sc=Han}]+$/u,
-                                        message: '姓は日本語、もしくは英語で入力してください'
-                                    }
+                                        message: "姓は日本語、もしくは英語で入力してください",
+                                    },
                                 ]}
                             >
-                                <Input style={{ width: '50%' }} placeholder="姓" />
+                                <Input style={{ width: "50%" }} placeholder="姓" />
                             </Form.Item>
                             <Form.Item
                                 name="firstName"
                                 noStyle
                                 rules={[
-                                    { required: true, message: '名を入力してください' },
+                                    { required: true, message: "名を入力してください" },
                                     {
                                         pattern: /^[A-Za-z\p{sc=Kana}\p{sc=Hira}\p{sc=Han}]+$/u,
-                                        message: '名は日本語、もしくは英語で入力してください'
-                                    }
+                                        message: "名は日本語、もしくは英語で入力してください",
+                                    },
                                 ]}
                             >
-                                <Input style={{ width: '50%' }} placeholder="名" />
+                                <Input style={{ width: "50%" }} placeholder="名" />
                             </Form.Item>
                         </Input.Group>
                     </Form.Item>
@@ -77,11 +86,11 @@ const LockerForm: React.FC = () => {
                         label="共同利用者 学籍番号"
                         name="coUserStudentId"
                         rules={[
-                            { required: true, message: '共同使用者の学籍番号を入力してください' },
+                            { required: true, message: "共同使用者の学籍番号を入力してください" },
                             {
                                 pattern: /^[48][1-6]\d{5}$/,
-                                message: '有効な学籍番号を入力してください。'
-                            }
+                                message: "有効な学籍番号を入力してください。",
+                            },
                         ]}
                     >
                         <Input placeholder="共同使用者の学籍番号を入力" />
@@ -93,27 +102,27 @@ const LockerForm: React.FC = () => {
                                 name="coUserLastName"
                                 noStyle
                                 rules={[
-                                    { required: true, message: '共同使用者の姓を入力してください' },
+                                    { required: true, message: "共同使用者の姓を入力してください" },
                                     {
                                         pattern: /^[A-Za-z\p{sc=Kana}\p{sc=Hira}\p{sc=Han}]+$/u,
-                                        message: '共同使用者の姓は日本語、もしくは英語で入力してください'
-                                    }
+                                        message: "共同使用者の姓は日本語、もしくは英語で入力してください",
+                                    },
                                 ]}
                             >
-                                <Input style={{ width: '50%' }} placeholder="共同使用者の姓" />
+                                <Input style={{ width: "50%" }} placeholder="共同使用者の姓" />
                             </Form.Item>
                             <Form.Item
                                 name="coUserFirstName"
                                 noStyle
                                 rules={[
-                                    { required: true, message: '共同使用者の名を入力してください' },
+                                    { required: true, message: "共同使用者の名を入力してください" },
                                     {
                                         pattern: /^[A-Za-z\p{sc=Kana}\p{sc=Hira}\p{sc=Han}]+$/u,
-                                        message: '共同使用者の名は日本語、もしくは英語で入力してください'
-                                    }
+                                        message: "共同使用者の名は日本語、もしくは英語で入力してください",
+                                    },
                                 ]}
                             >
-                                <Input style={{ width: '50%' }} placeholder="共同使用者の名" />
+                                <Input style={{ width: "50%" }} placeholder="共同使用者の名" />
                             </Form.Item>
                         </Input.Group>
                     </Form.Item>

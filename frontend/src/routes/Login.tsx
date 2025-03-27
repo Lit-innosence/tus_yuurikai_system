@@ -24,7 +24,7 @@ const LoginForm: React.FC = () => {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <CustomHeader />
+            <CustomHeader first={true}/>
             <Content style={{ padding: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Form
                     name="loginForm"
