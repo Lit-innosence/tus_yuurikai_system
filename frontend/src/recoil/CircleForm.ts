@@ -1,7 +1,7 @@
 import { atom } from 'recoil';
 
 export const circleFormState = atom({
-    key: 'circleUpdateState',
+    key: 'circleFormState',
     default: {
         organizationId: '',
         organizationName: '',

@@ -62,7 +62,7 @@ const CircleUpdate: React.FC = () => {
                                 name="familyName"
                                 noStyle
                                 rules={[
-                                    { required: true, message: '旧代表者の名字を入力してください' },
+                                    { required: true, message: '旧代表者の苗字を入力してください' },
                                     { pattern: /^[a-zA-Z\p{sc=Kana}\p{sc=Hira}\p{sc=Han}]+$/u, message: '苗字は日本語、もしくは英語で入力してください'}
                                 ]}
                             >
