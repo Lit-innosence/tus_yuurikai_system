@@ -9,7 +9,7 @@ use crate::usecase::{
                     registration::RegistrationUsecase,
                     };
 use crate::utils::jwt::decode_jwt;
-use crate::utils::oauth_authentication::refresh_access_token;
+use crate::utils::oauth_authentication::get_access_token;
 
 use std::env;
 use std::time::Duration;
@@ -419,13 +419,10 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
 
     // token類を環境変数から取得
     dotenv().ok();
-    let refresh_token = env::var("REFRESH_TOKEN").expect("refresh token must be set.");
-    let client_id = env::var("CLIENT_ID").expect("client id must be set.");
-    let client_secret = env::var("CLIENT_SECRET").expect("client secret must be set.");
     let deploy_id = env::var("DEPLOY_ID").expect("deploy id must be set.");
 
     // refreshtokenからaccesstokenを取得
-    let api_tokens = refresh_access_token(refresh_token.as_str(), client_id.as_str(), client_secret.as_str()).await.unwrap();
+    let api_token = get_access_token().await.unwrap();
 
     // googleapi用のデータを格納
     let input = MakeContact {
@@ -450,10 +447,17 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
 
     // リクエストを送信
     let result = client.post(format!("https://script.googleapis.com/v1/scripts/{}:run", deploy_id.as_str()))
-        .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", api_tokens.access_token))
+        .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", api_token.access_token))
         .body(input_json)
         .send()
         .await.unwrap();
+
+    // resultの中身を確認
+    let status = result.status(); 
+    let body = result.text().await.expect("レスポンスの読み取り失敗");
+
+    println!("status: {}", status);
+    println!("response: {}", body);
 
     match id.clone() {
         // 団体情報更新
@@ -510,7 +514,7 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
         }
     }
 
-    match result.status() {
+    match status {
         StatusCode::OK => {
             let user_address = main_user.email.to_string();
             let content = match id {
