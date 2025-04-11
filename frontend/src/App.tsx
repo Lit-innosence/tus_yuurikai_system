@@ -42,6 +42,7 @@ const CircleUpdate = lazy(() => import('./routes/circle/Update'));
 const CircleUpdateConfirm = lazy(() => import('./routes/circle/UpdateConfirm'));
 const CircleUpdateComplete = lazy(() => import('./routes/circle/UpdateComp'));
 const CircleUpdateProcess = lazy(() => import('./routes/circle/UpdateProcess'));
+const Timeout = lazy(() => import('./routes/circle/Timeout'));
 const Redirect = lazy(() => import('./components/Redirect'));
 
 const LockerSearch = lazy(() => import('./routes/admin/LockerSearch'));
@@ -95,6 +96,7 @@ function App() {
 
             <Route path='/locker/nopage' element={<Page404 />} />
             <Route path='/circle/nopage' element={<Page404 />} />
+            <Route path='/circle/timeout' element={<Timeout />} />
             <Route path='*' element={<Page404 />} />
           </Routes>
         </Suspense>
