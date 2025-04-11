@@ -1,3 +1,4 @@
+use aws_config::BehaviorVersion;
 use tus_yuurikai_system::{infrastructure::router::{App, AppOption}, adapters::controller::ApiDoc};
 use tus_yuurikai_system::adapters::controller::{*, locker::*, circle::*};
 
@@ -38,6 +39,10 @@ async fn main() -> Result<(), rocket::Error> {
         }
     }
 
+    // AWSの設定
+    let config = aws_config::defaults(BehaviorVersion::latest()).region("ap-northeast-1").load().await;
+    let client = aws_sdk_sesv2::Client::new(&config);
+
     // CORSの設定
     let cors = CorsOptions {
         allowed_origins: AllowedOrigins::all(), // すべてのオリジンを許可
@@ -54,6 +59,7 @@ async fn main() -> Result<(), rocket::Error> {
     let app = App::new(app_option);
     let _rocket = rocket::build()
         .manage(app)
+        .manage(client)
         .attach(cors)
         .mount(
             "/api",
