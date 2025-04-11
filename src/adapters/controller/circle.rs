@@ -113,7 +113,7 @@ pub async fn update_token_generator(request: Json<CircleUpdateTokenGenRequest>, 
     }
 
     // 電話番号
-    let re = Regex::new(r"^0[789]0-\d{4}-\d{4}$").unwrap();
+    let re = Regex::new(r"^0[789]0\d{8}$").unwrap();
     if !(re.is_match(&data.main_user.phone_number.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
@@ -224,7 +224,7 @@ pub async fn register_token_generator(request: Json<CircleTokenGenRequest>, app:
     }
 
     // 電話番号
-    let re = Regex::new(r"^0[789]0-\d{4}-\d{4}$").unwrap();
+    let re = Regex::new(r"^0[789]0\d{8}$").unwrap();
     if !(re.is_match(&data.main_user.phone_number.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
