@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Suspense, lazy } from 'react';
 import { Route, Routes } from 'react-router-dom';
+import { RecoilRoot } from "recoil";
 import Loading from './routes/Loading';
 import Page404 from './routes/Page404';
 import AuthProvider from './components/AuthContext';
@@ -54,54 +55,55 @@ const CircleList = lazy(() => import('./routes/admin/CircleList'));
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Suspense fallback={<Loading />}>
-          <Routes>
-            <Route path='/' element={<Toppage />} />
+    <RecoilRoot>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Suspense fallback={<Loading />}>
+            <Routes>
+              <Route path='/' element={<Toppage />} />
 
-            <Route path='/locker/terms' element={<LockerTerms />} />
-            <Route path='/locker/terms/important' element={<ImportantConfirm />} />
-            <Route path='/locker/form' element={<LockerForm />} />
-            <Route path='/locker/form/confirm' element={<LockerFormConfirm />} />
-            <Route path='/locker/form/complete' element={<FormComp />} />
-            <Route path='/locker/auth/complete' element={<AuthComp />} />
-            <Route path='/locker/process' element={<LockerProcess />} />
-            <Route path='/locker/user-register' element={<LockerMailAuth />} />
-            <Route path='/locker/register' element={<LockerRegister />} />
-            <Route path='/locker/register/confirm' element={<LockerRegisterConfirm />} />
-            <Route path='/locker/register/complete' element={<LockerRegisterComplete />} />
+              <Route path='/locker/terms' element={<LockerTerms />} />
+              <Route path='/locker/terms/important' element={<ImportantConfirm />} />
+              <Route path='/locker/form' element={<LockerForm />} />
+              <Route path='/locker/form/confirm' element={<LockerFormConfirm />} />
+              <Route path='/locker/form/complete' element={<FormComp />} />
+              <Route path='/locker/auth/complete' element={<AuthComp />} />
+              <Route path='/locker/process' element={<LockerProcess />} />
+              <Route path='/locker/user-register' element={<LockerMailAuth />} />
+              <Route path='/locker/register' element={<LockerRegister />} />
+              <Route path='/locker/register/confirm' element={<LockerRegisterConfirm />} />
+              <Route path='/locker/register/complete' element={<LockerRegisterComplete />} />
 
-            <Route path='/circle' element={<TimeRouter><CircleSelect /></TimeRouter>} />
-            <Route path='/circle/register/status' element={<TimeRouter><CircleRegister /></TimeRouter>} />
-            <Route path='/circle/register/auth' element={<TimeRouter><CircleRegisterAuth /></TimeRouter>} />
-            <Route path='/circle/register/complete' element={<TimeRouter><CircleRegisterAuthComp /></TimeRouter>} />
-            <Route path='/circle/register/process' element={<TimeRouter><CircleRegisterProcess /></TimeRouter>} />
-            <Route path='/circle/update' element={<TimeRouter><CircleUpdate /></TimeRouter>} />
-            <Route path='/circle/update/auth' element={<TimeRouter><CircleUpdateAuth /></TimeRouter>} />
-            <Route path='/circle/update/confirm' element={<TimeRouter><CircleUpdateConfirm /></TimeRouter>} />
-            <Route path='/circle/update/complete' element={<TimeRouter><CircleUpdateComplete /></TimeRouter>} />
-            <Route path='/circle/update/process' element={<TimeRouter><CircleUpdateProcess /></TimeRouter>} />
-            
-            <Route path='/redirect/*' element={<Redirect />} />
+              <Route path='/circle' element={<TimeRouter><CircleSelect /></TimeRouter>} />
+              <Route path='/circle/register/status' element={<TimeRouter><CircleRegister /></TimeRouter>} />
+              <Route path='/circle/register/auth' element={<TimeRouter><CircleRegisterAuth /></TimeRouter>} />
+              <Route path='/circle/register/complete' element={<TimeRouter><CircleRegisterAuthComp /></TimeRouter>} />
+              <Route path='/circle/register/process' element={<TimeRouter><CircleRegisterProcess /></TimeRouter>} />
+              <Route path='/circle/update' element={<TimeRouter><CircleUpdate /></TimeRouter>} />
+              <Route path='/circle/update/auth' element={<TimeRouter><CircleUpdateAuth /></TimeRouter>} />
+              <Route path='/circle/update/confirm' element={<TimeRouter><CircleUpdateConfirm /></TimeRouter>} />
+              <Route path='/circle/update/complete' element={<TimeRouter><CircleUpdateComplete /></TimeRouter>} />
+              <Route path='/circle/update/process' element={<TimeRouter><CircleUpdateProcess /></TimeRouter>} />
+              
+              <Route path='/redirect/*' element={<Redirect />} />
 
-            <Route path='/login' element={<Login />} />
-            <Route path='/admin' element={<PrivateRouter><Admin /></PrivateRouter>} />
-            <Route path='/admin/locker' element={<PrivateRouter><AdminLockerSelect/></PrivateRouter>} />
-            <Route path='/admin/circle' element={<PrivateRouter><AdminCircleSelect/></PrivateRouter>} />
-            <Route path='/admin/locker/reset' element={<PrivateRouter><LockerReset /></PrivateRouter>} />
-            <Route path='/admin/locker/search' element={<PrivateRouter><LockerSearch /></PrivateRouter>} />
-            <Route path='/admin/circle/access' element={<PrivateRouter><CircleAccessLimit /></PrivateRouter>} />
-            <Route path='/admin/circle/list' element={<PrivateRouter><CircleList /></PrivateRouter>} />
+              <Route path='/login' element={<Login />} />
+              <Route path='/admin' element={<PrivateRouter><Admin /></PrivateRouter>} />
+              <Route path='/admin/locker' element={<PrivateRouter><AdminLockerSelect/></PrivateRouter>} />
+              <Route path='/admin/circle' element={<PrivateRouter><AdminCircleSelect/></PrivateRouter>} />
+              <Route path='/admin/locker/reset' element={<PrivateRouter><LockerReset /></PrivateRouter>} />
+              <Route path='/admin/locker/search' element={<PrivateRouter><LockerSearch /></PrivateRouter>} />
+              <Route path='/admin/circle/access' element={<PrivateRouter><CircleAccessLimit /></PrivateRouter>} />
+              <Route path='/admin/circle/list' element={<PrivateRouter><CircleList /></PrivateRouter>} />
 
-            <Route path='/locker/nopage' element={<Page404 />} />
-            <Route path='/circle/nopage' element={<Page404 />} />
-            <Route path='/circle/timeout' element={<Timeout />} />
-            <Route path='*' element={<Page404 />} />
-          </Routes>
-        </Suspense>
-      </AuthProvider>
-    </QueryClientProvider>
+              <Route path='/locker/nopage' element={<Page404 />} />
+              <Route path='/circle/nopage' element={<Page404 />} />
+              <Route path='*' element={<Page404 />} />
+            </Routes>
+          </Suspense>
+        </AuthProvider>
+      </QueryClientProvider>
+    </RecoilRoot>
   );
 }
 
