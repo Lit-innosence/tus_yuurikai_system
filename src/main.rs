@@ -9,11 +9,17 @@ use std::{path::{Path, PathBuf}, env};
 
 #[rocket::get("/<file..>")]
 async fn catch_all(file: PathBuf) -> Option<NamedFile> {
-    let path = Path::new("frontend/build").join(file);
+    let path = Path::new("frontend/build").join(&file);
+
     if path.is_file() {
+        // 静的ファイルが存在する場合はそれを返す
         NamedFile::open(path).await.ok()
-    } else {
+    } else if path.extension().is_none() {
+        // 拡張子がないリクエスト（例: /dashboard, /user/123）には index.html を返す（SPA対応）
         NamedFile::open("frontend/build/index.html").await.ok()
+    } else {
+        // ファイルでもない・SPAルートでもない場合は 404 を返す
+        None
     }
 }
 
