@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Input, Button, Layout, message } from 'antd';
+import { Form, Input, Button, Layout } from 'antd';
+import { useRecoilState } from 'recoil';
+import { circleFormState } from '../../recoil/CircleForm';
 import CustomHeader from '../../components/CustomHeader';
 import CustomFooter from '../../components/CustomFooter';
 
@@ -8,8 +10,15 @@ const { Content } = Layout;
 
 const CircleUpdate: React.FC = () => {
     const navigate = useNavigate();
+    const [form] = Form.useForm();
+    const [formData, setFormData] = useRecoilState(circleFormState);
+
+    React.useEffect(() => {
+        form.setFieldsValue(formData);
+    }, [form, formData]);
 
     const onFinish = (values: any) => {
+        setFormData(values);
         navigate('/circle/update/confirm', { state: { formData: values } });
     };
 
@@ -18,6 +27,7 @@ const CircleUpdate: React.FC = () => {
             <CustomHeader />
             <Content style={{ padding: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Form
+                    form={form}
                     name="circleUpdateForm"
                     layout="vertical"
                     onFinish={onFinish}
@@ -52,7 +62,7 @@ const CircleUpdate: React.FC = () => {
                                 name="familyName"
                                 noStyle
                                 rules={[
-                                    { required: true, message: '旧代表者の名字を入力してください' },
+                                    { required: true, message: '旧代表者の苗字を入力してください' },
                                     { pattern: /^[a-zA-Z\p{sc=Kana}\p{sc=Hira}\p{sc=Han}]+$/u, message: '苗字は日本語、もしくは英語で入力してください'}
                                 ]}
                             >
@@ -63,7 +73,7 @@ const CircleUpdate: React.FC = () => {
                                 noStyle
                                 rules={[
                                     { required: true, message: '旧代表者の名前を入力してください' },
-                                    { pattern: /^[a-zA-Z\p{sc=Kana}\p{sc=Hira}\p{sc=Han}]+$/u, message: '苗字は日本語、もしくは英語で入力してください'}
+                                    { pattern: /^[a-zA-Z\p{sc=Kana}\p{sc=Hira}\p{sc=Han}]+$/u, message: '名前は日本語、もしくは英語で入力してください'}
                                 ]}
                             >
                                 <Input style={{ width: '50%' }} placeholder="名前" />
