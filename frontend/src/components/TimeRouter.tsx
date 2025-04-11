@@ -65,7 +65,7 @@ if (isLoading) {
 
 // アクセス不可の場合は /circle/nopage へリダイレクト
 if (!accessible) {
-    return <Navigate to="/circle/nopage" />;
+    return <Navigate to="/circle/timeout" />;
 }
 
 // 内部のコンテキストを提供しつつ、子コンポーネントを表示

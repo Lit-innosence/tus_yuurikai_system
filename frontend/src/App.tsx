@@ -43,6 +43,7 @@ const CircleUpdate = lazy(() => import('./routes/circle/Update'));
 const CircleUpdateConfirm = lazy(() => import('./routes/circle/UpdateConfirm'));
 const CircleUpdateComplete = lazy(() => import('./routes/circle/UpdateComp'));
 const CircleUpdateProcess = lazy(() => import('./routes/circle/UpdateProcess'));
+const Timeout = lazy(() => import('./routes/circle/Timeout'));
 const Redirect = lazy(() => import('./components/Redirect'));
 
 const LockerSearch = lazy(() => import('./routes/admin/LockerSearch'));

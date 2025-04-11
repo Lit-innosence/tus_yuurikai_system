@@ -23,6 +23,6 @@ pub struct RepresentativeInfo {
     pub given_name: String,
     #[schema(example = "example@example.com")]
     pub email: String,
-    #[schema(example = "000-0000-0000")]
+    #[schema(example = "09000000000")]
     pub phone_number: String,
 }

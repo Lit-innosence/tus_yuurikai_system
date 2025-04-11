@@ -7,15 +7,25 @@ use utoipa_swagger_ui::SwaggerUi;
 use utoipa::OpenApi;
 use std::{path::{Path, PathBuf}, env};
 
+
+const FRONTEND_BUILD_PATH: &str = "frontend/build";
+
 #[rocket::get("/<file..>")]
 async fn catch_all(file: PathBuf) -> Option<NamedFile> {
-    let path = Path::new("frontend/build").join(file);
+    let path = Path::new(FRONTEND_BUILD_PATH).join(&file);
+
     if path.is_file() {
+        // 静的ファイルが存在する場合はそれを返す
         NamedFile::open(path).await.ok()
+    } else if path.extension().is_none() {
+        // 拡張子がないリクエスト（例: /dashboard, /user/123）には index.html を返す（SPA対応）
+        NamedFile::open(Path::new(FRONTEND_BUILD_PATH).join("index.html")).await.ok()
     } else {
-        NamedFile::open("frontend/build/index.html").await.ok()
+        // ファイルでもない・SPAルートでもない場合は 404 を返す
+        None
     }
 }
+
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
