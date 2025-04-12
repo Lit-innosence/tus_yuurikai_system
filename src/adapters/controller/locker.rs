@@ -368,8 +368,8 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
 
     // 既に登録されていないかの確認
     match app.assignment_record.get_by_pair_id(&user_pair.pair_id).await {
-        Ok(_) => {return (Status::InternalServerError, "same pair already exists")},
-        Err(diesel::NotFound) => {},
+        Ok(Some(_)) => {return (Status::InternalServerError, "same pair already exists")},
+        Ok(None) => {},
         Err(_) => {return (Status::InternalServerError, "failed to get assignment_record")},
     }
 

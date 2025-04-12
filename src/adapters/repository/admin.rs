@@ -10,15 +10,15 @@ use crate::infrastructure::router::Pool;
 /// # admin
 #[async_trait]
 pub trait AdminRepository: Send + Sync {
-    async fn insert(
+    fn insert(
         &self,
         username: &String,
         password: &String
     ) -> Result<Admin, Error>;
 
-    async fn get_by_name(
+    fn get_by_name(
         &self,
-        username: &String,
+        username: String,
     ) -> Result<Admin, Error>;
 
     async fn delete_by_name(
@@ -43,7 +43,7 @@ impl AdminRepositorySqlImpl {
 
 #[async_trait]
 impl AdminRepository for AdminRepositorySqlImpl {
-    async fn insert (
+    fn insert (
         &self,
         username: &String,
         password: &String,
@@ -58,9 +58,9 @@ impl AdminRepository for AdminRepositorySqlImpl {
             .get_result(&mut conn)
     }
 
-    async fn get_by_name (
+    fn get_by_name (
             &self,
-            username: &String,
+            username: String,
     ) -> Result<Admin, Error> {
         let mut conn = self.pool.get().unwrap();
         admin::table.filter(admin::username.eq(username))

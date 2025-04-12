@@ -1,31 +1,29 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::result::Error;
-use async_trait::async_trait;
 
 use crate::infrastructure::schema::*;
 use crate::infrastructure::models::*;
 use crate::infrastructure::router::Pool;
 
 /// # representatives
-#[async_trait]
 pub trait RepresentativesRepository: Send + Sync {
-    async fn insert(
+    fn insert(
         &self,
-        student_id: &String,
-        family_name: &String,
-        given_name: &String,
-        email: &String,
-        phone: &String,
+        student_id: String,
+        family_name: String,
+        given_name: String,
+        email: String,
+        phone: String,
     ) -> Result<Representatives, Error>;
 
-    async fn get_all(
+    fn get_all(
         &self,
     ) -> Result<Vec<Representatives>, Error>;
 
-    async fn get_by_id(
+    fn get_by_id(
         &self,
-        student_id: &String,
+        student_id: String,
     ) -> Result<Representatives, Error>;
 }
 
@@ -39,22 +37,21 @@ impl RepresentativesRepositorySqlImpl {
     }
 }
 
-#[async_trait]
 impl RepresentativesRepository for RepresentativesRepositorySqlImpl {
-    async fn insert(
+    fn insert(
             &self,
-            student_id: &String,
-            family_name: &String,
-            given_name: &String,
-            email: &String,
-            phone: &String,
+            student_id: String,
+            family_name: String,
+            given_name: String,
+            email: String,
+            phone: String,
         ) -> Result<Representatives, Error> {
         let new_representative = NewRepresentatives{
-            student_id: student_id,
-            family_name: family_name,
-            given_name: given_name,
-            email: email,
-            phone: phone,
+            student_id: &student_id,
+            family_name: &family_name,
+            given_name: &given_name,
+            email: &email.clone(),
+            phone: &phone.clone(),
         };
         let mut conn = self.pool.get().unwrap();
         diesel::insert_into(representatives::table)
@@ -65,7 +62,7 @@ impl RepresentativesRepository for RepresentativesRepositorySqlImpl {
             .get_result(&mut conn)
     }
 
-    async fn get_all(
+    fn get_all(
             &self,
         ) -> Result<Vec<Representatives>, Error> {
         let mut conn = self.pool.get().unwrap();
@@ -73,9 +70,9 @@ impl RepresentativesRepository for RepresentativesRepositorySqlImpl {
             .get_results(&mut conn)
     }
 
-    async fn get_by_id(
+    fn get_by_id(
             &self,
-            student_id: &String,
+            student_id: String,
         ) -> Result<Representatives, Error> {
         let mut conn = self.pool.get().unwrap();
         representatives::table

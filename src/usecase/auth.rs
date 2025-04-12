@@ -11,7 +11,7 @@ use lettre::message::header::ContentType;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::transport::smtp::client::{Tls, TlsParameters};
 use lettre::{Message, SmtpTransport, Transport};
-use rocket::http::Status;
+use rocket::{tokio::task, http::Status};
 use async_trait::async_trait;
 
 pub struct AuthUsecaseImpl {
@@ -47,18 +47,28 @@ impl AuthUsecase for AuthUsecaseImpl {
         if is_same {
             co_token.clone_from(&main_token);
         }
-        let auth = match self.auth_repository.insert(&main_token, &co_token, phase).await {
-            Ok(auth) => {auth},
-            Err(_) => {return Err(Status::InternalServerError)}
+        let phase = phase.clone();
+        let main_user = main_user.clone();
+        let co_user = co_user.clone();
+        let auth_repository = self.auth_repository.clone();
+        let locker_auth_info_repository = self.locker_auth_info_repository.clone();
+
+        let auth = match task::spawn_blocking(move || {
+            auth_repository.insert(main_token, co_token, phase)
+        }).await {
+            Ok(Ok(auth)) => {auth},
+            _ => {return Err(Status::InternalServerError)}
         };
 
-        match self.locker_auth_info_repository.insert(&auth.auth_id,
-                                                    &main_user.student_id,
-                                                    &main_user.family_name,
-                                                    &main_user.given_name,
-                                                    &co_user.student_id,
-                                                    &co_user.family_name,
-                                                    &co_user.given_name).await {
+        match task::spawn_blocking(move || {
+            locker_auth_info_repository.insert(auth.auth_id,
+                                                main_user.student_id,
+                                                main_user.family_name,
+                                                main_user.given_name,
+                                                co_user.student_id,
+                                                co_user.family_name,
+                                                co_user.given_name)
+        }).await {
             Ok(_) => {return Ok(auth)},
             Err(_) => {return Err(Status::InternalServerError)},
         }
@@ -68,32 +78,41 @@ impl AuthUsecase for AuthUsecaseImpl {
     async fn circle_register(&self, organization: &OrganizationInfo, phase: &String, is_same: bool) -> Result<Auth, Status> {
         let main_token = generate_token();
         let mut co_token = generate_token();
-
         if is_same {
             co_token.clone_from(&main_token);
         }
-        let auth = match self.auth_repository.insert(&main_token, &co_token, phase).await {
-            Ok(auth) => {auth},
-            Err(_) => {return Err(Status::InternalServerError)}
+        let phase = phase.clone();
+        let organization = organization.clone();
+        let auth_repository = self.auth_repository.clone();
+        let circle_auth_info_repository = self.circle_auth_info_repository.clone();
+
+
+        let auth = match task::spawn_blocking(move || {
+            auth_repository.insert(main_token, co_token, phase)
+        }).await {
+            Ok(Ok(auth)) => {auth},
+            _ => {return Err(Status::InternalServerError)}
         };
 
-        match self.circle_auth_info_repository.insert(&auth.auth_id,
-                                                    &organization.main_user.student_id,
-                                                    &organization.main_user.family_name,
-                                                    &organization.main_user.given_name,
-                                                    &organization.main_user.email,
-                                                    &organization.main_user.phone_number,
-                                                    &organization.co_user.student_id,
-                                                    &organization.co_user.family_name,
-                                                    &organization.co_user.given_name,
-                                                    &organization.co_user.email,
-                                                    &organization.co_user.phone_number,
-                                                    &organization.b_doc,
-                                                    &organization.c_doc,
-                                                    &organization.d_doc,
-                                                    &organization.organization.organization_name,
-                                                    &organization.organization.organization_ruby,
-                                                    &organization.organization.organization_email).await {
+        match task::spawn_blocking(move || {
+            circle_auth_info_repository.insert(auth.auth_id,
+                                                organization.main_user.student_id,
+                                                organization.main_user.family_name,
+                                                organization.main_user.given_name,
+                                                organization.main_user.email,
+                                                organization.main_user.phone_number,
+                                                organization.co_user.student_id,
+                                                organization.co_user.family_name,
+                                                organization.co_user.given_name,
+                                                organization.co_user.email,
+                                                organization.co_user.phone_number,
+                                                organization.b_doc,
+                                                organization.c_doc,
+                                                organization.d_doc,
+                                                organization.organization.organization_name,
+                                                organization.organization.organization_ruby,
+                                                organization.organization.organization_email)
+        }).await {
             Ok(_) => {return Ok(auth)},
             Err(_) => {return Err(Status::InternalServerError)}
         }
@@ -131,7 +150,7 @@ impl AuthUsecase for AuthUsecaseImpl {
         let mailer = SmtpTransport::relay("smtp.gmail.com")
             .map_err(|_| Status::InternalServerError)?
             .port(587)
-            .tls(Tls::Required(tls_parameters)) 
+            .tls(Tls::Required(tls_parameters))
             .credentials(creds)
             .build();
 
@@ -140,43 +159,88 @@ impl AuthUsecase for AuthUsecaseImpl {
 
         Ok(())
     }
+
     async fn token_check(&self, token: String, is_main: bool) -> Result<Auth, Status> {
-        let auth = match self.auth_repository.get_by_token(&token).await {
-            Ok(auth) => auth,
-            Err(_) => return Err(Status::Unauthorized),
+        let verify_token = token.clone();
+        let repository = self.auth_repository.clone();
+
+        let auth = match task::spawn_blocking(move || {
+            repository.get_by_token(token)
+        }).await {
+            Ok(Ok(auth)) => auth,
+            _ => return Err(Status::Unauthorized),
         };
-        if (is_main && auth.main_auth_token == token) || (!is_main && auth.co_auth_token == token) {
+
+        if (is_main && auth.main_auth_token == verify_token) || (!is_main && auth.co_auth_token == verify_token) {
             Ok(auth)
         } else {
             Err(Status::Unauthorized)
         }
     }
+
     async fn get_locker_auth_info(&self, auth_id: &Uuid) -> Result<LockerAuthInfo, Status> {
-        match self.locker_auth_info_repository.get_by_id(auth_id).await {
-            Ok(info) => Ok(info),
-            Err(_) => return Err(Status::InternalServerError)
+        let auth_id = auth_id.clone();
+        let repository = self.locker_auth_info_repository.clone();
+
+        match task::spawn_blocking(move || {
+            repository.get_by_id(auth_id)
+        }).await {
+            Ok(Ok(info)) => Ok(info),
+            _ => Err(Status::InternalServerError)
         }
     }
+
     async fn get_circle_auth_info(&self, auth_id:&Uuid) -> Result<CircleAuthInfo, Status> {
-        match self.circle_auth_info_repository.get_by_id(auth_id).await {
-            Ok(info) => Ok(info),
-            Err(_) => return Err(Status::InternalServerError)
+        let auth_id = auth_id.clone();
+        let repository = self.circle_auth_info_repository.clone();
+
+        match task::spawn_blocking(move || {
+            repository.get_by_id(auth_id)
+        }).await {
+            Ok(Ok(info)) => Ok(info),
+            _ => Err(Status::InternalServerError)
         }
     }
+
     async  fn update_phase(&self, auth_id: &Uuid, phase: String) -> Result<usize, Status> {
-        match self.auth_repository.update_phase(&auth_id, &phase).await {
-            Ok(ok) => Ok(ok),
-            Err(_) => return Err(Status::InternalServerError),
+        let auth_id = auth_id.clone();
+        let repository = self.auth_repository.clone();
+
+        match task::spawn_blocking(move || {
+            repository.update_phase(auth_id, phase)
+        }).await {
+            Ok(Ok(result)) => Ok(result),
+            _ => Err(Status::InternalServerError),
         }
     }
+
     async  fn delete(&self, auth_id: &Uuid) -> Result<usize, Status> {
-        match self.locker_auth_info_repository.delete(&auth_id).await {
+        let locker_auth_id = auth_id.clone();
+        let circle_auth_id = auth_id.clone();
+        let auth_id = auth_id.clone();
+        let auth_repository = self.auth_repository.clone();
+        let locker_auth_info_repository = self.locker_auth_info_repository.clone();
+        let circle_auth_info_repository = self.circle_auth_info_repository.clone();
+
+        match task::spawn_blocking(move || {
+            locker_auth_info_repository.delete(locker_auth_id)
+        }).await {
             Ok(_) => {},
-            Err(_) => return Err(Status::InternalServerError),
+            _ => return Err(Status::InternalServerError),
         }
-        match self.auth_repository.delete(&auth_id).await {
-            Ok(ok) => Ok(ok),
-            Err(_) => return Err(Status::InternalServerError),
+
+        match task::spawn_blocking(move || {
+            circle_auth_info_repository.delete(circle_auth_id)
+        }).await {
+            Ok(_) => {},
+            _ => return Err(Status::InternalServerError),
+        }
+
+        match task::spawn_blocking(move || {
+            auth_repository.delete(auth_id)
+        }).await {
+            Ok(Ok(result)) => Ok(result),
+            _ => return Err(Status::InternalServerError),
         }
     }
 }

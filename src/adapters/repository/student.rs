@@ -1,7 +1,6 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::result::Error;
-use async_trait::async_trait;
 
 use crate::infrastructure::schema::*;
 use crate::infrastructure::models::*;
@@ -9,31 +8,30 @@ use crate::infrastructure::router::Pool;
 
 
 /// # student
-#[async_trait]
 pub trait StudentRepository: Send + Sync {
-    async fn insert(
+    fn insert(
         &self,
-        student_id: &String,
-        family_name: &String,
-        given_name: &String,
+        student_id: String,
+        family_name: String,
+        given_name: String,
     ) -> Result<Student, Error>;
 
-    async fn get_all(
+    fn get_all(
         &self
     ) -> Result<Vec<Student>, Error>;
 
-    async fn get_by_id(
+     fn get_by_id(
         &self,
-        student_id: &String,
+        student_id: String,
     ) -> Result<Student, Error>;
 
-    async fn get_by_name(
+     fn get_by_name(
         &self,
-        family_name: &String,
-        given_name: &String,
+        family_name: String,
+        given_name: String,
     ) -> Result<Vec<Student>, Error>;
 
-    async fn delete_all(
+     fn delete_all(
         &self
     ) -> Result<usize, Error>;
 }
@@ -47,18 +45,17 @@ impl StudentRepositorySqlImpl {
     }
 }
 
-#[async_trait]
 impl StudentRepository for StudentRepositorySqlImpl{
-    async fn insert(
+     fn insert(
         &self,
-        student_id: &String,
-        family_name: &String,
-        given_name: &String,
+        student_id: String,
+        family_name: String,
+        given_name: String,
     ) -> Result<Student, Error> {
         let new_student = NewStudent {
-            student_id,
-            family_name,
-            given_name,
+            student_id: &student_id,
+            family_name: &family_name,
+            given_name: &given_name,
         };
         let mut conn = self.pool.get().unwrap();
         diesel::insert_into(student::table)
@@ -69,7 +66,7 @@ impl StudentRepository for StudentRepositorySqlImpl{
             .get_result(&mut conn)
     }
 
-    async fn get_all(
+     fn get_all(
         &self
     ) -> Result<Vec<Student>, Error> {
         let mut conn = self.pool.get().unwrap();
@@ -77,9 +74,9 @@ impl StudentRepository for StudentRepositorySqlImpl{
             .get_results(&mut conn)
     }
 
-    async fn get_by_id(
+     fn get_by_id(
             &self,
-            student_id: &String,
+            student_id: String,
         ) -> Result<Student, Error> {
         let mut conn = self.pool.get().unwrap();
         student::table
@@ -87,10 +84,10 @@ impl StudentRepository for StudentRepositorySqlImpl{
             .get_result(&mut conn)
     }
 
-    async fn get_by_name(
+     fn get_by_name(
         &self,
-        family_name: &String,
-        given_name: &String,
+        family_name: String,
+        given_name: String,
     ) -> Result<Vec<Student>, Error> {
         let mut conn = self.pool.get().unwrap();
         let family_name_ex = format!("{}%", family_name);
@@ -101,7 +98,7 @@ impl StudentRepository for StudentRepositorySqlImpl{
             .get_results(&mut conn)
     }
 
-    async fn delete_all(
+     fn delete_all(
         &self
     ) -> Result<usize, Error> {
         let mut conn = self.pool.get().unwrap();

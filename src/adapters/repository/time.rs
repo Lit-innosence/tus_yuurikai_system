@@ -2,29 +2,27 @@ use chrono::NaiveDateTime;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::result::Error;
-use async_trait::async_trait;
 
 use crate::infrastructure::schema::*;
 use crate::infrastructure::models::*;
 use crate::infrastructure::router::Pool;
 
 /// # time
-#[async_trait]
 pub trait TimeRepository: Send + Sync {
-    async fn insert(
+    fn insert(
         &self,
-        name: &String,
-        start_time: &NaiveDateTime,
-        end_time: &NaiveDateTime,
+        name: String,
+        start_time: NaiveDateTime,
+        end_time: NaiveDateTime,
     ) -> Result<Time, Error>;
 
-    async fn get_all(
+    fn get_all(
         &self,
     ) -> Result<Vec<Time>, Error>;
 
-    async fn get_by_name(
+    fn get_by_name(
         &self,
-        name: &String,
+        name: String,
     ) -> Result<Time, Error>;
 }
 
@@ -38,18 +36,17 @@ impl TimeRepositorySqlImpl {
     }
 }
 
-#[async_trait]
 impl TimeRepository for TimeRepositorySqlImpl {
-    async fn insert(
+    fn insert(
             &self,
-            name: &String,
-            start_time: &NaiveDateTime,
-            end_time: &NaiveDateTime,
+            name: String,
+            start_time: NaiveDateTime,
+            end_time: NaiveDateTime,
         ) -> Result<Time, Error> {
         let new_time = NewTime{
-            name: name,
-            start_time: start_time,
-            end_time: end_time,
+            name: &name,
+            start_time: &start_time,
+            end_time: &end_time,
         };
         let mut conn = self.pool.get().unwrap();
         diesel::insert_into(time::table)
@@ -60,7 +57,7 @@ impl TimeRepository for TimeRepositorySqlImpl {
             .get_result(&mut conn)
     }
 
-    async fn get_all(
+    fn get_all(
             &self,
         ) -> Result<Vec<Time>, Error> {
         let mut conn = self.pool.get().unwrap();
@@ -68,9 +65,9 @@ impl TimeRepository for TimeRepositorySqlImpl {
             .get_results(&mut conn)
     }
 
-    async fn get_by_name(
+    fn get_by_name(
             &self,
-            name: &String,
+            name: String,
         ) -> Result<Time, Error> {
         let mut conn = self.pool.get().unwrap();
         time::table

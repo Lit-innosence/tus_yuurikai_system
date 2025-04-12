@@ -2,40 +2,38 @@ use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::result::Error;
 use uuid::Uuid;
-use async_trait::async_trait;
 
 use crate::infrastructure::schema::*;
 use crate::infrastructure::models::*;
 use crate::infrastructure::router::Pool;
 
 /// # assignment_record
-#[async_trait]
 pub trait AssignmentRecordRepository: Send + Sync {
-    async fn insert(
+    fn insert(
         &self,
-        pair_id: &Uuid,
-        locker_id: &String,
-        year: &i32,
+        pair_id: Uuid,
+        locker_id: String,
+        year: i32,
     ) -> Result<AssignmentRecord, Error>;
 
-    async fn get_all(
+    fn get_all(
         &self,
     ) -> Result<Vec<AssignmentRecord>, Error>;
 
-    async fn get(
+    fn get(
         &self,
-        year: &i32,
-        floor: &String,
-        pair_id: &Uuid,
+        year: i32,
+        floor: String,
+        pair_id: Uuid,
     ) -> Result<Vec<AssignmentRecord>, Error>;
 
-    async fn get_by_pair_id(
+    fn get_by_pair_id(
         &self,
-        year: &i32,
-        pair_id: &Uuid,
+        year: i32,
+        pair_id: Uuid,
     ) -> Result<AssignmentRecord, Error>;
 
-    async fn delete_all(
+    fn delete_all(
         &self
     ) -> Result<usize, Error>;
 }
@@ -50,18 +48,17 @@ impl AssignmentRecordRepositorySqlImpl {
     }
 }
 
-#[async_trait]
 impl AssignmentRecordRepository for AssignmentRecordRepositorySqlImpl {
-    async fn insert (
+    fn insert (
         &self,
-        pair_id: &Uuid,
-        locker_id: &String,
-        year: &i32,
+        pair_id: Uuid,
+        locker_id: String,
+        year: i32,
     ) -> Result<AssignmentRecord, Error> {
         let new_assignmentrecord = NewAssignmentRecord {
-            pair_id,
-            locker_id,
-            year,
+            pair_id: &pair_id,
+            locker_id: &locker_id,
+            year: &year
         };
         let mut conn = self.pool.get().unwrap();
         diesel::insert_into(assignment_record::table)
@@ -69,7 +66,7 @@ impl AssignmentRecordRepository for AssignmentRecordRepositorySqlImpl {
             .get_result(&mut conn)
     }
 
-    async fn get_all(
+    fn get_all(
         &self,
     ) -> Result<Vec<AssignmentRecord>, Error> {
         let mut conn = self.pool.get().unwrap();
@@ -77,11 +74,11 @@ impl AssignmentRecordRepository for AssignmentRecordRepositorySqlImpl {
             .get_results(&mut conn)
     }
 
-    async fn get (
+    fn get (
         &self,
-        year: &i32,
-        floor: &String,
-        pair_id: &Uuid,
+        year: i32,
+        floor: String,
+        pair_id: Uuid,
     ) -> Result<Vec<AssignmentRecord>, Error> {
         let mut conn = self.pool.get().unwrap();
 
@@ -94,10 +91,10 @@ impl AssignmentRecordRepository for AssignmentRecordRepositorySqlImpl {
         ).get_results(&mut conn)
     }
 
-    async  fn get_by_pair_id(
+    fn get_by_pair_id(
             &self,
-            year: &i32,
-            pair_id: &Uuid,
+            year: i32,
+            pair_id: Uuid,
         ) -> Result<AssignmentRecord, Error> {
         let mut conn = self.pool.get().unwrap();
 
@@ -106,7 +103,7 @@ impl AssignmentRecordRepository for AssignmentRecordRepositorySqlImpl {
             .get_result(&mut conn)
     }
 
-    async fn delete_all(
+    fn delete_all(
         &self
     ) -> Result<usize, Error> {
         let mut conn = self.pool.get().unwrap();
