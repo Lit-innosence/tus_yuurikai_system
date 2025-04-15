@@ -98,6 +98,7 @@ function App() {
 
               <Route path='/locker/nopage' element={<Page404 />} />
               <Route path='/circle/nopage' element={<Page404 />} />
+              <Route path='/circle/timeout' element={<Timeout />} />
               <Route path='*' element={<Page404 />} />
             </Routes>
           </Suspense>
