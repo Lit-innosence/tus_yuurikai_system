@@ -5,12 +5,15 @@ use crate::adapters::repository::{auth::AuthRepository, circle_auth_info::Circle
 use crate::infrastructure::models::{Auth, CircleAuthInfo, LockerAuthInfo};
 use crate::utils::token::generate_token;
 
+use aws_sdk_sesv2::error::DisplayErrorContext;
+use aws_sdk_sesv2::types::{Message as awsMessage, Body, Content, Destination, EmailContent};
+use aws_sdk_sesv2::Client;
 use dotenv::dotenv;
 use uuid::Uuid;
 use lettre::message::header::ContentType;
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::transport::smtp::client::{Tls, TlsParameters};
-use lettre::{Message, SmtpTransport, Transport};
+use lettre::{Message as lettreMessage, SmtpTransport, Transport};
 use rocket::http::Status;
 use async_trait::async_trait;
 
@@ -25,6 +28,7 @@ pub trait AuthUsecase: Sync + Send {
     async fn locker_register(&self, main_user: &UserInfo, co_user: &UserInfo, phase: &String, is_same: bool) -> Result<Auth, Status>;
     async fn circle_register(&self, organization: &OrganizationInfo, phase: &String, is_same: bool) -> Result<Auth, Status>;
     async fn mail_sender(&self, user_address: String, content: String, subject: &str) -> Result<(), Status>;
+    async fn aws_mail_sender(&self, client: &Client, user_address: String, content: String, subject: &str) -> Result<(), Status>;
     async fn token_check(&self, token: String, is_main: bool) -> Result<Auth, Status>;
     async fn get_locker_auth_info(&self, auth_id: &Uuid) -> Result<LockerAuthInfo, Status>;
     async fn get_circle_auth_info(&self, auth_id:&Uuid) -> Result<CircleAuthInfo, Status>;
@@ -105,7 +109,7 @@ impl AuthUsecase for AuthUsecaseImpl {
         let sender_address = env::var("SENDER_MAIL_ADDRESS").expect("SENDER_MAIL_ADDRESS must be set.");
         let appkey = env::var("MAIL_APP_KEY").expect("MAIL_APP_KEY must be set.");
 
-        let email = Message::builder()
+        let email = lettreMessage::builder()
             .from(
                 format!("Developer <{}>", sender_address)
                     .parse()
@@ -131,7 +135,7 @@ impl AuthUsecase for AuthUsecaseImpl {
         let mailer = SmtpTransport::relay("smtp.gmail.com")
             .map_err(|_| Status::InternalServerError)?
             .port(587)
-            .tls(Tls::Required(tls_parameters)) 
+            .tls(Tls::Required(tls_parameters))
             .credentials(creds)
             .build();
 
@@ -140,6 +144,55 @@ impl AuthUsecase for AuthUsecaseImpl {
 
         Ok(())
     }
+
+    async fn aws_mail_sender(&self, client: &Client, user_address: String, content: String, subject: &str) -> Result<(), Status> {
+
+        let cs: Vec<String> = vec![user_address];
+
+        let mut dest : Destination = Destination::builder().build();
+        dest.to_addresses = Some(cs);
+
+        let subject_content = Content::builder()
+            .data(subject)
+            .charset("UTF-8")
+            .build()
+            .expect("building Content");
+        let body_content = Content::builder()
+            .data(content)
+            .charset("UTF-8")
+            .build()
+            .expect("building Content");
+        let body = Body::builder().text(body_content).build();
+
+        let msg = awsMessage::builder()
+            .subject(subject_content)
+            .body(body)
+            .build();
+
+        let email_content = EmailContent::builder().simple(msg).build();
+
+        dotenv().ok();
+
+        let from = env::var("SENDER_EMAIL_ADDRESS").expect("SENDER_EMAIL_ADDRESS must be set.");
+
+        match client
+            .send_email()
+            .from_email_address(from.as_str())
+            .destination(dest)
+            .content(email_content)
+            .send()
+            .await {
+                Ok(_) => {},
+                Err(err) => {
+                    println!("Error: {}", DisplayErrorContext(&err));
+                    return Err(Status::InternalServerError)},
+            };
+
+        println!("Email sent successfully");
+
+        Ok(())
+    }
+
     async fn token_check(&self, token: String, is_main: bool) -> Result<Auth, Status> {
         let auth = match self.auth_repository.get_by_token(&token).await {
             Ok(auth) => auth,

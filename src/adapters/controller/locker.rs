@@ -11,6 +11,7 @@ use crate::usecase::{
 use crate::utils::{jwt::{encode_jwt, decode_jwt}, verify_password::verify_password_hash, verify_recaptcha::verify_recaptcha};
 
 use std::{env, collections::HashSet};
+use aws_sdk_sesv2::Client;
 use uuid::Uuid;
 use dotenv::dotenv;
 use rocket::{get, http::{Status, RawStr, Cookie, CookieJar, SameSite}, post, serde::json::Json, State};
@@ -21,7 +22,7 @@ use regex::Regex;
 // token生成、メール送信API
 #[utoipa::path(context_path = "/api/locker")]
 #[post("/token-gen", data = "<request>")]
-pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<App>) -> Status {
+pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<App>, client: &State<Client>) -> Status {
 
     let data = &request.data;
 
@@ -76,8 +77,12 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
     let user_address = format!("{}@ed.tus.ac.jp", main_user.student_id);
     let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n\n{}/locker/user-register?method=1&token={}", main_user.family_name, main_user.given_name, app_url, token);
     let subject = "ロッカーシステム メール認証";
-
+/*
     if app.auth.mail_sender(user_address, content, subject).await.is_err(){
+        return Status::InternalServerError;
+    }
+*/
+    if app.auth.aws_mail_sender(client, user_address, content, subject).await.is_err() {
         return Status::InternalServerError;
     }
 
@@ -87,7 +92,7 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
 // main_user認証API
 #[utoipa::path(context_path = "/api/locker")]
 #[get("/main-auth?<token>")]
-pub async fn main_auth(token: String, app: &State<App>) -> Status {
+pub async fn main_auth(token: String, app: &State<App>, client: &State<Client>) -> Status {
     //データのバリデーション
 
     // token
@@ -142,7 +147,12 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
     let subject = "ロッカーシステム メール認証";
 
     // メールの送信
+    /*
     if app.auth.mail_sender(user_address, content, subject).await.is_err(){
+        return Status::InternalServerError;
+    } */
+
+    if app.auth.aws_mail_sender(client, user_address, content, subject).await.is_err() {
         return Status::InternalServerError;
     }
 
@@ -157,7 +167,7 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
 // co_user認証API {
 #[utoipa::path(context_path = "/api/locker")]
 #[get("/co-auth?<token>")]
-pub async fn co_auth(token: String, app: &State<App>) -> Status {
+pub async fn co_auth(token: String, app: &State<App>, client: &State<Client>) -> Status {
     //データのバリデーション
 
     // token
@@ -228,7 +238,12 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     let subject = "ロッカーシステム 認証完了通知";
 
     // メールの送信
+    /*
     if app.auth.mail_sender(user_address, content, subject).await.is_err(){
+        return Status::InternalServerError;
+    }*/
+
+    if app.auth.aws_mail_sender(client, user_address, content, subject).await.is_err() {
         return Status::InternalServerError;
     }
 
