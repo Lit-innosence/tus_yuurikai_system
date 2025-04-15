@@ -38,7 +38,7 @@ const ImportantConfirm: React.FC = () => {
             <CustomHeader />
             <MovieButton />
             <Content style={contentStyle}>
-                <Card title="重要事項確認" bordered={true} style={cardStyle}>
+                <Card title="重要確認事項" bordered={true} style={cardStyle}>
                     <Paragraph strong style={{ fontSize: '16px', color: '#ff4d4f' }}>
                         廃棄日までに荷物を回収しない場合、荷物は廃棄されます。
                     </Paragraph>
