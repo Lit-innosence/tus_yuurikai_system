@@ -1,62 +1,60 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use diesel::result::Error;
-use async_trait::async_trait;
 
 use crate::infrastructure::schema::*;
 use crate::infrastructure::models::*;
 use crate::infrastructure::router::Pool;
+use super::RepositoryError;
 
 /// # locker
-#[async_trait]
 pub trait LockerRepository: Send + Sync {
-    async fn insert(
+    fn insert(
         &self,
-        locker_id: &String,
-        location: &String,
-        status: &String,
-    ) -> Result<Locker, Error>;
+        locker_id: String,
+        location: String,
+        status: String,
+    ) -> Result<Locker, RepositoryError>;
 
-    async fn get_all(
+    fn get_all(
         &self,
-    ) -> Result<Vec<Locker>, Error>;
+    ) -> Result<Vec<Locker>, RepositoryError>;
 
-    async fn update_status(
+    fn update_status(
         &self,
-        floor: &String,
-        prev_status: &String,
-        new_status: &String,
-    ) -> Result<usize, Error>;
+        floor: String,
+        prev_status: String,
+        new_status: String,
+    ) -> Result<usize, RepositoryError>;
 
-    async fn update_status_by_id(
+    fn update_status_by_id(
         &self,
-        locker_id: &String,
-        status: &String,
-    ) -> Result<usize, Error>;
+        locker_id: String,
+        status: String,
+    ) -> Result<usize, RepositoryError>;
 
-    async fn update_all_status(
+    fn update_all_status(
         &self,
-        status: &String,
-    ) -> Result<usize, Error>;
+        status: String,
+    ) -> Result<usize, RepositoryError>;
 
-    async fn get_by_id(
+    fn get_by_id(
         &self,
-        locker_id: &String,
-    ) -> Result<Locker, Error>;
+        locker_id: String,
+    ) -> Result<Locker, RepositoryError>;
 
-    async fn get_by_floor(
+    fn get_by_floor(
         &self,
-        floor: &String,
-    ) -> Result<Vec<Locker>, Error>;
+        floor: String,
+    ) -> Result<Vec<Locker>, RepositoryError>;
 
-    async fn get_by_status(
+    fn get_by_status(
         &self,
-        status: &String,
-    ) -> Result<Vec<Locker>, Error>;
+        status: String,
+    ) -> Result<Vec<Locker>, RepositoryError>;
 
-    async fn delete_all(
+    fn delete_all(
         &self
-    ) -> Result<usize, Error>;
+    ) -> Result<usize, RepositoryError>;
 }
 
 pub struct LockerRepositorySqlImpl {
@@ -69,112 +67,129 @@ impl LockerRepositorySqlImpl {
     }
 }
 
-#[async_trait]
 impl LockerRepository for LockerRepositorySqlImpl {
-    async fn insert(
+    fn insert(
         &self,
-        locker_id: &String,
-        location: &String,
-        status: &String,
-    ) -> Result<Locker, Error> {
+        locker_id: String,
+        location: String,
+        status: String,
+    ) -> Result<Locker, RepositoryError> {
         let new_locker = NewLocker {
-            locker_id,
-            location,
-            status
+            locker_id: &locker_id,
+            location: &location,
+            status: &status
         };
-        let mut conn = self.pool.get().unwrap();
-        diesel::insert_into(locker::table)
+        let mut conn = self.pool.get()?;
+        let result = diesel::insert_into(locker::table)
             .values(&new_locker)
-            .get_result(&mut conn)
+            .get_result::<Locker>(&mut conn)?;
+
+        Ok(result)
     }
 
-    async fn get_all(
+    fn get_all(
         &self,
-    ) -> Result<Vec<Locker>, Error> {
-        let mut conn = self.pool.get().unwrap();
-        locker::table
-            .get_results(&mut conn)
+    ) -> Result<Vec<Locker>, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = locker::table
+            .get_results::<Locker>(&mut conn)?;
+
+        Ok(result)
     }
 
-    async  fn update_status(
+    fn update_status(
             &self,
-            floor: &String,
-            prev_status: &String,
-            new_status: &String,
-        ) -> Result<usize, Error> {
-        let mut conn = self.pool.get().unwrap();
+            floor: String,
+            prev_status: String,
+            new_status: String,
+        ) -> Result<usize, RepositoryError> {
+        let mut conn = self.pool.get()?;
         let floor_ex = format!("{}%", floor);
         let status_ex = format!("{}%", prev_status);
-        diesel::update(
+        let result = diesel::update(
             locker::table.filter(
                 locker::locker_id.like(floor_ex)
             ).filter(locker::status.like(status_ex))
-        ).set(locker::status.eq(new_status))
-        .execute(&mut conn)
+            ).set(locker::status.eq(new_status))
+            .execute(&mut conn)?;
+
+        Ok(result)
     }
 
-    async fn update_status_by_id(
+    fn update_status_by_id(
             &self,
-            locker_id: &String,
-            status: &String,
-        ) -> Result<usize, Error> {
-        let mut conn = self.pool.get().unwrap();
-        diesel::update(locker::table.find(locker_id))
+            locker_id: String,
+            status: String,
+        ) -> Result<usize, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = diesel::update(locker::table.find(locker_id))
             .set(locker::status.eq(status))
-            .execute(&mut conn)
+            .execute(&mut conn)?;
+
+        Ok(result)
     }
 
-    async fn update_all_status(
+    fn update_all_status(
             &self,
-            status: &String,
-        ) -> Result<usize, Error> {
-        let mut conn = self.pool.get().unwrap();
-        diesel::update(locker::table)
+            status: String,
+        ) -> Result<usize, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = diesel::update(locker::table)
             .set(locker::status.eq(status))
-            .execute(&mut conn)
+            .execute(&mut conn)?;
+
+        Ok(result)
     }
 
-    async  fn get_by_id(
+    fn get_by_id(
             &self,
-            locker_id: &String,
-        ) -> Result<Locker, Error> {
-            let mut conn = self.pool.get().unwrap();
-        locker::table
+            locker_id: String,
+        ) -> Result<Locker, RepositoryError> {
+            let mut conn = self.pool.get()?;
+        let result = locker::table
             .filter(
                 locker::locker_id
                 .eq(locker_id)
-            ).first(&mut conn)
+            ).first::<Locker>(&mut conn)?;
+
+        Ok(result)
     }
 
-    async fn get_by_floor(
+    fn get_by_floor(
             &self,
-            floor: &String,
-        ) -> Result<Vec<Locker>, Error> {
-        let mut conn = self.pool.get().unwrap();
+            floor: String,
+        ) -> Result<Vec<Locker>, RepositoryError> {
+        let mut conn = self.pool.get()?;
         let floor_ex = format!("{}%", floor);
-        locker::table
+        let result = locker::table
             .filter(
                 locker::locker_id
                 .like(floor_ex)
-            ).get_results(&mut conn)
+            ).get_results(&mut conn)?;
+
+        Ok(result)
     }
 
-    async fn get_by_status(
+    fn get_by_status(
             &self,
-            status: &String,
-        ) -> Result<Vec<Locker>, Error> {
-        let mut conn = self.pool.get().unwrap();
-        locker::table
+            status: String,
+        ) -> Result<Vec<Locker>, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = locker::table
             .filter(
                 locker::status.like(status)
-            ).get_results(&mut conn)
+            ).get_results::<Locker>(&mut conn)?;
+
+        Ok(result)
     }
 
-    async fn delete_all(
+    fn delete_all(
         &self
-    ) -> Result<usize, Error> {
-        let mut conn = self.pool.get().unwrap();
-        diesel::delete(locker::table)
-            .execute(&mut conn)
+    ) -> Result<usize, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = diesel::delete(locker::table)
+            .execute(&mut conn)?;
+
+        Ok(result)
     }
 }

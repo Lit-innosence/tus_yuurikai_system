@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use std::env;
+use std::time::Duration;
 use diesel::{PgConnection, r2d2::ConnectionManager};
 use dotenv::dotenv;
 use crate::adapters::repository::{
@@ -65,7 +66,10 @@ impl App{
 
         let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
         let manager = ConnectionManager::<PgConnection>::new(&database_url);
-        let pool = Pool::builder().build(manager).expect("Failed to create pool");
+        let pool = Pool::builder()
+            .connection_timeout(Duration::from_secs(5))
+            .build(manager)
+            .expect("Failed to create pool");
 
         let student_repository = StudentUsecaseImpl::new(Arc::new(StudentRepositorySqlImpl::new(pool.clone())));
         let student_pair_repository = StudentPairUsecaseImpl::new(Arc::new(StudentPairRepositorySqlImpl::new(pool.clone())));
