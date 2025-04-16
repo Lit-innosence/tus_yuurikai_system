@@ -1,11 +1,10 @@
 use std::sync::Arc;
 use crate::domain::assignment::AssignmentInfo;
-use crate::adapters::repository::assignment_record::AssignmentRecordRepository;
+use crate::adapters::repository::{RepositoryError, assignment_record::AssignmentRecordRepository};
 use crate::infrastructure::models::{AssignmentRecord, StudentPair};
 use async_trait::async_trait;
 use chrono::{Datelike, Local};
-use rocket::http::Status;
-use rocket::tokio::task;
+use rocket::{tokio::task, http::Status};
 use uuid::Uuid;
 
 pub struct AssignmentRecordUsecaseImpl {
@@ -29,7 +28,7 @@ impl AssignmentRecordUsecaseImpl {
 #[async_trait]
 impl AssignmentRecordUsecase for AssignmentRecordUsecaseImpl {
     async fn register(&self, student_pair: &StudentPair, assignment: &AssignmentInfo) -> Result<AssignmentRecord, Status> {
-        let pair_id = student_pair.pair_id.clone();
+        let pair_id = student_pair.pair_id;
         let locker_id = assignment.locker_id.clone();
         let year = Local::now().year();
         let repository = self.assignment_record_repository.clone();
@@ -37,8 +36,19 @@ impl AssignmentRecordUsecase for AssignmentRecordUsecaseImpl {
         match task::spawn_blocking(move || {
              repository.insert(pair_id, locker_id, year)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(assignment)) => Ok(assignment),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -48,8 +58,19 @@ impl AssignmentRecordUsecase for AssignmentRecordUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_all()
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(result)) => Ok(result),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -65,8 +86,19 @@ impl AssignmentRecordUsecase for AssignmentRecordUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get(year, floor_val, pair_id)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(result)) => Ok(result),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -78,9 +110,20 @@ impl AssignmentRecordUsecase for AssignmentRecordUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_by_pair_id(year, pair_id)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(diesel::result::Error::NotFound))) => Ok(None),
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(result)) => Ok(Some(result)),
-            Ok(Err(diesel::NotFound)) => Ok(None),
-            _ => Err(Status::InternalServerError)
         }
    }
 }

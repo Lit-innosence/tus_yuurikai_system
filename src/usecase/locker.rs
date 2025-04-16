@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use crate::adapters::repository::locker::LockerRepository;
+use crate::adapters::repository::{RepositoryError, locker::LockerRepository};
 use crate::infrastructure::models::Locker;
 use async_trait::async_trait;
 use rocket::{tokio::task, http::Status};
@@ -31,8 +31,19 @@ impl LockerUsecase for LockerUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_all()
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(lockers)) => Ok(lockers),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -43,8 +54,19 @@ impl LockerUsecase for LockerUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_by_id(locker_id)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                return Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
             Ok(Ok(locker)) => Ok(locker),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -58,8 +80,19 @@ impl LockerUsecase for LockerUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_by_floor(floor_val)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                return Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
             Ok(Ok(lockers)) => Ok(lockers),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -71,8 +104,19 @@ impl LockerUsecase for LockerUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.update_status_by_id(locker_id, status)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                return Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
             Ok(Ok(result)) => Ok(result),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -83,8 +127,19 @@ impl LockerUsecase for LockerUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.update_status(String::from(""), String::from("occupied"), String::from("vacant"))
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(result)) => Ok(result),
-            _ => Err(Status::InternalServerError),
         }
     }
 }

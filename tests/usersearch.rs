@@ -6,7 +6,7 @@ mod utils;
 use std::env;
 use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
-use rocket::http::{Status, Cookie};
+use rocket::{tokio::task, http::{Status, Cookie}};
 use dotenv::dotenv;
 use tus_yuurikai_system::adapters::httpmodels::{UserSearchResponse, UserSearchResult};
 use tus_yuurikai_system::domain::{assignment::AssignmentInfo, student_pair::PairInfo, student::UserInfo};
@@ -73,9 +73,14 @@ async fn normal() {
     let password = String::from("0000");
 
     let password_hash = utils::password_hash::compute_password_hash(password.clone()).unwrap();
-    match app.admin.admin_repository.insert(&username, &password_hash).await {
-        Ok(_) => {},
-        Err(err) => {panic!{"{}", err}},
+    let user_name = username.clone();
+    let admin_repository = app.admin.admin_repository.clone();
+    match task::spawn_blocking(move || {
+        admin_repository.insert(user_name, password_hash)
+    }).await {
+        Ok(Ok(_)) => {},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}", err),
     }
 
     let key = env::var("TOKEN_KEY").expect("token key must be set");
@@ -103,9 +108,13 @@ async fn normal() {
         }]
     };
 
-    match app.admin.admin_repository.delete_by_name(&username).await {
-        Ok(_) => {},
-        Err(err) => {panic!{"{}",err}}
+    let admin_repository = app.admin.admin_repository.clone();
+    match task::spawn_blocking(move || {
+        admin_repository.delete_by_name(username)
+    }).await {
+        Ok(Ok(_)) => {},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}",err)
     }
 
     // Assert
@@ -173,9 +182,14 @@ async fn given_name_is_not_requested() {
     let password = String::from("0000");
 
     let password_hash = utils::password_hash::compute_password_hash(password.clone()).unwrap();
-    match app.admin.admin_repository.insert(&username, &password_hash).await {
-        Ok(_) => {},
-        Err(err) => {panic!{"{}", err}},
+    let user_name = username.clone();
+    let admin_repository = app.admin.admin_repository.clone();
+    match task::spawn_blocking(move || {
+        admin_repository.insert(user_name, password_hash)
+    }).await {
+        Ok(Ok(_)) => {},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}", err),
     }
 
     let key = env::var("TOKEN_KEY").expect("token key must be set");
@@ -204,9 +218,13 @@ async fn given_name_is_not_requested() {
         }]
     };
 
-    match app.admin.admin_repository.delete_by_name(&username).await {
-        Ok(_) => {},
-        Err(err) => {panic!{"{}",err}}
+    let admin_repository = app.admin.admin_repository.clone();
+    match task::spawn_blocking(move || {
+        admin_repository.delete_by_name(username)
+    }).await {
+        Ok(Ok(_)) => {},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}",err)
     }
 
     // Assert
@@ -274,9 +292,14 @@ async fn family_name_is_not_requested() {
     let password = String::from("0000");
 
     let password_hash = utils::password_hash::compute_password_hash(password.clone()).unwrap();
-    match app.admin.admin_repository.insert(&username, &password_hash).await {
-        Ok(_) => {},
-        Err(err) => {panic!{"{}", err}},
+    let user_name = username.clone();
+    let admin_repository = app.admin.admin_repository.clone();
+    match task::spawn_blocking(move || {
+        admin_repository.insert(user_name, password_hash)
+    }).await {
+        Ok(Ok(_)) => {},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}", err),
     }
 
     let key = env::var("TOKEN_KEY").expect("token key must be set");
@@ -304,9 +327,13 @@ async fn family_name_is_not_requested() {
         }]
     };
 
-    match app.admin.admin_repository.delete_by_name(&username).await {
-        Ok(_) => {},
-        Err(err) => {panic!{"{}",err}}
+    let admin_repository = app.admin.admin_repository.clone();
+    match task::spawn_blocking(move || {
+        admin_repository.delete_by_name(username)
+    }).await {
+        Ok(Ok(_)) => {},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}",err)
     }
 
     // Assert
@@ -374,10 +401,16 @@ async fn name_is_not_requested() {
     let password = String::from("0000");
 
     let password_hash = utils::password_hash::compute_password_hash(password.clone()).unwrap();
-    match app.admin.admin_repository.insert(&username, &password_hash).await {
-        Ok(_) => {},
-        Err(err) => {panic!{"{}", err}},
+    let user_name = username.clone();
+    let admin_repository = app.admin.admin_repository.clone();
+    match task::spawn_blocking(move || {
+        admin_repository.insert(user_name, password_hash)
+    }).await {
+        Ok(Ok(_)) => {},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}", err),
     }
+
 
     let key = env::var("TOKEN_KEY").expect("token key must be set");
     let token = encode_jwt(&username, Duration::hours(1), &key);
@@ -404,9 +437,13 @@ async fn name_is_not_requested() {
         }]
     };
 
-    match app.admin.admin_repository.delete_by_name(&username).await {
-        Ok(_) => {},
-        Err(err) => {panic!{"{}",err}}
+    let admin_repository = app.admin.admin_repository.clone();
+    match task::spawn_blocking(move || {
+        admin_repository.delete_by_name(username)
+    }).await {
+        Ok(Ok(_)) => {},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}",err)
     }
 
     // Assert

@@ -1,11 +1,11 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use diesel::result::Error;
 use uuid::Uuid;
 
 use crate::infrastructure::schema::*;
 use crate::infrastructure::models::*;
 use crate::infrastructure::router::Pool;
+use super::RepositoryError;
 
 /// # locker_auth_info
 pub trait LockerAuthInfoRepository: Send + Sync {
@@ -18,21 +18,21 @@ pub trait LockerAuthInfoRepository: Send + Sync {
         co_student_id: String,
         co_family_name: String,
         co_given_name: String,
-    ) -> Result<LockerAuthInfo, Error>;
+    ) -> Result<LockerAuthInfo, RepositoryError>;
 
     fn get_by_id(
         &self,
         auth_id: Uuid,
-    ) -> Result<LockerAuthInfo, Error>;
+    ) -> Result<LockerAuthInfo, RepositoryError>;
 
     fn delete(
         &self,
         auth_id: Uuid,
-    ) -> Result<usize, Error>;
+    ) -> Result<usize, RepositoryError>;
 
     fn delete_all(
         &self
-    ) -> Result<usize, Error>;
+    ) -> Result<usize, RepositoryError>;
 }
 
 pub struct LockerAuthInfoRepositorySqlImpl {
@@ -55,7 +55,7 @@ impl LockerAuthInfoRepository for LockerAuthInfoRepositorySqlImpl {
             co_student_id: String,
             co_family_name: String,
             co_given_name: String,
-    ) -> Result<LockerAuthInfo, Error> {
+    ) -> Result<LockerAuthInfo, RepositoryError> {
         let new_auth_info = NewLockerAuthInfo {
             auth_id: &auth_id,
             main_student_id: &main_student_id,
@@ -65,35 +65,43 @@ impl LockerAuthInfoRepository for LockerAuthInfoRepositorySqlImpl {
             co_family_name: &co_family_name,
             co_given_name: &co_given_name,
         };
-        let mut conn = self.pool.get().unwrap();
-        diesel::insert_into(locker_auth_info::table)
+        let mut conn = self.pool.get()?;
+        let result = diesel::insert_into(locker_auth_info::table)
             .values(&new_auth_info)
-            .get_result(&mut conn)
+            .get_result::<LockerAuthInfo>(&mut conn)?;
+
+        Ok(result)
     }
 
     fn get_by_id(
             &self,
             auth_id: Uuid,
-        ) -> Result<LockerAuthInfo, Error> {
-            let mut conn = self.pool.get().unwrap();
-        locker_auth_info::table.filter(locker_auth_info::auth_id.eq(auth_id))
-            .get_result(&mut conn)
+        ) -> Result<LockerAuthInfo, RepositoryError> {
+            let mut conn = self.pool.get()?;
+        let result = locker_auth_info::table.filter(locker_auth_info::auth_id.eq(auth_id))
+            .get_result::<LockerAuthInfo>(&mut conn)?;
+
+        Ok(result)
     }
 
     fn delete(
             &self,
             auth_id: Uuid,
-        ) -> Result<usize, Error> {
-        let mut conn = self.pool.get().unwrap();
-        diesel::delete(locker_auth_info::table.find(auth_id))
-            .execute(&mut conn)
+        ) -> Result<usize, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = diesel::delete(locker_auth_info::table.find(auth_id))
+            .execute(&mut conn)?;
+
+        Ok(result)
     }
 
     fn delete_all(
             &self
-        ) -> Result<usize, Error> {
-        let mut conn = self.pool.get().unwrap();
-        diesel::delete(locker_auth_info::table)
-            .execute(&mut conn)
+        ) -> Result<usize, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = diesel::delete(locker_auth_info::table)
+            .execute(&mut conn)?;
+
+        Ok(result)
     }
 }

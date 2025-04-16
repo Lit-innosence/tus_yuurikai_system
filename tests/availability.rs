@@ -5,7 +5,7 @@ mod utils;
 
 use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
-use rocket::http::Status;
+use rocket::{tokio::task, http::Status};
 use tus_yuurikai_system::adapters::httpmodels::{LockerStatus, LockerStatusResponse};
 use tus_yuurikai_system::infrastructure::router::{App, AppOption};
 
@@ -20,11 +20,17 @@ pub async fn normal() {
     setup_db(&app).await;
 
     let mut results: Vec<LockerStatus> = Vec::new();
-    let result = app.locker.locker_repository.get_by_floor(&String::from("")).await.unwrap();
+    let locker_repository = app.locker.locker_repository.clone();
+    let result = match task::spawn_blocking(move || {
+        locker_repository.get_by_floor(String::from(""))
+    }).await {
+        Ok(Ok(result)) => result,
+        _ => panic!("failed to get locker")
+    };
     for element in result {
         let data = LockerStatus{
             locker_id: element.locker_id.clone(),
-            floor: element.locker_id.chars().nth(0).unwrap().to_digit(10).unwrap() as i8,
+            floor: element.locker_id.chars().next().unwrap().to_digit(10).unwrap() as i8,
             status: element.status,
         };
         results.push(data);
@@ -57,11 +63,17 @@ pub async fn floor_is_not_requested() {
     setup_db(&app).await;
 
     let mut results: Vec<LockerStatus> = Vec::new();
-    let result = app.locker.locker_repository.get_by_floor(&String::from("")).await.unwrap();
+    let locker_repository = app.locker.locker_repository.clone();
+    let result = match task::spawn_blocking(move || {
+        locker_repository.get_by_floor(String::from(""))
+    }).await {
+        Ok(Ok(result)) => result,
+        _ => panic!("failed to get locker")
+    };
     for element in result {
         let data = LockerStatus{
             locker_id: element.locker_id.clone(),
-            floor: element.locker_id.chars().nth(0).unwrap().to_digit(10).unwrap() as i8,
+            floor: element.locker_id.chars().next().unwrap().to_digit(10).unwrap() as i8,
             status: element.status,
         };
         results.push(data);

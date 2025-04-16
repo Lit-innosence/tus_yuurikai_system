@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use crate::adapters::repository::admin::AdminRepository;
+use crate::adapters::repository::{RepositoryError, admin::AdminRepository};
 use crate::infrastructure::models::Admin;
 use async_trait::async_trait;
 use rocket::{tokio::task, http::Status};
@@ -28,8 +28,19 @@ impl AdminUsecase for AdminUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_by_name(username)
         }).await {
-            Ok(Ok(admin)) => Ok(admin),
-            _ => Err(Status::InternalServerError)
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Ok(admin)) => Ok(admin)
         }
     }
 }

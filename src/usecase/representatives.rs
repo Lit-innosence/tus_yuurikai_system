@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use crate::adapters::repository::representatives::RepresentativesRepository;
+use crate::adapters::repository::{RepositoryError, representatives::RepresentativesRepository};
 use crate::domain::student::RepresentativeInfo;
 use crate::infrastructure::models::Representatives;
 use rocket::{tokio::task, http::Status};
@@ -31,8 +31,19 @@ impl RepresentativesUsecase for RepresentativesUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.insert(student.student_id, student.family_name, student.given_name, student.email, student.phone_number)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(representatives)) => Ok(representatives),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -42,8 +53,19 @@ impl RepresentativesUsecase for RepresentativesUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_all()
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(representativeses)) => Ok(representativeses),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -54,8 +76,19 @@ impl RepresentativesUsecase for RepresentativesUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_by_id(student_id)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(representatives)) => Ok(representatives),
-            _ => Err(Status::InternalServerError)
         }
     }
 }

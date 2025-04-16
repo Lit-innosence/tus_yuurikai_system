@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::env;
 use crate::domain::{student::UserInfo, circle::OrganizationInfo};
-use crate::adapters::repository::{auth::AuthRepository, circle_auth_info::CircleAuthInfoRepository, locker_auth_info::LockerAuthInfoRepository};
+use crate::adapters::repository::{RepositoryError, auth::AuthRepository, circle_auth_info::CircleAuthInfoRepository, locker_auth_info::LockerAuthInfoRepository};
 use crate::infrastructure::models::{Auth, CircleAuthInfo, LockerAuthInfo};
 use crate::utils::token::generate_token;
 
@@ -56,8 +56,19 @@ impl AuthUsecase for AuthUsecaseImpl {
         let auth = match task::spawn_blocking(move || {
             auth_repository.insert(main_token, co_token, phase)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                return Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
             Ok(Ok(auth)) => {auth},
-            _ => {return Err(Status::InternalServerError)}
         };
 
         match task::spawn_blocking(move || {
@@ -69,8 +80,19 @@ impl AuthUsecase for AuthUsecaseImpl {
                                                 co_user.family_name,
                                                 co_user.given_name)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                return Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
             Ok(_) => {return Ok(auth)},
-            Err(_) => {return Err(Status::InternalServerError)},
         }
     }
 
@@ -90,8 +112,19 @@ impl AuthUsecase for AuthUsecaseImpl {
         let auth = match task::spawn_blocking(move || {
             auth_repository.insert(main_token, co_token, phase)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                return Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
             Ok(Ok(auth)) => {auth},
-            _ => {return Err(Status::InternalServerError)}
         };
 
         match task::spawn_blocking(move || {
@@ -113,8 +146,19 @@ impl AuthUsecase for AuthUsecaseImpl {
                                                 organization.organization.organization_ruby,
                                                 organization.organization.organization_email)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                return Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
             Ok(_) => {return Ok(auth)},
-            Err(_) => {return Err(Status::InternalServerError)}
         }
     }
 
@@ -142,12 +186,12 @@ impl AuthUsecase for AuthUsecaseImpl {
         let creds = Credentials::new(sender_address.to_owned(), appkey.to_owned());
 
         // TLSパラメータを生成
-        let tls_parameters = TlsParameters::builder("smtp.gmail.com".to_string())
+        let tls_parameters = TlsParameters::builder("tus-yuurikai.jp".to_string())
         .build()
         .map_err(|_| Status::InternalServerError)?;
 
         // Gmailにsmtp接続する
-        let mailer = SmtpTransport::relay("smtp.gmail.com")
+        let mailer = SmtpTransport::relay("tus-yuurikai.jp")
             .map_err(|_| Status::InternalServerError)?
             .port(587)
             .tls(Tls::Required(tls_parameters))
@@ -167,8 +211,19 @@ impl AuthUsecase for AuthUsecaseImpl {
         let auth = match task::spawn_blocking(move || {
             repository.get_by_token(token)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                return Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                return Err(Status::Unauthorized)
+            },
             Ok(Ok(auth)) => auth,
-            _ => return Err(Status::Unauthorized),
         };
 
         if (is_main && auth.main_auth_token == verify_token) || (!is_main && auth.co_auth_token == verify_token) {
@@ -179,45 +234,78 @@ impl AuthUsecase for AuthUsecaseImpl {
     }
 
     async fn get_locker_auth_info(&self, auth_id: &Uuid) -> Result<LockerAuthInfo, Status> {
-        let auth_id = auth_id.clone();
+        let auth_id = *auth_id;
         let repository = self.locker_auth_info_repository.clone();
 
         match task::spawn_blocking(move || {
             repository.get_by_id(auth_id)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                return Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
             Ok(Ok(info)) => Ok(info),
-            _ => Err(Status::InternalServerError)
         }
     }
 
     async fn get_circle_auth_info(&self, auth_id:&Uuid) -> Result<CircleAuthInfo, Status> {
-        let auth_id = auth_id.clone();
+        let auth_id = *auth_id;
         let repository = self.circle_auth_info_repository.clone();
 
         match task::spawn_blocking(move || {
             repository.get_by_id(auth_id)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                return Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
             Ok(Ok(info)) => Ok(info),
-            _ => Err(Status::InternalServerError)
         }
     }
 
     async  fn update_phase(&self, auth_id: &Uuid, phase: String) -> Result<usize, Status> {
-        let auth_id = auth_id.clone();
+        let auth_id = *auth_id;
         let repository = self.auth_repository.clone();
 
         match task::spawn_blocking(move || {
             repository.update_phase(auth_id, phase)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                return Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
             Ok(Ok(result)) => Ok(result),
-            _ => Err(Status::InternalServerError),
         }
     }
 
     async  fn delete(&self, auth_id: &Uuid) -> Result<usize, Status> {
-        let locker_auth_id = auth_id.clone();
-        let circle_auth_id = auth_id.clone();
-        let auth_id = auth_id.clone();
+        let locker_auth_id = *auth_id;
+        let circle_auth_id = *auth_id;
+        let auth_id = *auth_id;
         let auth_repository = self.auth_repository.clone();
         let locker_auth_info_repository = self.locker_auth_info_repository.clone();
         let circle_auth_info_repository = self.circle_auth_info_repository.clone();
@@ -225,22 +313,55 @@ impl AuthUsecase for AuthUsecaseImpl {
         match task::spawn_blocking(move || {
             locker_auth_info_repository.delete(locker_auth_id)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                return Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
             Ok(_) => {},
-            _ => return Err(Status::InternalServerError),
         }
 
         match task::spawn_blocking(move || {
             circle_auth_info_repository.delete(circle_auth_id)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                return Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
             Ok(_) => {},
-            _ => return Err(Status::InternalServerError),
         }
 
         match task::spawn_blocking(move || {
             auth_repository.delete(auth_id)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                return Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                return Err(Status::InternalServerError)
+            },
             Ok(Ok(result)) => Ok(result),
-            _ => return Err(Status::InternalServerError),
         }
     }
 }

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use crate::domain::circle::Organization;
-use crate::adapters::repository::organization::OrganizationRepository;
+use crate::adapters::repository::{RepositoryError, organization::OrganizationRepository};
 use crate::infrastructure::models;
 use async_trait::async_trait;
 use rocket::{tokio::task, http::Status};
@@ -32,8 +32,19 @@ impl OrganizationUsecase for OrganizationUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.insert(organization.organization_name, organization.organization_ruby, organization.organization_email)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(organization)) => Ok(organization),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -43,8 +54,19 @@ impl OrganizationUsecase for OrganizationUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_all()
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(organizations)) => Ok(organizations),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -57,8 +79,19 @@ impl OrganizationUsecase for OrganizationUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.update_email_by_id(organization_id, organization_email)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(organization)) => Ok(organization),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -70,8 +103,19 @@ impl OrganizationUsecase for OrganizationUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_by_id(organization_id)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(organization)) => Ok(organization),
-            _ => Err(Status::InternalServerError)
         }
     }
 }

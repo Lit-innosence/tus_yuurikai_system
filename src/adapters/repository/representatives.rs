@@ -1,10 +1,10 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use diesel::result::Error;
 
 use crate::infrastructure::schema::*;
 use crate::infrastructure::models::*;
 use crate::infrastructure::router::Pool;
+use super::RepositoryError;
 
 /// # representatives
 pub trait RepresentativesRepository: Send + Sync {
@@ -15,16 +15,16 @@ pub trait RepresentativesRepository: Send + Sync {
         given_name: String,
         email: String,
         phone: String,
-    ) -> Result<Representatives, Error>;
+    ) -> Result<Representatives, RepositoryError>;
 
     fn get_all(
         &self,
-    ) -> Result<Vec<Representatives>, Error>;
+    ) -> Result<Vec<Representatives>, RepositoryError>;
 
     fn get_by_id(
         &self,
         student_id: String,
-    ) -> Result<Representatives, Error>;
+    ) -> Result<Representatives, RepositoryError>;
 }
 
 pub struct RepresentativesRepositorySqlImpl {
@@ -45,7 +45,7 @@ impl RepresentativesRepository for RepresentativesRepositorySqlImpl {
             given_name: String,
             email: String,
             phone: String,
-        ) -> Result<Representatives, Error> {
+        ) -> Result<Representatives, RepositoryError> {
         let new_representative = NewRepresentatives{
             student_id: &student_id,
             family_name: &family_name,
@@ -53,30 +53,36 @@ impl RepresentativesRepository for RepresentativesRepositorySqlImpl {
             email: &email.clone(),
             phone: &phone.clone(),
         };
-        let mut conn = self.pool.get().unwrap();
-        diesel::insert_into(representatives::table)
+        let mut conn = self.pool.get()?;
+        let result = diesel::insert_into(representatives::table)
             .values(new_representative)
             .on_conflict(representatives::student_id)
             .do_update()
             .set((representatives::updated_at.eq(diesel::dsl::now), representatives::email.eq(email), representatives::phone.eq(phone)))
-            .get_result(&mut conn)
+            .get_result::<Representatives>(&mut conn)?;
+
+        Ok(result)
     }
 
     fn get_all(
             &self,
-        ) -> Result<Vec<Representatives>, Error> {
-        let mut conn = self.pool.get().unwrap();
-        representatives::table
-            .get_results(&mut conn)
+        ) -> Result<Vec<Representatives>, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = representatives::table
+            .get_results::<Representatives>(&mut conn)?;
+
+        Ok(result)
     }
 
     fn get_by_id(
             &self,
             student_id: String,
-        ) -> Result<Representatives, Error> {
-        let mut conn = self.pool.get().unwrap();
-        representatives::table
+        ) -> Result<Representatives, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = representatives::table
             .filter(representatives::student_id.eq(student_id))
-            .get_result(&mut conn)
+            .get_result::<Representatives>(&mut conn)?;
+
+        Ok(result)
     }
 }

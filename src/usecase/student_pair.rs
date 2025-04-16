@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use crate::domain::student_pair::PairInfo;
-use crate::adapters::repository::student_pair::StudentPairRepository;
+use crate::adapters::repository::{RepositoryError, student_pair::StudentPairRepository};
 use crate::infrastructure::models::StudentPair;
 use rocket::{tokio::task, http::Status};
 use async_trait::async_trait;
@@ -35,8 +35,19 @@ impl StudentPairUsecase for StudentPairUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.insert(student_pair.main_user.student_id, student_pair.co_user.student_id, year)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(student_pair)) => Ok(student_pair),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -46,8 +57,19 @@ impl StudentPairUsecase for StudentPairUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_all()
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(student_pairs)) => Ok(student_pairs),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -59,8 +81,19 @@ impl StudentPairUsecase for StudentPairUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_by_student_id_and_year(student_id, year)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(student_pair)) => Ok(student_pair),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -72,8 +105,19 @@ impl StudentPairUsecase for StudentPairUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_by_main_id_and_year(student_id, year)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(student_id)) => Ok(student_id),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -85,8 +129,19 @@ impl StudentPairUsecase for StudentPairUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_by_pair_id_and_year(pair_id, year)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(student_pair)) => Ok(student_pair),
-            _ => Err(Status::InternalServerError)
         }
     }
 }

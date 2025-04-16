@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use crate::domain::student::UserInfo;
-use crate::adapters::repository::student::StudentRepository;
+use crate::adapters::repository::{RepositoryError, student::StudentRepository};
 use crate::infrastructure::models::Student;
 use rocket::{tokio::task, http::Status};
 use async_trait::async_trait;
@@ -32,8 +32,19 @@ impl StudentUsecase for StudentUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.insert(student.student_id, student.family_name, student.given_name)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(student)) => Ok(student),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -43,8 +54,19 @@ impl StudentUsecase for StudentUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_all()
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(students)) => Ok(students),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -55,8 +77,19 @@ impl StudentUsecase for StudentUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_by_id(student_id)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(student)) => Ok(student),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -68,8 +101,19 @@ impl StudentUsecase for StudentUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_by_name(family_name, given_name)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(students)) => Ok(students),
-            _ => Err(Status::InternalServerError)
         }
     }
 }

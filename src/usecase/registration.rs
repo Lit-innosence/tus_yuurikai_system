@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use crate::domain::circle::OrganizationInfo;
-use crate::adapters::repository::registration::RegistrationRepository;
+use crate::adapters::repository::{RepositoryError, registration::RegistrationRepository};
 use crate::infrastructure::models::Registration;
 use async_trait::async_trait;
 use rocket::{tokio::task, http::Status};
@@ -52,8 +52,19 @@ impl RegistrationUsecase for RegistrationUsecaseImpl {
                             organization.d_doc
                             )
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(registration)) => Ok(registration),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -67,8 +78,19 @@ impl RegistrationUsecase for RegistrationUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.update_student_by_id(organization_id, main_student_id, co_student_id)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(registration)) => Ok(registration),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -84,8 +106,19 @@ impl RegistrationUsecase for RegistrationUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.update_status_by_id(organization_id, status_acceptance, status_authentication, status_form_confirmation, status_registration_complete)
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(registration)) => Ok(registration),
-            _ => Err(Status::InternalServerError)
         }
     }
 
@@ -96,8 +129,19 @@ impl RegistrationUsecase for RegistrationUsecaseImpl {
         match task::spawn_blocking(move || {
             repository.get_all()
         }).await {
+            Err(e) => {
+                eprintln!("Thread panic in spawn_blocking: {:?}", e);
+                Err(Status::InternalServerError)
+            },
+            Ok(Err(RepositoryError::ConnectionError(e))) => {
+                eprintln!("Connection Error: {:?}", e);
+                Err(Status::ServiceUnavailable)
+            },
+            Ok(Err(RepositoryError::DieselError(e))) => {
+                eprintln!("Repository Error: {:?}", e);
+                Err(Status::InternalServerError)
+            },
             Ok(Ok(registrations)) => Ok(registrations),
-            _ => Err(Status::InternalServerError)
         }
     }
 }

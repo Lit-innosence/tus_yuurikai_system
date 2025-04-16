@@ -1,11 +1,11 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use diesel::result::Error;
 use uuid::Uuid;
 
 use crate::infrastructure::schema::*;
 use crate::infrastructure::models::*;
 use crate::infrastructure::router::Pool;
+use super::RepositoryError;
 
 /// # circle_auth_info
 pub trait CircleAuthInfoRepository: Send + Sync {
@@ -28,21 +28,21 @@ pub trait CircleAuthInfoRepository: Send + Sync {
         organization_name: String,
         organization_ruby: String,
         organization_email: String,
-    ) -> Result<CircleAuthInfo, Error>;
+    ) -> Result<CircleAuthInfo, RepositoryError>;
 
     fn get_by_id(
         &self,
         auth_id: Uuid,
-    ) -> Result<CircleAuthInfo, Error>;
+    ) -> Result<CircleAuthInfo, RepositoryError>;
 
     fn delete(
         &self,
         auth_id: Uuid,
-    ) -> Result<usize, Error>;
+    ) -> Result<usize, RepositoryError>;
 
     fn delete_all(
         &self
-    ) -> Result<usize, Error>;
+    ) -> Result<usize, RepositoryError>;
 }
 
 pub struct CircleAuthInfoRepositorySqlImpl {
@@ -75,7 +75,7 @@ impl CircleAuthInfoRepository for CircleAuthInfoRepositorySqlImpl {
             organization_name: String,
             organization_ruby: String,
             organization_email: String,
-    ) -> Result<CircleAuthInfo, Error> {
+    ) -> Result<CircleAuthInfo, RepositoryError> {
         let new_auth_info = NewCircleAuthInfo {
             auth_id: &auth_id,
             main_student_id: &main_student_id,
@@ -95,32 +95,43 @@ impl CircleAuthInfoRepository for CircleAuthInfoRepositorySqlImpl {
             organization_ruby: &organization_ruby,
             organization_email: &organization_email,
         };
-        let mut conn = self.pool.get().unwrap();
-        diesel::insert_into(circle_auth_info::table)
+        let mut conn = self.pool.get()?;
+        let result = diesel::insert_into(circle_auth_info::table)
             .values(&new_auth_info)
-            .get_result(&mut conn)
+            .get_result::<CircleAuthInfo>(&mut conn)?;
+
+        Ok(result)
     }
+
     fn get_by_id(
             &self,
             auth_id: Uuid,
-        ) -> Result<CircleAuthInfo, Error> {
-            let mut conn = self.pool.get().unwrap();
-        circle_auth_info::table.filter(circle_auth_info::auth_id.eq(auth_id))
-            .get_result(&mut conn)
+        ) -> Result<CircleAuthInfo, RepositoryError> {
+            let mut conn = self.pool.get()?;
+        let result = circle_auth_info::table.filter(circle_auth_info::auth_id.eq(auth_id))
+            .get_result::<CircleAuthInfo>(&mut conn)?;
+
+        Ok(result)
     }
+
     fn delete(
             &self,
             auth_id: Uuid,
-        ) -> Result<usize, Error> {
-        let mut conn = self.pool.get().unwrap();
-        diesel::delete(circle_auth_info::table.find(auth_id))
-            .execute(&mut conn)
+        ) -> Result<usize, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = diesel::delete(circle_auth_info::table.find(auth_id))
+            .execute(&mut conn)?;
+
+        Ok(result)
     }
+
     fn delete_all(
             &self
-        ) -> Result<usize, Error> {
-        let mut conn = self.pool.get().unwrap();
-        diesel::delete(circle_auth_info::table)
-            .execute(&mut conn)
+        ) -> Result<usize, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = diesel::delete(circle_auth_info::table)
+            .execute(&mut conn)?;
+
+        Ok(result)
     }
 }
