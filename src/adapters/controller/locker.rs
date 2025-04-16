@@ -408,7 +408,7 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
         ※ 廃棄に伴う責任は負いかねますので、必ず期間内に回収をお願いします。\n\n\
         【ロッカー使用時の注意事項】\n\
         ・ロッカー使用時には必ず鍵を使用してください。\n\
-        ・鍵の購入はこちら：<URL>\n\n\
+        ・鍵の購入はこちら：https://www.univcoop.jp/rikadai/time/index.html#s02\n\n\
         ご不明点がございましたら、お問い合わせください。\n\n\
         よろしくお願いいたします。\n",
         assignment.locker_id
