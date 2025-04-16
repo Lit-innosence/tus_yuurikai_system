@@ -75,8 +75,14 @@ const ConfirmPage: React.FC = () => {
             await axios.post(`${constants.backendApiEndpoint}/api/locker/token-gen`, formattedData);
             message.success('フォームが正常に送信されました');
             navigate('/locker/form/complete');
-        } catch (error) {
-            message.error('送信に失敗しました');
+        } catch (error: any) {
+            console.log(error.response);
+            console.log(error.response.status);
+            if (error.response && error.response.status == "429") {
+                message.warning('本日の登録分は終了しました。明日以降に再度お試しください。');
+            } else {
+                message.error('ロッカーの登録に失敗しました');
+            }
         } finally {
             setLoading(false);
         }
