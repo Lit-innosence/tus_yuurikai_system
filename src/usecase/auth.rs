@@ -186,12 +186,12 @@ impl AuthUsecase for AuthUsecaseImpl {
         let creds = Credentials::new(sender_address.to_owned(), appkey.to_owned());
 
         // TLSパラメータを生成
-        let tls_parameters = TlsParameters::builder("tus-yuurikai.jp".to_string())
+        let tls_parameters = TlsParameters::builder("smtp.gmail.com".to_string())
         .build()
         .map_err(|_| Status::InternalServerError)?;
 
         // Gmailにsmtp接続する
-        let mailer = SmtpTransport::relay("tus-yuurikai.jp")
+        let mailer = SmtpTransport::relay("smtp.gmail.com")
             .map_err(|_| Status::InternalServerError)?
             .port(587)
             .tls(Tls::Required(tls_parameters))
