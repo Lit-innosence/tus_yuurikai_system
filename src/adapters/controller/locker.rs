@@ -61,6 +61,15 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
         return Status::Unauthorized;
     }
 
+    // メール送信前に制限を確認
+    let allow_send = {
+        let mut mail_limit = app.mail_limit.lock().unwrap();
+        mail_limit.check_and_increment()
+    };
+    
+    if !allow_send {
+        return Status::TooManyRequests;
+    }
 
     // tokenの生成
     let token = match app.auth.locker_register(&data.main_user.clone(), &data.co_user.clone(), &String::from("main_auth"), false).await{

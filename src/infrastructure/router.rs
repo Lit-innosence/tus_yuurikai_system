@@ -1,4 +1,5 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
+use chrono::{Utc, Datelike};
 use std::env;
 use std::time::Duration;
 use diesel::{PgConnection, r2d2::ConnectionManager};
@@ -44,8 +45,53 @@ impl AppOption {
     }
 }
 
+pub struct MailLimit {
+    pub date: (i32, u32, u32), // (year, month, day)
+    pub count: u32,
+}
+
+impl MailLimit {
+    const MAIL_LIMIT: u32 = 50;
+
+    pub fn new() -> Self {
+        let now = Utc::now();
+        Self {
+            date: (now.year(), now.month(), now.day()),
+            count: 0,
+        }
+    }
+
+    pub fn check_and_increment(&mut self) -> bool {
+        let now = Utc::now();
+        let today = (now.year(), now.month(), now.day());
+
+        if self.date != today {
+            println!(
+                "Date changed: {}-{}-{} -> {}-{}-{}",
+                self.date.0, self.date.1, self.date.2,
+                today.0, today.1, today.2
+            );
+            self.date = today;
+            self.count = 0;
+        }
+
+        println!("Mail limit: {} / {}", self.count, Self::MAIL_LIMIT);
+        println!("Date: {}-{}-{}", self.date.0, self.date.1, self.date.2);
+
+        if self.count >= Self::MAIL_LIMIT {
+            false
+        } else {
+            self.count += 1;
+            true
+        }
+    }
+}
+
+
+
 pub struct App{
     pub option: AppOption,
+    pub mail_limit: Mutex<MailLimit>,
     pub student: StudentUsecaseImpl,
     pub student_pair: StudentPairUsecaseImpl,
     pub auth: AuthUsecaseImpl,
@@ -63,6 +109,8 @@ impl App{
         dotenv().ok();
 
         let option = app_option;
+
+        let mail_limit = Mutex::new(MailLimit::new());
 
         let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
         let manager = ConnectionManager::<PgConnection>::new(&database_url);
@@ -84,6 +132,7 @@ impl App{
 
         App {
             option: option,
+            mail_limit: mail_limit,
             student: student_repository,
             student_pair: student_pair_repository,
             auth: auth_repository,
