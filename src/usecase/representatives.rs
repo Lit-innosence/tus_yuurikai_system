@@ -13,7 +13,7 @@ pub struct RepresentativesUsecaseImpl {
 pub trait RepresentativesUsecase: Sync + Send {
     async fn register(&self, student: &RepresentativeInfo) -> Result<Representatives, Status>;
     async fn get_all(&self) -> Result<Vec<Representatives>, Status>;
-    async fn get_by_id(&self, student_id: &String) -> Result<Representatives, Status>;
+    async fn get_by_id(&self, student_id: &str) -> Result<Representatives, Status>;
 }
 
 impl RepresentativesUsecaseImpl {
@@ -69,8 +69,8 @@ impl RepresentativesUsecase for RepresentativesUsecaseImpl {
         }
     }
 
-    async fn get_by_id(&self, student_id: &String) -> Result<Representatives, Status> {
-        let student_id = student_id.clone();
+    async fn get_by_id(&self, student_id: &str) -> Result<Representatives, Status> {
+        let student_id = student_id.to_string();
         let repository = self.representatives_repository.clone();
 
         match task::spawn_blocking(move || {

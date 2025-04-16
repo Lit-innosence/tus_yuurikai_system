@@ -10,7 +10,7 @@ pub struct AdminUsecaseImpl {
 
 #[async_trait]
 pub trait AdminUsecase: Sync + Send {
-    async fn get_by_name(&self, username: &String) -> Result<Admin, Status>;
+    async fn get_by_name<'a>(&self, username: &'a str) -> Result<Admin, Status>;
 }
 
 impl AdminUsecaseImpl {
@@ -21,12 +21,12 @@ impl AdminUsecaseImpl {
 
 #[async_trait]
 impl AdminUsecase for AdminUsecaseImpl {
-    async fn get_by_name(&self, username: &String) -> Result<Admin, Status> {
-        let username = username.clone();
+    async fn get_by_name<'a>(&self, username: &'a str) -> Result<Admin, Status> {
+        let username = username.to_string();
         let repository = self.admin_repository.clone();
 
         match task::spawn_blocking(move || {
-            repository.get_by_name(username)
+            repository.get_by_name(username.to_string())
         }).await {
             Err(e) => {
                 eprintln!("Thread panic in spawn_blocking: {:?}", e);
