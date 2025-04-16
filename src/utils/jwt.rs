@@ -27,43 +27,45 @@ pub struct Claims{
 /// exp         : jwtの持続時間
 ///
 /// key         : jwtの鍵
-pub fn encode_jwt(username: &String, exp: TimeDelta, key: &String) -> String {
+pub fn encode_jwt(username: &str, exp: TimeDelta, key: &String) -> String {
 
     // headerの宣言
-    let mut header = Header::default();
+    let header = Header{
+        // 使用するトークンはjwt
+        typ: Some("JWT".to_string()),
 
-    // 使用するトークンはjwt
-    header.typ = Some("JWT".to_string());
+        // 使用するアルゴリズムはHMAC SHA-256
+        alg: Algorithm::HS256,
 
-    // 使用するアルゴリズムはHMAC SHA-256
-    header.alg = Algorithm::HS256;
+        ..Default::default()
+    };
 
     // 現在時刻を取得
     let now = Utc::now();
 
     // claimsを設定
     let admin_claims = Claims{
-        sub: username.clone(),
+        sub: username.to_string(),
         exp: (now + exp).timestamp() as usize,
         iat: now.timestamp() as usize,
     };
 
     // jwtを発行
-    return encode(&header, &admin_claims, &EncodingKey::from_secret(key.as_ref())).unwrap()
+    encode(&header, &admin_claims, &EncodingKey::from_secret(key.as_ref())).unwrap()
 }
 
 /// ### decode_jwt
 /// JWTを検証する
 ///
 /// jwt     : 検証するjwt
-pub fn decode_jwt(jwt: &String) -> Option<Claims> {
+pub fn decode_jwt(jwt: &str) -> Option<Claims> {
 
     let validation = Validation::default();
 
     dotenv().ok();
     let secret = env::var("TOKEN_KEY").expect("token key must be set");
 
-    match decode::<Claims>(&jwt, &DecodingKey::from_secret(secret.as_ref()), &validation) {
+    match decode::<Claims>(jwt, &DecodingKey::from_secret(secret.as_ref()), &validation) {
         Ok(token) => Option::Some(token.claims),
         _ => Option::None,
     }

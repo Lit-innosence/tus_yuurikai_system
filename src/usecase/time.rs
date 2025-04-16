@@ -11,9 +11,9 @@ pub struct TimeUsecaseImpl {
 
 #[async_trait]
 pub trait TimeUsecase: Sync + Send {
-    async fn register(&self, name: &String, start_time: &NaiveDateTime, end_time: &NaiveDateTime) -> Result<Time, Status>;
+    async fn register(&self, name: &str, start_time: &NaiveDateTime, end_time: &NaiveDateTime) -> Result<Time, Status>;
     async fn get_all(&self) -> Result<Vec<Time>, Status>;
-    async fn get_by_name(&self, name: &String) -> Result<Time, Status>;
+    async fn get_by_name(&self, name: &str) -> Result<Time, Status>;
 }
 
 impl TimeUsecaseImpl {
@@ -24,8 +24,8 @@ impl TimeUsecaseImpl {
 
 #[async_trait]
 impl TimeUsecase for TimeUsecaseImpl {
-    async fn register(&self, name: &String, start_time: &NaiveDateTime, end_time: &NaiveDateTime) -> Result<Time, Status> {
-        let name = name.clone();
+    async fn register(&self, name: &str, start_time: &NaiveDateTime, end_time: &NaiveDateTime) -> Result<Time, Status> {
+        let name = name.to_string();
         let start_time = *start_time;
         let end_time = *end_time;
         let repository = self.time_repository.clone();
@@ -71,8 +71,8 @@ impl TimeUsecase for TimeUsecaseImpl {
         }
     }
 
-    async fn get_by_name(&self, name: &String) -> Result<Time, Status> {
-        let name = name.clone();
+    async fn get_by_name(&self, name: &str) -> Result<Time, Status> {
+        let name = name.to_string();
         let repository = self.time_repository.clone();
 
         match task::spawn_blocking(move || {

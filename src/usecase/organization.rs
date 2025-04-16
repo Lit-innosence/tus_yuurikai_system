@@ -13,7 +13,7 @@ pub struct OrganizationUsecaseImpl {
 pub trait OrganizationUsecase: Sync + Send {
     async fn register(&self, organization: &Organization) -> Result<models::Organization, Status>;
     async fn get_all(&self) -> Result<Vec<models::Organization>, Status>;
-    async fn update_email(&self, organization_id: &i32, organization_email: &String) -> Result<models::Organization, Status>;
+    async fn update_email(&self, organization_id: &i32, organization_email: &str) -> Result<models::Organization, Status>;
     async fn get_by_id(&self, organization_id: &i32) -> Result<models::Organization, Status>;
 }
 
@@ -70,9 +70,9 @@ impl OrganizationUsecase for OrganizationUsecaseImpl {
         }
     }
 
-    async fn update_email(&self, organization_id: &i32, organization_email: &String) -> Result<models::Organization, Status> {
+    async fn update_email(&self, organization_id: &i32, organization_email: &str) -> Result<models::Organization, Status> {
         let organization_id = *organization_id;
-        let organization_email = organization_email.clone();
+        let organization_email = organization_email.to_string();
         let repository = self.organization_repository.clone();
 
         // 団体メールアドレスの更新

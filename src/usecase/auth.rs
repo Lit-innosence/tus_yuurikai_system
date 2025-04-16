@@ -22,8 +22,8 @@ pub struct AuthUsecaseImpl {
 
 #[async_trait]
 pub trait AuthUsecase: Sync + Send {
-    async fn locker_register(&self, main_user: &UserInfo, co_user: &UserInfo, phase: &String, is_same: bool) -> Result<Auth, Status>;
-    async fn circle_register(&self, organization: &OrganizationInfo, phase: &String, is_same: bool) -> Result<Auth, Status>;
+    async fn locker_register(&self, main_user: &UserInfo, co_user: &UserInfo, phase: &str, is_same: bool) -> Result<Auth, Status>;
+    async fn circle_register(&self, organization: &OrganizationInfo, phase: &str, is_same: bool) -> Result<Auth, Status>;
     async fn mail_sender(&self, user_address: String, content: String, subject: &str) -> Result<(), Status>;
     async fn token_check(&self, token: String, is_main: bool) -> Result<Auth, Status>;
     async fn get_locker_auth_info(&self, auth_id: &Uuid) -> Result<LockerAuthInfo, Status>;
@@ -41,13 +41,13 @@ impl AuthUsecaseImpl {
 #[async_trait]
 impl AuthUsecase for AuthUsecaseImpl {
     // ロッカー用、tokenの生成、DBへの登録
-    async fn locker_register(&self, main_user: &UserInfo, co_user: &UserInfo, phase: &String, is_same: bool) -> Result<Auth, Status> {
+    async fn locker_register(&self, main_user: &UserInfo, co_user: &UserInfo, phase: &str, is_same: bool) -> Result<Auth, Status> {
         let main_token = generate_token();
         let mut co_token = generate_token();
         if is_same {
             co_token.clone_from(&main_token);
         }
-        let phase = phase.clone();
+        let phase = phase.to_string();
         let main_user = main_user.clone();
         let co_user = co_user.clone();
         let auth_repository = self.auth_repository.clone();
@@ -97,13 +97,13 @@ impl AuthUsecase for AuthUsecaseImpl {
     }
 
     // 団体登録用、tokenの生成、DBへの登録
-    async fn circle_register(&self, organization: &OrganizationInfo, phase: &String, is_same: bool) -> Result<Auth, Status> {
+    async fn circle_register(&self, organization: &OrganizationInfo, phase: &str, is_same: bool) -> Result<Auth, Status> {
         let main_token = generate_token();
         let mut co_token = generate_token();
         if is_same {
             co_token.clone_from(&main_token);
         }
-        let phase = phase.clone();
+        let phase = phase.to_string();
         let organization = organization.clone();
         let auth_repository = self.auth_repository.clone();
         let circle_auth_info_repository = self.circle_auth_info_repository.clone();

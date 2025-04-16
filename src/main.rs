@@ -35,8 +35,7 @@ async fn main() -> Result<(), rocket::Error> {
 
     let mut app_option = AppOption::new();
 
-    for _i in 1..args.len() {
-        let arg = &args[_i];
+    for arg in args.iter().skip(1) {
         match arg.as_str() {
             "same-student" => {
                 app_option.same_student_enable = true;

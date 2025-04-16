@@ -14,8 +14,8 @@ pub struct RegistrationUsecaseImpl {
 #[async_trait]
 pub trait RegistrationUsecase: Sync + Send {
     async fn register(&self, organization: &OrganizationInfo, organization_id: &i32) -> Result<Registration, Status>;
-    async fn update_student(&self, organization_id: &i32, main_student_id: &String, co_student_id: &String) -> Result<Registration, Status>;
-    async fn update_status(&self, organization_id: &i32, status_acceptance: &String, status_authentication: &String, status_form_confirmation: &String, status_registration_complete: &String) -> Result<Registration, Status>;
+    async fn update_student(&self, organization_id: &i32, main_student_id: &str, co_student_id: &str) -> Result<Registration, Status>;
+    async fn update_status(&self, organization_id: &i32, status_acceptance: &str, status_authentication: &str, status_form_confirmation: &str, status_registration_complete: &str) -> Result<Registration, Status>;
     async fn get_all(&self) -> Result<Vec<Registration>, Status>;
 }
 
@@ -68,10 +68,10 @@ impl RegistrationUsecase for RegistrationUsecaseImpl {
         }
     }
 
-    async fn update_student(&self, organization_id: &i32, main_student_id: &String, co_student_id: &String) -> Result<Registration, Status> {
+    async fn update_student(&self, organization_id: &i32, main_student_id: &str, co_student_id: &str) -> Result<Registration, Status> {
         let organization_id = *organization_id;
-        let main_student_id = main_student_id.clone();
-        let co_student_id = co_student_id.clone();
+        let main_student_id = main_student_id.to_string();
+        let co_student_id = co_student_id.to_string();
         let repository = self.registration_repository.clone();
 
         // 団体代表者と団体副代表者の更新
@@ -94,12 +94,12 @@ impl RegistrationUsecase for RegistrationUsecaseImpl {
         }
     }
 
-    async fn update_status(&self, organization_id: &i32, status_acceptance: &String, status_authentication: &String, status_form_confirmation: &String, status_registration_complete: &String) -> Result<Registration, Status> {
+    async fn update_status(&self, organization_id: &i32, status_acceptance: &str, status_authentication: &str, status_form_confirmation: &str, status_registration_complete: &str) -> Result<Registration, Status> {
         let organization_id = *organization_id;
-        let status_acceptance = status_acceptance.clone();
-        let status_authentication = status_authentication.clone();
-        let status_form_confirmation = status_form_confirmation.clone();
-        let status_registration_complete = status_registration_complete.clone();
+        let status_acceptance = status_acceptance.to_string();
+        let status_authentication = status_authentication.to_string();
+        let status_form_confirmation = status_form_confirmation.to_string();
+        let status_registration_complete = status_registration_complete.to_string();
         let repository = self.registration_repository.clone();
 
         // 団体のステータス更新

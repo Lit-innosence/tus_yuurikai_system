@@ -93,7 +93,7 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
     // token
 
     let re = Regex::new(r"^[a-zA-Z0-9]{16}$").unwrap();
-    if !(re.is_match(&token.as_str())) {
+    if !(re.is_match(token.as_str())) {
         return Status::BadRequest;
     }
 
@@ -105,7 +105,7 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
     };
 
     // authのphaseを確認
-    if auth.phase != String::from("main_auth") {
+    if auth.phase != *"main_auth" {
         return Status::BadRequest
     }
 
@@ -163,7 +163,7 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     // token
 
     let re = Regex::new(r"^[a-zA-Z0-9]{16}$").unwrap();
-    if !(re.is_match(&token.as_str())) {
+    if !(re.is_match(token.as_str())) {
         return Status::BadRequest;
     }
 
@@ -174,7 +174,7 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     };
 
     // authのphaseを確認
-    if auth.phase != String::from("co_auth") {
+    if auth.phase != *"co_auth" {
         return Status::BadRequest
     }
 
@@ -249,7 +249,7 @@ pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthChec
     // token
 
     let re = Regex::new(r"^[a-zA-Z0-9]{16}$").unwrap();
-    if !(re.is_match(&token.as_str())) {
+    if !(re.is_match(token.as_str())) {
         return Err(Status::BadRequest);
     }
 
@@ -260,7 +260,7 @@ pub async fn auth_check(token: String, app: &State<App>) -> Result<Json<AuthChec
     };
 
     // authのphaseを確認
-    if auth.phase != String::from("auth_check") {
+    if auth.phase != *"auth_check" {
         return Err(Status::BadRequest)
     }
 
@@ -302,14 +302,11 @@ pub async fn availability(floor: Option<i8>, app: &State<App>) -> Result<Json<Lo
     // データのバリデーション
 
     // floor
-    match floor {
-        Some(floor) => {
-            let re = Regex::new(r"^[2-6]$").unwrap();
-            if !(re.is_match(&floor.to_string())) {
-                return Err(Status::BadRequest);
-            }
-        },
-        None => {}
+    if let Some(floor) = floor {
+        let re = Regex::new(r"^[2-6]$").unwrap();
+        if !(re.is_match(&floor.to_string())) {
+            return Err(Status::BadRequest);
+        }
     }
 
     // 指定階数のlockerレコードの取得
@@ -319,7 +316,7 @@ pub async fn availability(floor: Option<i8>, app: &State<App>) -> Result<Json<Lo
     for element in result {
         let data = LockerStatus{
             locker_id: element.locker_id.clone(),
-            floor: element.locker_id.chars().nth(0).unwrap().to_digit(10).unwrap() as i8,
+            floor: element.locker_id.chars().next().unwrap().to_digit(10).unwrap() as i8,
             status: element.status,
         };
         response.push(data);
@@ -343,13 +340,13 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
 
     // 代表者学籍番号
     let re = Regex::new(r"^[48][1-6]\d{5}$").unwrap();
-    if !(re.is_match(&assignment.student_id.as_str())) {
+    if !(re.is_match(assignment.student_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // ロッカー番号
     let re = Regex::new(r"^[2-6]\d{3}$").unwrap();
-    if !(re.is_match(&assignment.locker_id.as_str())) {
+    if !(re.is_match(assignment.locker_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
@@ -358,7 +355,7 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
         Ok(uuid) => {uuid},
         Err(_) => {return (Status::BadRequest, "request auth_id is not valid");}
     };
-    println!("{}", auth_id.to_string());
+    println!("{}", auth_id);
 
     // pair_idの検索
     let user_pair = match app.student_pair.get_by_main_id(&assignment.student_id).await {
@@ -411,7 +408,7 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
         ※ 廃棄に伴う責任は負いかねますので、必ず期間内に回収をお願いします。\n\n\
         【ロッカー使用時の注意事項】\n\
         ・ロッカー使用時には必ず鍵を使用してください。\n\
-        ・鍵の購入はこちら：<URL>\n\n\
+        ・鍵の購入はこちら： https://www.univcoop.jp/rikadai/time/index.html#s02 \n\n\
         ご不明点がございましたら、お問い合わせください。\n\n\
         よろしくお願いいたします。\n",
         assignment.locker_id
@@ -434,13 +431,13 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
 
     // username
     let re = Regex::new(r"^[A-Za-z\d_-]+$").unwrap();
-    if !(re.is_match(&request.username.as_str())) {
+    if !(re.is_match(request.username.as_str())) {
         return Status::BadRequest;
     }
 
     // password
     let re = Regex::new(r"^[A-Za-z\d]+$").unwrap();
-    if !(re.is_match(&request.password.as_str())) {
+    if !(re.is_match(request.password.as_str())) {
         return Status::BadRequest;
     }
 
@@ -475,7 +472,7 @@ pub async fn login(request: Json<LoginFormRequest>, jar: &CookieJar<'_>, app: &S
 
     jar.add(cookie);
 
-    return Status::Created
+    Status::Created
 }
 
 /// ### 管理者ログアウトAPI
@@ -514,7 +511,7 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
 
     // jwtの検証
     match decode_jwt(&jwt) {
-        None => return Err(Status::BadRequest),
+        None => Err(Status::BadRequest),
         Some(_) => {
             // データのバリデーション
 
@@ -524,21 +521,19 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
             }
 
             // floor
-            match floor {
-                Some(floor) => {
-                    if (floor < 2) || (floor > 6) {
-                        return Err(Status::BadRequest);
-                    }
-                },
-                None => {}
+            if let Some(floor) = floor {
+                if !(2..=6).contains(&floor) {
+                    return Err(Status::BadRequest);
+                }
             }
+
             // familyname
             let family_name_val = match familyname {
                 None => String::from(""),
                 Some(x) => {
                     let name = String::from(RawStr::new(&x).url_decode().unwrap());
                     let re = Regex::new(r"^[A-Za-z\p{Kana}\p{Hira}\p{Han}]+$").unwrap();
-                    if !(re.is_match(&name.as_str())) {
+                    if !(re.is_match(name.as_str())) {
                         return Err(Status::BadRequest);
                     }
                     else {
@@ -552,7 +547,7 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
                 Some(x) => {
                     let name = String::from(RawStr::new(&x).url_decode().unwrap());
                     let re = Regex::new(r"^[A-Za-z\p{Kana}\p{Hira}\p{Han}]+$").unwrap();
-                    if !(re.is_match(&name.as_str())) {
+                    if !(re.is_match(name.as_str())) {
                         return Err(Status::BadRequest);
                     }
                     else {
@@ -620,10 +615,10 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
 
                 let num = UserSearchResult {
                     locker_id: element.locker_id,
-                    floor: locker_id_borrow.chars().nth(0).unwrap().to_digit(10).unwrap() as i8,
+                    floor: locker_id_borrow.chars().next().unwrap().to_digit(10).unwrap() as i8,
                     main_user: main_user_info,
                     co_user: co_user_info,
-                    year: year,
+                    year,
                 };
 
                 result.push(num);
@@ -646,7 +641,7 @@ pub async fn reset(request: Json<LockerResetRequest>, jar: &CookieJar<'_>, app: 
 
     // password
     let re = Regex::new(r"^[A-Za-z\d]+$").unwrap();
-    if !(re.is_match(&request.password.as_str())) {
+    if !(re.is_match(request.password.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 

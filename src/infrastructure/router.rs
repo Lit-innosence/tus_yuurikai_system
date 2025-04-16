@@ -44,6 +44,12 @@ impl AppOption {
     }
 }
 
+impl Default for AppOption {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub struct App{
     pub option: AppOption,
     pub student: StudentUsecaseImpl,
@@ -83,7 +89,7 @@ impl App{
         let time_repository = TimeUsecaseImpl::new(Arc::new(TimeRepositorySqlImpl::new(pool.clone())));
 
         App {
-            option: option,
+            option,
             student: student_repository,
             student_pair: student_pair_repository,
             auth: auth_repository,

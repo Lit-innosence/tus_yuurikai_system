@@ -11,9 +11,9 @@ pub struct LockerUsecaseImpl {
 #[async_trait]
 pub trait LockerUsecase: Sync + Send {
     async fn get_all(&self) -> Result<Vec<Locker>, Status>;
-    async fn get_by_id(&self, locker_id: &String) -> Result<Locker, Status>;
+    async fn get_by_id(&self, locker_id: &str) -> Result<Locker, Status>;
     async fn get_by_floor(&self, floor: &Option<i8>) -> Result<Vec<Locker>, Status>;
-    async fn update_status(&self, locker_id: &String, status: &String) -> Result<usize, Status>;
+    async fn update_status(&self, locker_id: &str, status: &str) -> Result<usize, Status>;
     async fn reset_status(&self) -> Result<usize, Status>;
 }
 
@@ -47,8 +47,8 @@ impl LockerUsecase for LockerUsecaseImpl {
         }
     }
 
-    async fn get_by_id(&self, locker_id: &String) -> Result<Locker, Status> {
-        let locker_id = locker_id.clone();
+    async fn get_by_id(&self, locker_id: &str) -> Result<Locker, Status> {
+        let locker_id = locker_id.to_string();
         let repository = self.locker_repository.clone();
 
         match task::spawn_blocking(move || {
@@ -96,9 +96,9 @@ impl LockerUsecase for LockerUsecaseImpl {
         }
     }
 
-    async  fn update_status(&self, locker_id: &String, status: &String) -> Result<usize, Status> {
-        let locker_id = locker_id.clone();
-        let status = status.clone();
+    async  fn update_status(&self, locker_id: &str, status: &str) -> Result<usize, Status> {
+        let locker_id = locker_id.to_string();
+        let status = status.to_string();
         let repository = self.locker_repository.clone();
 
         match task::spawn_blocking(move || {
