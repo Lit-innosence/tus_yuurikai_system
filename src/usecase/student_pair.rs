@@ -14,7 +14,7 @@ pub struct StudentPairUsecaseImpl {
 pub trait StudentPairUsecase: Sync + Send {
     async fn register(&self, student_pair: &PairInfo) -> Result<StudentPair, Status>;
     async fn get_all(&self) -> Result<Vec<StudentPair>, Status>;
-    async fn get_by_id(&self, student_id: &str) -> Result<StudentPair, Status>;
+    async fn get_by_id(&self, student_id: &str) -> Result<Option<StudentPair>, Status>;
     async fn get_by_main_id(&self, student_id: &str) -> Result<StudentPair, Status>;
     async fn get_by_pair_id(&self, pair_id: &uuid::Uuid) -> Result<StudentPair, Status>;
 }
@@ -73,7 +73,7 @@ impl StudentPairUsecase for StudentPairUsecaseImpl {
         }
     }
 
-    async fn get_by_id(&self, student_id: &str) -> Result<StudentPair, Status> {
+    async fn get_by_id(&self, student_id: &str) -> Result<Option<StudentPair>, Status> {
         let student_id = student_id.to_string();
         let year = Local::now().year();
         let repository = self.student_pair_repository.clone();
@@ -89,11 +89,14 @@ impl StudentPairUsecase for StudentPairUsecaseImpl {
                 eprintln!("Connection Error: {:?}", e);
                 Err(Status::ServiceUnavailable)
             },
+            Ok(Err(RepositoryError::DieselError(diesel::result::Error::NotFound))) => {
+                Ok(None)
+            },
             Ok(Err(RepositoryError::DieselError(e))) => {
                 eprintln!("Repository Error: {:?}", e);
                 Err(Status::InternalServerError)
             },
-            Ok(Ok(student_pair)) => Ok(student_pair),
+            Ok(Ok(student_pair)) => Ok(Some(student_pair)),
         }
     }
 

@@ -207,6 +207,19 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
         main_user: main_user.clone(),
         co_user: co_user.clone(),
     };
+    
+    // studentpairに同じ学籍番号がないか確認
+    match app.student_pair.get_by_id(&main_user.student_id).await {
+        Ok(None) => {},
+        Ok(_) => return Status::InternalServerError,
+        Err(status) => return status,
+    }
+
+    match app.student_pair.get_by_id(&co_user.student_id).await {
+        Ok(None) => {},
+        Ok(_) => return Status::InternalServerError,
+        Err(status) => return status,
+    }
 
     // studentpairの情報をstudent_pairテーブルに保存
     if app.student_pair.register(student_pair).await.is_err(){
@@ -419,7 +432,7 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
         return (Status::InternalServerError, "failed to send mail");
     }
 
-    println!(r"\( 'ω')/ウオオオオオアアアーーーーッ！！！");
+    println!(r"( 'ω')/ウオオオオオアアアーーーーッ！！！");
 
     (Status::Created, "success create assignment")
 }
@@ -564,11 +577,13 @@ pub async fn user_search(year: i32, floor: Option<i8>, familyname: Option<String
 
             let mut user_pairs= Vec::new();
             for element in match_user {
-                let user_pair = match app.student_pair.get_by_id(&element.student_id).await {
-                    Ok(student_pair) => student_pair,
+                match app.student_pair.get_by_id(&element.student_id).await {
+                    Ok(Some(student_pair)) => {
+                        user_pairs.push(student_pair);
+                    },
+                    Ok(None) => {},
                     Err(_) => return Err(Status::InternalServerError),
                 };
-                user_pairs.push(user_pair)
             }
 
             let unique_user_pair: HashSet<StudentPair> = user_pairs.into_iter().collect();
