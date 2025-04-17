@@ -355,7 +355,6 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
         Ok(uuid) => {uuid},
         Err(_) => {return (Status::BadRequest, "request auth_id is not valid");}
     };
-    println!("{}", auth_id);
 
     // pair_idの検索
     let user_pair = match app.student_pair.get_by_main_id(&assignment.student_id).await {
@@ -419,6 +418,8 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     if app.auth.mail_sender(user_address, content, subject).await.is_err(){
         return (Status::InternalServerError, "failed to send mail");
     }
+
+    println!(r"\( 'ω')/ウオオオオオアアアーーーーッ！！！");
 
     (Status::Created, "success create assignment")
 }

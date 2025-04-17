@@ -86,6 +86,9 @@ impl TimeUsecase for TimeUsecaseImpl {
                 eprintln!("Connection Error: {:?}", e);
                 Err(Status::ServiceUnavailable)
             },
+            Ok(Err(RepositoryError::DieselError(diesel::result::Error::NotFound))) => {
+                Err(Status::InternalServerError)
+            },
             Ok(Err(RepositoryError::DieselError(e))) => {
                 eprintln!("Repository Error: {:?}", e);
                 Err(Status::InternalServerError)
