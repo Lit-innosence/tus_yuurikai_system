@@ -30,4 +30,8 @@ ENV PATH=$PATH:/usr/local/bin
 RUN apt-get update && apt-get install -y postgresql-client
 
 # Diesel CLIをインストール
-RUN cargo install diesel_cli --no-default-features --features postgres         
+RUN cargo install diesel_cli --no-default-features --features postgres 
+
+# export関連の設定
+ENV DATABASE_URL=postgres://your_user:your_password@db:5432/your_db
+ENV ROCKET_ADDRESS=0.0.0.0

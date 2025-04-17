@@ -206,6 +206,9 @@ impl AuthUsecase for AuthUsecaseImpl {
                 eprintln!("Connection Error: {:?}", e);
                 return Err(Status::ServiceUnavailable)
             },
+            Ok(Err(RepositoryError::DieselError(diesel::result::Error::NotFound))) => {
+                return Err(Status::InternalServerError)
+            },
             Ok(Err(RepositoryError::DieselError(e))) => {
                 eprintln!("Repository Error: {:?}", e);
                 return Err(Status::Unauthorized)
