@@ -36,7 +36,6 @@ const Toppage: React.FC = () => {
                     setIsCircleRegistrationAllowed(false);
                 }
             } catch (error) {
-                console.error('Error fetching access setting:', error);
                 setIsCircleRegistrationAllowed(false);
             }
         };
