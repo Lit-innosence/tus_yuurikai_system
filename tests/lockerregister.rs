@@ -6,7 +6,7 @@ mod utils;
 
 use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
-use rocket::http::{Status, ContentType};
+use rocket::{tokio::task, http::{Status, ContentType}};
 use tus_yuurikai_system::adapters::{controller::locker, httpmodels::LockerResisterRequest};
 use tus_yuurikai_system::domain::{assignment::AssignmentInfo, student_pair::PairInfo, student::UserInfo};
 use tus_yuurikai_system::usecase::{student_pair::StudentPairUsecase, student::StudentUsecase, auth::AuthUsecase};
@@ -264,10 +264,17 @@ async fn year_do_not_match() {
 
     // yearが一致しないstudentpairをdbに保存
     let year = 2000;
-    match app.student_pair.student_pair_repository.insert(&mainuser.student_id, &couser.student_id, &year).await {
-        Ok(_) => {},
-        Err(err) => {panic!("{}", err);},
-    };
+    let main_id = mainuser.student_id.clone();
+    let co_id = couser.student_id.clone();
+    let student_pair_repository = app.student_pair.student_pair_repository.clone();
+
+    match task::spawn_blocking(move || {
+        student_pair_repository.insert(main_id, co_id, year)
+    }).await {
+        Ok(Ok(_)) => {},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}", err),
+    }
 
     // 認証完了用のレコードを保存
     let auth_id = match app.auth.locker_register(mainuser, couser, &String::from("auth_check"), true).await{
@@ -355,11 +362,15 @@ async fn locker_status_unavailable() {
     };
 
     // 該当lockerのstatusをunavailableに変更
-    match app.locker.locker_repository.update_status_by_id(&request.data.locker_id, &String::from("unavailable")).await {
-        Ok(_) => {},
-        Err(err) => {panic!("{}", err);},
-    };
-
+    let data = request.data.clone();
+    let locker_repository = app.locker.locker_repository.clone();
+    match task::spawn_blocking(move || {
+        locker_repository.update_status_by_id(data.locker_id, String::from("unavailable"))
+    }).await {
+        Ok(Ok(_)) => {},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}", err),
+    }
 
     // Act
     let response = client.post(uri!("/api/locker", locker::locker_register))

@@ -1,36 +1,34 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use diesel::result::Error;
-use async_trait::async_trait;
 
 use crate::infrastructure::schema::*;
 use crate::infrastructure::models::*;
 use crate::infrastructure::router::Pool;
+use super::RepositoryError;
 
 /// # organization
-#[async_trait]
 pub trait OrganizationRepository: Send + Sync {
-    async fn insert(
+    fn insert(
         &self,
-        organization_name: &String,
-        organization_ruby: &String,
-        organization_email: &String,
-    ) -> Result<Organization, Error>;
+        organization_name: String,
+        organization_ruby: String,
+        organization_email: String,
+    ) -> Result<Organization, RepositoryError>;
 
-    async fn get_all(
+    fn get_all(
         &self,
-    ) -> Result<Vec<Organization>, Error>;
+    ) -> Result<Vec<Organization>, RepositoryError>;
 
-    async fn get_by_id(
+    fn get_by_id(
         &self,
-        organization_id: &i32,
-    ) -> Result<Organization, Error>;
+        organization_id: i32,
+    ) -> Result<Organization, RepositoryError>;
 
-    async fn update_email_by_id(
+    fn update_email_by_id(
         &self,
-        organization_id: &i32,
-        organization_email: &String,
-    ) -> Result<Organization, Error>;
+        organization_id: i32,
+        organization_email: String,
+    ) -> Result<Organization, RepositoryError>;
 }
 
 pub struct OrganizationRepositorySqlImpl {
@@ -43,51 +41,58 @@ impl OrganizationRepositorySqlImpl {
     }
 }
 
-#[async_trait]
 impl OrganizationRepository for OrganizationRepositorySqlImpl {
-    async fn insert(
+    fn insert(
             &self,
-            organization_name: &String,
-            organization_ruby: &String,
-            organization_email: &String,
-        ) -> Result<Organization, Error> {
+            organization_name: String,
+            organization_ruby: String,
+            organization_email: String,
+        ) -> Result<Organization, RepositoryError> {
         let new_organization = NewOrganization{
-            organization_name: organization_name,
-            organization_ruby: organization_ruby,
-            organization_email: organization_email,
+            organization_name: &organization_name,
+            organization_ruby: &organization_ruby,
+            organization_email: &organization_email,
         };
-        let mut conn = self.pool.get().unwrap();
-        diesel::insert_into(organization::table)
+        let mut conn = self.pool.get()?;
+        let result = diesel::insert_into(organization::table)
             .values(new_organization)
-            .get_result(&mut conn)
+            .get_result::<Organization>(&mut conn)?;
+
+        Ok(result)
     }
 
-    async fn get_all(
+    fn get_all(
             &self,
-        ) -> Result<Vec<Organization>, Error> {
-        let mut conn = self.pool.get().unwrap();
-        organization::table
-            .get_results(&mut conn)
+        ) -> Result<Vec<Organization>, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = organization::table
+            .get_results::<Organization>(&mut conn)?;
+
+        Ok(result)
     }
 
-    async  fn get_by_id(
+    fn get_by_id(
             &self,
-            organization_id: &i32,
-        ) -> Result<Organization, Error> {
-        let mut conn = self.pool.get().unwrap();
-        organization::table.filter(organization::organization_id.eq(organization_id))
-            .get_result(&mut conn)
+            organization_id: i32,
+        ) -> Result<Organization, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = organization::table.filter(organization::organization_id.eq(organization_id))
+            .get_result::<Organization>(&mut conn)?;
+
+        Ok(result)
     }
 
-    async fn update_email_by_id(
+    fn update_email_by_id(
             &self,
-            organization_id: &i32,
-            organization_email: &String,
-        ) -> Result<Organization, Error> {
-        let mut conn = self.pool.get().unwrap();
-        diesel::update(organization::table)
+            organization_id: i32,
+            organization_email: String,
+        ) -> Result<Organization, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = diesel::update(organization::table)
             .filter(organization::organization_id.eq(organization_id))
             .set((organization::organization_email.eq(organization_email), organization::updated_at.eq(diesel::dsl::now)))
-            .get_result(&mut conn)
+            .get_result::<Organization>(&mut conn)?;
+
+        Ok(result)
     }
 }

@@ -63,7 +63,7 @@ if (isLoading) {
     return <Loading />;
 }
 
-// アクセス不可の場合は /circle/nopage へリダイレクト
+// アクセス不可の場合は /circle/timeout へリダイレクト
 if (!accessible) {
     return <Navigate to="/circle/timeout" />;
 }

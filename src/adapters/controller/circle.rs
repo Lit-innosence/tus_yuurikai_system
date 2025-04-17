@@ -31,35 +31,35 @@ pub async fn update_entry(request: Json<CircleUpdateRequest>, app: &State<App>) 
 
     // 団体ID
     let re = Regex::new(r"^C\d{5}$").unwrap();
-    if !(re.is_match(&request.organization_id.as_str())) {
+    if !(re.is_match(request.organization_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 旧代表者学籍番号
     let re = Regex::new(r"^[1-46-9][1-9]\d{5}$").unwrap();
-    if !(re.is_match(&request.student_id.as_str())) {
+    if !(re.is_match(request.student_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 旧代表者氏名
     let re = Regex::new(r"^[a-zA-Z\p{Kana}\p{Hira}\p{Han}々]+$").unwrap();
-    if !(re.is_match(&request.family_name.as_str())) {
+    if !(re.is_match(request.family_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if !(re.is_match(&request.given_name.as_str()) ){
+    if !(re.is_match(request.given_name.as_str()) ){
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 旧代表者メールアドレス
     let re = Regex::new(r"^[a-zA-Z0-9_.+-]+@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$").unwrap();
-    if !(re.is_match(&request.email.as_str())) {
+    if !(re.is_match(request.email.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 団体が存在しているかの確認
 
     // メール内容の作成
-    let user_address = format!("{}", request.email);
+    let user_address = request.email.to_string();
     let content = format!("{} 代表 {}{} 様\n\n以下のURLから団体情報更新用GoogleFormにアクセスして更新内容を入力してください。\n\n{}", request.organization_name, request.family_name, request.given_name, app_url);
     let subject = "団体情報更新 更新用URLのお知らせ";
 
@@ -84,52 +84,52 @@ pub async fn update_token_generator(request: Json<CircleUpdateTokenGenRequest>, 
 
     // 団体ID
     let re = Regex::new(r"^C\d{5}$").unwrap();
-    if !(re.is_match(&data.organization_id.as_str())) {
+    if !(re.is_match(data.organization_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 学籍番号
     let re = Regex::new(r"^[1-46-9][1-9]\d{5}$").unwrap();
-    if !(re.is_match(&data.main_user.student_id.as_str())) {
+    if !(re.is_match(data.main_user.student_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if !(re.is_match(&data.co_user.student_id.as_str())) {
+    if !(re.is_match(data.co_user.student_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 氏名
     let re = Regex::new(r"^[A-Za-z\p{Kana}\p{Hira}\p{Han}]+$").unwrap();
-    if !(re.is_match(&data.main_user.family_name.as_str())) {
+    if !(re.is_match(data.main_user.family_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if !(re.is_match(&data.main_user.given_name.as_str())) {
+    if !(re.is_match(data.main_user.given_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if !(re.is_match(&data.co_user.family_name.as_str())) {
+    if !(re.is_match(data.co_user.family_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if !(re.is_match(&data.co_user.given_name.as_str())) {
+    if !(re.is_match(data.co_user.given_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 電話番号
     let re = Regex::new(r"^0[789]0\d{8}$").unwrap();
-    if !(re.is_match(&data.main_user.phone_number.as_str())) {
+    if !(re.is_match(data.main_user.phone_number.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if !(re.is_match(&data.co_user.phone_number.as_str())) {
+    if !(re.is_match(data.co_user.phone_number.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // メールアドレス
     let re = Regex::new(r"^[a-zA-Z0-9_.+-]+@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$").unwrap();
-    if !(re.is_match(&&data.main_user.email.as_str())) {
+    if !(re.is_match(data.main_user.email.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if !(re.is_match(&data.co_user.email.as_str())) {
+    if !(re.is_match(data.co_user.email.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if !(re.is_match(&data.organization_email.as_str())) {
+    if !(re.is_match(data.organization_email.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
@@ -183,52 +183,52 @@ pub async fn register_token_generator(request: Json<CircleTokenGenRequest>, app:
 
     // 氏名
     let re = Regex::new(r"^[A-Za-z\p{Kana}\p{Hira}\p{Han}]+$").unwrap();
-    if !(re.is_match(&data.main_user.family_name.as_str())) {
+    if !(re.is_match(data.main_user.family_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if !(re.is_match(&data.main_user.given_name.as_str())) {
+    if !(re.is_match(data.main_user.given_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if !(re.is_match(&data.co_user.family_name.as_str())) {
+    if !(re.is_match(data.co_user.family_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if !(re.is_match(&data.co_user.given_name.as_str())) {
+    if !(re.is_match(data.co_user.given_name.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 学籍番号
     let re = Regex::new(r"^[1-46-9][1-9]\d{5}$").unwrap();
-    if !(re.is_match(&data.main_user.student_id.as_str())) {
+    if !(re.is_match(data.main_user.student_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if !(re.is_match(&data.co_user.student_id.as_str())) {
+    if !(re.is_match(data.co_user.student_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 団体名ふりがな
     let re = Regex::new(r"^[\p{Hira}]+$").unwrap();
-    if !(re.is_match(&data.organization.organization_ruby.as_str())) {
+    if !(re.is_match(data.organization.organization_ruby.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // メールアドレス
     let re = Regex::new(r"^[a-zA-Z0-9_.+-]+@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.)+[a-zA-Z]{2,}$").unwrap();
-    if !(re.is_match(&data.organization.organization_email.as_str())) {
+    if !(re.is_match(data.organization.organization_email.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if !(re.is_match(&data.main_user.email.as_str())) {
+    if !(re.is_match(data.main_user.email.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if !(re.is_match(&data.co_user.email.as_str())) {
+    if !(re.is_match(data.co_user.email.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
     // 電話番号
     let re = Regex::new(r"^0[789]0\d{8}$").unwrap();
-    if !(re.is_match(&data.main_user.phone_number.as_str())) {
+    if !(re.is_match(data.main_user.phone_number.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
-    if !(re.is_match(&data.co_user.phone_number.as_str())) {
+    if !(re.is_match(data.co_user.phone_number.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
 
@@ -264,19 +264,16 @@ pub async fn circle_main_auth(token: String, id: Option<String>, app:&State<App>
     // データのバリデーション
 
     // 団体ID
-    match id.clone() {
-        Some(id) => {
-            let re = Regex::new(r"^C\d{5}$").unwrap();
-            if !(re.is_match(id.as_str())) {
-                return (Status::BadRequest, "request parameter is not valid");
-            }
-        },
-        None => {}
+    if let Some(id) = id.clone() {
+        let re = Regex::new(r"^C\d{5}$").unwrap();
+        if !(re.is_match(id.as_str())) {
+            return (Status::BadRequest, "request parameter is not valid");
+        }
     }
 
     // token
     let re = Regex::new(r"^[a-zA-Z0-9]{16}$").unwrap();
-    if !(re.is_match(&token.as_str())) {
+    if !(re.is_match(token.as_str())) {
         return (Status::BadRequest, "request parameter is not valid");
     }
 
@@ -288,7 +285,7 @@ pub async fn circle_main_auth(token: String, id: Option<String>, app:&State<App>
     };
 
     // authのphaseを確認
-    if auth.phase != String::from("main_auth") {
+    if auth.phase != *"main_auth" {
         return (Status::BadRequest, "authentication phase does not match");
     }
 
@@ -350,19 +347,16 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
     // データのバリデーション
 
     // 団体ID
-    match id.clone() {
-        Some(id) => {
+    if let Some(id) = id.clone() {
             let re = Regex::new(r"^C\d{5}$").unwrap();
-            if !(re.is_match(&id.as_str())) {
+            if !(re.is_match(id.as_str())) {
                 return (Status::BadRequest, "request parameter is not valid")
             }
-        },
-        None => {}
-    }
+    };
 
     // token
     let re = Regex::new(r"^[a-zA-Z0-9]{16}$").unwrap();
-    if !(re.is_match(&token.as_str())) {
+    if !(re.is_match(token.as_str())) {
         return (Status::BadRequest, "request parameter is not valid");
     }
 
@@ -375,7 +369,7 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
     };
 
     // authのphaseを確認
-    if auth.phase != String::from("co_auth") {
+    if auth.phase != *"co_auth" {
         return (Status::BadRequest, "authentication phase does not match");
     }
 
@@ -468,17 +462,13 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
             };
 
             // 団体メールアドレスの更新
-            if organization.organization_email != "" {
-                if app.organization.update_email(&organization_id, &organization.organization_email).await.is_err() {
-                    return (Status::InternalServerError, "failed to update organization")
-                }
+            if !organization.organization_email.is_empty() && app.organization.update_email(&organization_id, &organization.organization_email).await.is_err() {
+                return (Status::InternalServerError, "failed to update organization")
             }
 
             // 代表者、副代表者の更新
-            if main_user.student_id != "" && co_user.student_id != "" {
-                if app.registration.update_student(&organization_id, &main_user.student_id, &co_user.student_id).await.is_err() {
-                    return (Status::InternalServerError, "failed to update registration")
-                }
+            if (!main_user.student_id.is_empty() && !co_user.student_id.is_empty()) && app.registration.update_student(&organization_id, &main_user.student_id, &co_user.student_id).await.is_err() {
+                return (Status::InternalServerError, "failed to update registration")
             }
         },
         // 団体新規登録
@@ -488,7 +478,7 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
             let organization_info = &OrganizationInfo{
                 organization: organization.clone(),
                 main_user: main_user.clone(),
-                co_user: co_user,
+                co_user,
                 b_doc: auth_info.b_doc,
                 c_doc: auth_info.c_doc,
                 d_doc: auth_info.d_doc,
@@ -571,7 +561,7 @@ pub async fn access_setting_post(request: Json<CircleAccessSetting>, jar: &Cooki
     };
 
     match decode_jwt(&jwt) {
-        None => return (Status::Unauthorized, "request token is not valid."),
+        None => (Status::Unauthorized, "request token is not valid."),
         Some(_) => {
             // 時間情報を整形
             let start_time = DateTime::parse_from_rfc3339(&request.start).unwrap().naive_utc();
@@ -622,7 +612,7 @@ pub async fn circle_list(jar: &CookieJar<'_>, app: &State<App>) -> Result<Json<O
     };
 
     match decode_jwt(&jwt) {
-        None => return Err(Status::Unauthorized),
+        None => Err(Status::Unauthorized),
         Some(_) => {
             let result = app.registration.get_all().await.unwrap();
 
@@ -677,7 +667,7 @@ pub async fn circle_status_update(request: Json<OrganizationStatusUpdateRequest>
     };
 
     match decode_jwt(&jwt) {
-        None => return (Status::Unauthorized, "request token is not valid"),
+        None => (Status::Unauthorized, "request token is not valid"),
         Some(_) => {
 
             // データのバリデーション
@@ -713,7 +703,7 @@ pub async fn circle_status_update(request: Json<OrganizationStatusUpdateRequest>
                 return (Status::InternalServerError, "failed to update status")
             }
 
-            return (Status::Ok, "organization status updated successfully")
+            (Status::Ok, "organization status updated successfully")
         }
     }
 }

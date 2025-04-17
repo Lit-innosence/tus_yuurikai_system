@@ -10,7 +10,7 @@ use utoipa::OpenApi;
 pub fn rocket() -> Rocket<Build> {
     let app_option = AppOption::new();
     let app = App::new(app_option);
-    let rocket = rocket::build()
+    rocket::build()
         .manage(app)
         .mount(
             "/api",
@@ -50,7 +50,5 @@ pub fn rocket() -> Rocket<Build> {
         .mount(
             "/",
             SwaggerUi::new("/swagger-ui/<_..>").url("/api-docs/openapi.json", ApiDoc::openapi()),
-        );
-
-    rocket
+        )
 }

@@ -7,7 +7,7 @@ mod utils;
 use std::env;
 use utils::{router::rocket, setup::setup_db};
 use rocket::local::asynchronous::Client;
-use rocket::http::{Status, ContentType, Cookie};
+use rocket::{tokio::task, http::{Status, ContentType, Cookie}};
 use dotenv::dotenv;
 use tus_yuurikai_system::adapters::{controller::locker, httpmodels::LockerResetRequest};
 use tus_yuurikai_system::utils::jwt::encode_jwt;
@@ -43,14 +43,22 @@ async fn normal() {
         .secure(true)
         .http_only(true);
 
-    match app.locker.locker_repository.update_status_by_id(&String::from("2001"), &String::from("occupied")).await {
-        Ok(_) => {},
-        Err(err) => {panic!("{}", err)}
+    let locker_repository = app.locker.locker_repository.clone();
+    match task::spawn_blocking(move || {
+        locker_repository.update_status_by_id(String::from("2001"), String::from("occupied"))
+    }).await {
+        Ok(Ok(_)) => {},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}", err)
     }
 
-    match app.locker.locker_repository.update_status_by_id(&String::from("2002"), &String::from("out-of-work")).await {
-        Ok(_) => {},
-        Err(err) => {panic!("{}", err)}
+    let locker_repository = app.locker.locker_repository.clone();
+    match task::spawn_blocking(move || {
+        locker_repository.update_status_by_id(String::from("2002"), String::from("out-of-work"))
+    }).await {
+        Ok(Ok(_)) => {},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}", err)
     }
 
     // Act
@@ -61,21 +69,33 @@ async fn normal() {
         .dispatch().await;
 
     // Assert
-    let status = match app.locker.locker_repository.get_by_id(&String::from("2001")).await {
-        Ok(locker) => {locker.status},
-        Err(err) => {panic!("{}", err)}
+    let locker_repository = app.locker.locker_repository.clone();
+    let status = match task::spawn_blocking(move || {
+        locker_repository.get_by_id(String::from("2001"))
+    }).await {
+        Ok(Ok(locker)) => {locker.status},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}", err)
     };
     assert_eq!(status, String::from("vacant"));
 
-    let status = match app.locker.locker_repository.get_by_id(&String::from("2002")).await {
-        Ok(locker) => {locker.status},
-        Err(err) => {panic!("{}", err)}
+    let locker_repository = app.locker.locker_repository.clone();
+    let status = match task::spawn_blocking(move || {
+        locker_repository.get_by_id(String::from("2002"))
+    }).await {
+        Ok(Ok(locker)) => {locker.status},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}", err)
     };
+    let locker_repository = app.locker.locker_repository.clone();
     assert_eq!(status, String::from("out-of-work"));
 
-    let status = match app.locker.locker_repository.get_by_id(&String::from("2003")).await {
-        Ok(locker) => {locker.status},
-        Err(err) => {panic!("{}", err)},
+    let status = match task::spawn_blocking(move || {
+        locker_repository.get_by_id(String::from("2003"))
+    }).await {
+        Ok(Ok(locker)) => {locker.status},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}", err)
     };
     assert_eq!(status, String::from("vacant"));
 
@@ -121,9 +141,15 @@ async fn out_of_work_locker_exists() {
     let target_status = vec![OCP, OOW, VCT, OCP, OOW];
 
     for _i in 0..target_locker.len() {
-        match app.locker.locker_repository.update_status_by_id(&String::from(target_locker[_i]), &String::from(target_status[_i])).await {
-            Ok(_) => {},
-            Err(err) => {panic!("{}", err)},
+        let locker_repository = app.locker.locker_repository.clone();
+        let locker = target_locker.clone();
+        let status = target_status.clone();
+        match task::spawn_blocking(move || {
+            locker_repository.update_status_by_id(String::from(locker[_i]), String::from(status[_i]))
+        }).await {
+            Ok(Ok(_)) => {},
+            Ok(Err(err)) => panic!("{}", err),
+            Err(err) => panic!("{}", err),
         }
     }
 
@@ -137,9 +163,14 @@ async fn out_of_work_locker_exists() {
     // Assert
 
     for _i in 0..target_locker.len() {
-        let status = match app.locker.locker_repository.get_by_id(&String::from(target_locker[_i])).await {
-            Ok(locker) => {locker.status},
-            Err(err) => {panic!("{}", err)},
+        let locker_repository = app.locker.locker_repository.clone();
+        let locker = target_locker.clone();
+        let status = match task::spawn_blocking(move || {
+            locker_repository.get_by_id(String::from(locker[_i]))
+        }).await {
+            Ok(Ok(locker)) => {locker.status},
+            Ok(Err(err)) => panic!("{}", err),
+            Err(err) => panic!("{}", err),
         };
         if target_status[_i] == OOW {
             assert_eq!(status, String::from(OOW));
@@ -180,9 +211,13 @@ async fn request_password_is_not_valid() {
         .secure(true)
         .http_only(true);
 
-    match app.locker.locker_repository.update_status_by_id(&String::from("2001"), &String::from("occupied")).await {
-        Ok(_) => {},
-        Err(err) => {panic!("{}", err)}
+    let locker_repository = app.locker.locker_repository.clone();
+    match task::spawn_blocking(move || {
+        locker_repository.update_status_by_id(String::from("2001"), String::from("occupied"))
+    }).await {
+        Ok(Ok(_)) => {},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}", err)
     }
 
     // Act
@@ -255,9 +290,13 @@ async fn jwt_is_not_valid() {
         .secure(true)
         .http_only(true);
 
-    match app.locker.locker_repository.update_status_by_id(&String::from("2001"), &String::from("occupied")).await {
-        Ok(_) => {},
-        Err(err) => {panic!("{}", err)}
+    let locker_repository = app.locker.locker_repository.clone();
+    match task::spawn_blocking(move || {
+        locker_repository.update_status_by_id(String::from("2001"), String::from("occupied"))
+    }).await {
+        Ok(Ok(_)) => {},
+        Ok(Err(err)) => panic!("{}", err),
+        Err(err) => panic!("{}", err)
     }
 
     // Act

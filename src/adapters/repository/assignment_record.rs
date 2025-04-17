@@ -1,43 +1,41 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use diesel::result::Error;
 use uuid::Uuid;
-use async_trait::async_trait;
 
 use crate::infrastructure::schema::*;
 use crate::infrastructure::models::*;
 use crate::infrastructure::router::Pool;
+use super::RepositoryError;
 
 /// # assignment_record
-#[async_trait]
 pub trait AssignmentRecordRepository: Send + Sync {
-    async fn insert(
+    fn insert(
         &self,
-        pair_id: &Uuid,
-        locker_id: &String,
-        year: &i32,
-    ) -> Result<AssignmentRecord, Error>;
+        pair_id: Uuid,
+        locker_id: String,
+        year: i32,
+    ) -> Result<AssignmentRecord, RepositoryError>;
 
-    async fn get_all(
+    fn get_all(
         &self,
-    ) -> Result<Vec<AssignmentRecord>, Error>;
+    ) -> Result<Vec<AssignmentRecord>, RepositoryError>;
 
-    async fn get(
+    fn get(
         &self,
-        year: &i32,
-        floor: &String,
-        pair_id: &Uuid,
-    ) -> Result<Vec<AssignmentRecord>, Error>;
+        year: i32,
+        floor: String,
+        pair_id: Uuid,
+    ) -> Result<Vec<AssignmentRecord>, RepositoryError>;
 
-    async fn get_by_pair_id(
+    fn get_by_pair_id(
         &self,
-        year: &i32,
-        pair_id: &Uuid,
-    ) -> Result<AssignmentRecord, Error>;
+        year: i32,
+        pair_id: Uuid,
+    ) -> Result<AssignmentRecord, RepositoryError>;
 
-    async fn delete_all(
+    fn delete_all(
         &self
-    ) -> Result<usize, Error>;
+    ) -> Result<usize, RepositoryError>;
 }
 
 pub struct AssignmentRecordRepositorySqlImpl {
@@ -50,67 +48,76 @@ impl AssignmentRecordRepositorySqlImpl {
     }
 }
 
-#[async_trait]
 impl AssignmentRecordRepository for AssignmentRecordRepositorySqlImpl {
-    async fn insert (
+    fn insert (
         &self,
-        pair_id: &Uuid,
-        locker_id: &String,
-        year: &i32,
-    ) -> Result<AssignmentRecord, Error> {
+        pair_id: Uuid,
+        locker_id: String,
+        year: i32,
+    ) -> Result<AssignmentRecord, RepositoryError> {
         let new_assignmentrecord = NewAssignmentRecord {
-            pair_id,
-            locker_id,
-            year,
+            pair_id: &pair_id,
+            locker_id: &locker_id,
+            year: &year
         };
-        let mut conn = self.pool.get().unwrap();
-        diesel::insert_into(assignment_record::table)
+        let mut conn = self.pool.get()?;
+        let result = diesel::insert_into(assignment_record::table)
             .values(&new_assignmentrecord)
-            .get_result(&mut conn)
+            .get_result::<AssignmentRecord>(&mut conn)?;
+
+        Ok(result)
     }
 
-    async fn get_all(
+    fn get_all(
         &self,
-    ) -> Result<Vec<AssignmentRecord>, Error> {
-        let mut conn = self.pool.get().unwrap();
-        assignment_record::table
-            .get_results(&mut conn)
+    ) -> Result<Vec<AssignmentRecord>, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = assignment_record::table
+            .get_results::<AssignmentRecord>(&mut conn)?;
+
+        Ok(result)
     }
 
-    async fn get (
+    fn get (
         &self,
-        year: &i32,
-        floor: &String,
-        pair_id: &Uuid,
-    ) -> Result<Vec<AssignmentRecord>, Error> {
-        let mut conn = self.pool.get().unwrap();
+        year: i32,
+        floor: String,
+        pair_id: Uuid,
+    ) -> Result<Vec<AssignmentRecord>, RepositoryError> {
+        let mut conn = self.pool.get()?;
 
         let floor_ex = format!("{}%", floor);
 
-        assignment_record::table
-        .filter(assignment_record::locker_id
-            .like(floor_ex)
-        ).filter(assignment_record::pair_id.eq(pair_id).and(assignment_record::year.eq(year))
-        ).get_results(&mut conn)
+        let result = assignment_record::table
+            .filter(assignment_record::locker_id
+                .like(floor_ex)
+            ).filter(assignment_record::pair_id.eq(pair_id).and(assignment_record::year.eq(year))
+            ).get_results::<AssignmentRecord>(&mut conn)?;
+
+        Ok(result)
     }
 
-    async  fn get_by_pair_id(
+    fn get_by_pair_id(
             &self,
-            year: &i32,
-            pair_id: &Uuid,
-        ) -> Result<AssignmentRecord, Error> {
-        let mut conn = self.pool.get().unwrap();
+            year: i32,
+            pair_id: Uuid,
+        ) -> Result<AssignmentRecord, RepositoryError> {
+        let mut conn = self.pool.get()?;
 
-        assignment_record::table
+        let result = assignment_record::table
             .filter(assignment_record::pair_id.eq(pair_id).and(assignment_record::year.eq(year)))
-            .get_result(&mut conn)
+            .get_result::<AssignmentRecord>(&mut conn)?;
+
+        Ok(result)
     }
 
-    async fn delete_all(
+    fn delete_all(
         &self
-    ) -> Result<usize, Error> {
-        let mut conn = self.pool.get().unwrap();
-        diesel::delete(assignment_record::table)
-            .execute(&mut conn)
+    ) -> Result<usize, RepositoryError> {
+        let mut conn = self.pool.get()?;
+        let result = diesel::delete(assignment_record::table)
+            .execute(&mut conn)?;
+
+        Ok(result)
     }
 }

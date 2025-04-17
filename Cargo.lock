@@ -2817,6 +2817,7 @@ dependencies = [
  "rocket_cors",
  "serde",
  "serde_json",
+ "thiserror 1.0.63",
  "utoipa",
  "utoipa-swagger-ui",
  "uuid",
