@@ -9,7 +9,6 @@ use dotenv::dotenv;
 use uuid::Uuid;
 use lettre::message::header::ContentType;
 use lettre::transport::smtp::authentication::Credentials;
-use lettre::transport::smtp::client::{Tls, TlsParameters};
 use lettre::{Message, SmtpTransport, Transport};
 use rocket::{tokio::task, http::Status};
 use async_trait::async_trait;
@@ -167,10 +166,11 @@ impl AuthUsecase for AuthUsecaseImpl {
         dotenv().ok();
         let sender_address = env::var("SENDER_MAIL_ADDRESS").expect("SENDER_MAIL_ADDRESS must be set.");
         let appkey = env::var("MAIL_APP_KEY").expect("MAIL_APP_KEY must be set.");
+        let smtp_server = env::var("SMTP_SERVER").expect("SMTP_SERVER must be set.");
 
         let email = Message::builder()
             .from(
-                format!("Developer <{}>", sender_address)
+                format!("Noreply <{}>", sender_address)
                     .parse()
                     .map_err(|_| Status::InternalServerError)?,
             )
@@ -182,20 +182,10 @@ impl AuthUsecase for AuthUsecaseImpl {
             .body(content)
             .map_err(|_| Status::InternalServerError)?;
 
-        // SMTP認証情報
-        let creds = Credentials::new(sender_address.to_owned(), appkey.to_owned());
-
-        // TLSパラメータを生成
-        let tls_parameters = TlsParameters::builder("smtp.gmail.com".to_string())
-        .build()
-        .map_err(|_| Status::InternalServerError)?;
-
-        // Gmailにsmtp接続する
-        let mailer = SmtpTransport::relay("smtp.gmail.com")
+        // SMTPサーバーに接続する
+        let mailer = SmtpTransport::builder_dangerous(smtp_server.as_str())
+            .port(25)
             .map_err(|_| Status::InternalServerError)?
-            .port(587)
-            .tls(Tls::Required(tls_parameters))
-            .credentials(creds)
             .build();
 
         // メール送信
