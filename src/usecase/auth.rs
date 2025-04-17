@@ -8,7 +8,6 @@ use crate::utils::token::generate_token;
 use dotenv::dotenv;
 use uuid::Uuid;
 use lettre::message::header::ContentType;
-use lettre::transport::smtp::authentication::Credentials;
 use lettre::{Message, SmtpTransport, Transport};
 use rocket::{tokio::task, http::Status};
 use async_trait::async_trait;
@@ -165,7 +164,6 @@ impl AuthUsecase for AuthUsecaseImpl {
         // 環境変数の読み取り
         dotenv().ok();
         let sender_address = env::var("SENDER_MAIL_ADDRESS").expect("SENDER_MAIL_ADDRESS must be set.");
-        let appkey = env::var("MAIL_APP_KEY").expect("MAIL_APP_KEY must be set.");
         let smtp_server = env::var("SMTP_SERVER").expect("SMTP_SERVER must be set.");
 
         let email = Message::builder()
@@ -185,7 +183,6 @@ impl AuthUsecase for AuthUsecaseImpl {
         // SMTPサーバーに接続する
         let mailer = SmtpTransport::builder_dangerous(smtp_server.as_str())
             .port(25)
-            .map_err(|_| Status::InternalServerError)?
             .build();
 
         // メール送信
