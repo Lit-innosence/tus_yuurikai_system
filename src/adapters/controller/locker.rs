@@ -28,7 +28,7 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
     // データのバリデーション
 
     // 学籍番号についてのバリデーション
-    let re = Regex::new(r"^[48][1-6]\d{5}$").unwrap();
+    let re = Regex::new(r"^(15\d{5}|[48][1-6]\d{5})$").unwrap();
     if !(re.is_match(data.main_user.student_id.clone().as_str())) {
         return Status::BadRequest;
     }
@@ -207,7 +207,7 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
         main_user: main_user.clone(),
         co_user: co_user.clone(),
     };
-    
+
     // studentpairに同じ学籍番号がないか確認
     match app.student_pair.get_by_id(&main_user.student_id).await {
         Ok(None) => {},
@@ -352,7 +352,7 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     //データのバリデーション
 
     // 代表者学籍番号
-    let re = Regex::new(r"^[48][1-6]\d{5}$").unwrap();
+    let re = Regex::new(r"^(15\d{5}|[48][1-6]\d{5})$").unwrap();
     if !(re.is_match(assignment.student_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
