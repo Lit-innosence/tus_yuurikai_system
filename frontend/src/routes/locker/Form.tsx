@@ -42,7 +42,7 @@ const LockerForm: React.FC = () => {
                         rules={[
                             { required: true, message: "学籍番号を入力してください" },
                             {
-                                pattern: /^[48][1-6]\d{5}$/,
+                                pattern: /^(15\d{5}|[48][1-6]\d{5})$/,
                                 message: "有効な学籍番号を入力してください。",
                             },
                         ]}
@@ -88,7 +88,7 @@ const LockerForm: React.FC = () => {
                         rules={[
                             { required: true, message: "共同使用者の学籍番号を入力してください" },
                             {
-                                pattern: /^[48][1-6]\d{5}$/,
+                                pattern: /^(15\d{5}[48][1-6]\d{5})$/,
                                 message: "有効な学籍番号を入力してください。",
                             },
                         ]}
