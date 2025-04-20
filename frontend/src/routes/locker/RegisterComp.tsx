@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { Result, Typography, Card } from 'antd';
-import { NotificationOutlined, LockOutlined, FieldNumberOutlined } from '@ant-design/icons';
+import { NotificationOutlined, LockOutlined } from '@ant-design/icons';
 
 const { Paragraph, Text, Link } = Typography;
 

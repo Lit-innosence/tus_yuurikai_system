@@ -8,7 +8,7 @@ use crate::utils::token::generate_token;
 use dotenv::dotenv;
 use uuid::Uuid;
 use lettre::message::header::ContentType;
-use lettre::{Message, SmtpTransport, Transport};
+use lettre::{Message, SmtpTransport, Transport, transport::smtp::{authentication::Credentials, client::{TlsParameters, Tls}}};
 use rocket::{tokio::task, http::Status};
 use async_trait::async_trait;
 
@@ -23,6 +23,7 @@ pub trait AuthUsecase: Sync + Send {
     async fn locker_register(&self, main_user: &UserInfo, co_user: &UserInfo, phase: &str, is_same: bool) -> Result<Auth, Status>;
     async fn circle_register(&self, organization: &OrganizationInfo, phase: &str, is_same: bool) -> Result<Auth, Status>;
     async fn mail_sender(&self, user_address: String, content: String, subject: &str) -> Result<(), Status>;
+    async fn mail_sender_local(&self, user_address: String, content: String, subject: &str) -> Result<(), Status>;
     async fn token_check(&self, token: String, is_main: bool) -> Result<Auth, Status>;
     async fn get_locker_auth_info(&self, auth_id: &Uuid) -> Result<LockerAuthInfo, Status>;
     async fn get_circle_auth_info(&self, auth_id:&Uuid) -> Result<CircleAuthInfo, Status>;
@@ -183,6 +184,48 @@ impl AuthUsecase for AuthUsecaseImpl {
         // SMTPサーバーに接続する
         let mailer = SmtpTransport::builder_dangerous(smtp_server.as_str())
             .port(25)
+            .build();
+
+        // メール送信
+        mailer.send(&email).map_err(|_| Status::InternalServerError)?;
+
+        Ok(())
+    }
+
+    async fn mail_sender_local(&self, user_address: String, content: String, subject: &str) -> Result<(), Status> {
+        // 環境変数の読み取り
+        dotenv().ok();
+        let sender_address = env::var("SENDER_MAIL_ADDRESS").expect("SENDER_MAIL_ADDRESS must be set.");
+        let appkey = env::var("MAIL_APP_KEY").expect("MAIL_APP_KEY must be set.");
+
+        let email = Message::builder()
+            .from(
+                format!("Developer <{}>", sender_address)
+                    .parse()
+                    .map_err(|_| Status::InternalServerError)?,
+            )
+            .to(format!("User <{}>", user_address)
+                .parse()
+                .map_err(|_| Status::InternalServerError)?)
+            .subject(subject)
+            .header(ContentType::TEXT_PLAIN)
+            .body(content)
+            .map_err(|_| Status::InternalServerError)?;
+
+        // SMTP認証情報
+        let creds = Credentials::new(sender_address.to_owned(), appkey.to_owned());
+
+        // TLSパラメータを生成
+        let tls_parameters = TlsParameters::builder("smtp.gmail.com".to_string())
+        .build()
+        .map_err(|_| Status::InternalServerError)?;
+
+        // Gmailにsmtp接続する
+        let mailer = SmtpTransport::relay("smtp.gmail.com")
+            .map_err(|_| Status::InternalServerError)?
+            .port(587)
+            .tls(Tls::Required(tls_parameters)) 
+            .credentials(creds)
             .build();
 
         // メール送信

@@ -1,5 +1,5 @@
 use crate::adapters::httpmodels::*;
-use crate::domain::{circle::{OrganizationInfo, Organization}, student::RepresentativeInfo, googleapis::{MakeContact, MakeContactParameters}};
+use crate::domain::{circle::{OrganizationInfo, Organization}, student::RepresentativeInfo};
 use crate::infrastructure::router::App;
 use crate::usecase::time::TimeUsecase;
 use crate::usecase::{
@@ -9,15 +9,12 @@ use crate::usecase::{
                     registration::RegistrationUsecase,
                     };
 use crate::utils::jwt::decode_jwt;
-use crate::utils::oauth_authentication::refresh_access_token;
 
 use std::env;
-use std::time::Duration;
 use chrono::{DateTime, Utc};
 use dotenv::dotenv;
 use rocket::{get, http::{Status, CookieJar}, post, serde::json::Json, State};
 use regex::Regex;
-use reqwest::StatusCode;
 
 // 団体登録受付API
 #[utoipa::path(context_path = "/api/circle")]
@@ -64,8 +61,15 @@ pub async fn update_entry(request: Json<CircleUpdateRequest>, app: &State<App>) 
     let subject = "団体情報更新 更新用URLのお知らせ";
 
     // 認証メールを送信
-    if app.auth.mail_sender(user_address, content, subject).await.is_err(){
-        return (Status::InternalServerError, "Failed to send authentication email");
+    if app.option.local_mail_enable {
+        if app.auth.mail_sender_local(user_address, content, subject).await.is_err(){
+            return (Status::InternalServerError, "Failed to send authentication email");
+        }
+    }
+    else {
+        if app.auth.mail_sender(user_address, content, subject).await.is_err(){
+            return (Status::InternalServerError, "Failed to send authentication email");
+        }
     }
 
     // レスポンスを返す
@@ -164,8 +168,15 @@ pub async fn update_token_generator(request: Json<CircleUpdateTokenGenRequest>, 
     let subject = "団体登録システム メール認証";
 
     // メールの送信
-    if app.auth.mail_sender(user_address, content, subject).await.is_err(){
-        return (Status::InternalServerError, "failed to send authentication email");
+    if app.option.local_mail_enable {
+        if app.auth.mail_sender_local(user_address, content, subject).await.is_err(){
+            return (Status::InternalServerError, "Failed to send authentication email");
+        }
+    }
+    else {
+        if app.auth.mail_sender(user_address, content, subject).await.is_err(){
+            return (Status::InternalServerError, "Failed to send authentication email");
+        }
     }
 
     (Status::Created, "Authentication email sent successfully")
@@ -249,8 +260,15 @@ pub async fn register_token_generator(request: Json<CircleTokenGenRequest>, app:
     let subject = "団体登録システム メール認証";
 
     // メールの送信
-    if app.auth.mail_sender(user_address, content, subject).await.is_err() {
-        return (Status::InternalServerError, "failed to send authentication email");
+    if app.option.local_mail_enable {
+        if app.auth.mail_sender_local(user_address, content, subject).await.is_err(){
+            return (Status::InternalServerError, "Failed to send authentication email");
+        }
+    }
+    else {
+        if app.auth.mail_sender(user_address, content, subject).await.is_err(){
+            return (Status::InternalServerError, "Failed to send authentication email");
+        }
     }
 
     (Status::Created, "Authentication email sent successfully")
@@ -327,8 +345,15 @@ pub async fn circle_main_auth(token: String, id: Option<String>, app:&State<App>
     let subject = "団体登録システム メール認証";
 
     // メールの送信
-    if app.auth.mail_sender(user_address, content, subject).await.is_err() {
-        return (Status::InternalServerError, "failed to send authentication email");
+    if app.option.local_mail_enable {
+        if app.auth.mail_sender_local(user_address, content, subject).await.is_err(){
+            return (Status::InternalServerError, "Failed to send authentication email");
+        }
+    }
+    else {
+        if app.auth.mail_sender(user_address, content, subject).await.is_err(){
+            return (Status::InternalServerError, "Failed to send authentication email");
+        }
     }
 
     // phaseの更新
@@ -409,46 +434,6 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
         return (Status::InternalServerError, "failed to insert Representative")
     }
 
-    // googleapiの処理
-
-    // token類を環境変数から取得
-    dotenv().ok();
-    let refresh_token = env::var("REFRESH_TOKEN").expect("refresh token must be set.");
-    let client_id = env::var("CLIENT_ID").expect("client id must be set.");
-    let client_secret = env::var("CLIENT_SECRET").expect("client secret must be set.");
-    let deploy_id = env::var("DEPLOY_ID").expect("deploy id must be set.");
-
-    // refreshtokenからaccesstokenを取得
-    let api_tokens = refresh_access_token(refresh_token.as_str(), client_id.as_str(), client_secret.as_str()).await.unwrap();
-
-    // googleapi用のデータを格納
-    let input = MakeContact {
-        function: String::from("onPostRequest"),
-        parameters: MakeContactParameters {
-            data: OrganizationInfo{
-                organization: organization.clone(),
-                main_user: main_user.clone(),
-                co_user: co_user.clone(),
-                b_doc: auth_info.b_doc.clone(),
-                c_doc: auth_info.c_doc.clone(),
-                d_doc: auth_info.d_doc.clone(),
-            },
-        }
-    };
-    let input_json = serde_json::to_string(&input).unwrap();
-
-    // リクエスト用クライアント
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(60))
-        .build().unwrap();
-
-    // リクエストを送信
-    let result = client.post(format!("https://script.googleapis.com/v1/scripts/{}:run", deploy_id.as_str()))
-        .header(reqwest::header::AUTHORIZATION, format!("Bearer {}", api_tokens.access_token))
-        .body(input_json)
-        .send()
-        .await.unwrap();
-
     match id.clone() {
         // 団体情報更新
         Some(id) => {
@@ -500,26 +485,27 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
         }
     }
 
-    match result.status() {
-        StatusCode::OK => {
-            let user_address = main_user.email.to_string();
-            let content = match id {
-                Some(_) => format!("{}{} 様\n\nメール認証が完了し、団体情報が更新されました。\n", main_user.family_name, main_user.given_name),
-                None => format!("{}{} 様\n\nメール認証が完了し、団体情報が登録されました。\n", main_user.family_name, main_user.given_name),
-            };
-            let subject = "団体登録システム メール認証完了のお知らせ";
+    let user_address = main_user.email.to_string();
+    let content = match id {
+        Some(_) => format!("{}{} 様\n\nメール認証が完了し、団体情報が更新されました。\n", main_user.family_name, main_user.given_name),
+        None => format!("{}{} 様\n\nメール認証が完了し、団体情報が登録されました。\n", main_user.family_name, main_user.given_name),
+    };
+    let subject = "団体登録システム メール認証完了のお知らせ";
 
-            // 登録完了メールの送信
-            if app.auth.mail_sender(user_address, content, subject).await.is_err() {
-                return (Status::InternalServerError, "failed to send authentication email");
-            }
-
-            (Status::Created, "Organization Infomation updated successfully")
-        },
-        _ => {
-            (Status::InternalServerError, "googleapi request failed")
+    // 登録完了メールの送信
+    if app.option.local_mail_enable {
+        if app.auth.mail_sender_local(user_address, content, subject).await.is_err(){
+            return (Status::InternalServerError, "Failed to send authentication email");
         }
     }
+    else {
+        if app.auth.mail_sender(user_address, content, subject).await.is_err(){
+            return (Status::InternalServerError, "Failed to send authentication email");
+        }
+    }
+
+    (Status::Created, "Organization Infomation updated successfully")
+    
 }
 
 // 団体情報取得API

@@ -77,8 +77,15 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
     let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n\n{}/locker/user-register?method=1&token={}", main_user.family_name, main_user.given_name, app_url, token);
     let subject = "ロッカーシステム メール認証";
 
-    if app.auth.mail_sender(user_address, content, subject).await.is_err(){
-        return Status::InternalServerError;
+    if app.option.local_mail_enable {
+        if app.auth.mail_sender_local(user_address, content, subject).await.is_err(){
+            return Status::InternalServerError;
+        }
+    }
+    else {
+        if app.auth.mail_sender(user_address, content, subject).await.is_err(){
+            return Status::InternalServerError;
+        }
     }
 
     Status::Created
@@ -142,8 +149,15 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
     let subject = "ロッカーシステム メール認証";
 
     // メールの送信
-    if app.auth.mail_sender(user_address, content, subject).await.is_err(){
-        return Status::InternalServerError;
+    if app.option.local_mail_enable {
+        if app.auth.mail_sender_local(user_address, content, subject).await.is_err(){
+            return Status::InternalServerError;
+        }
+    }
+    else {
+        if app.auth.mail_sender(user_address, content, subject).await.is_err(){
+            return Status::InternalServerError;
+        }
     }
 
     // phaseの更新
@@ -241,8 +255,15 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     let subject = "ロッカーシステム 認証完了通知";
 
     // メールの送信
-    if app.auth.mail_sender(user_address, content, subject).await.is_err(){
-        return Status::InternalServerError;
+    if app.option.local_mail_enable {
+        if app.auth.mail_sender_local(user_address, content, subject).await.is_err(){
+            return Status::InternalServerError;
+        }
+    }
+    else {
+        if app.auth.mail_sender(user_address, content, subject).await.is_err(){
+            return Status::InternalServerError;
+        }
     }
 
     // レコードを削除
@@ -428,8 +449,15 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
     let subject = "ロッカーシステム ロッカー登録通知";
 
     // メールの送信
-    if app.auth.mail_sender(user_address, content, subject).await.is_err(){
-        return (Status::InternalServerError, "failed to send mail");
+    if app.option.local_mail_enable {
+        if app.auth.mail_sender_local(user_address, content, subject).await.is_err(){
+            return (Status::InternalServerError, "Failed to send authentication email");
+        }
+    }
+    else {
+        if app.auth.mail_sender(user_address, content, subject).await.is_err(){
+            return (Status::InternalServerError, "Failed to send authentication email");
+        }
     }
 
     println!(r"( 'ω')/ウオオオオオアアアーーーーッ！！！");
