@@ -34,12 +34,14 @@ pub type Pool<T> = diesel::r2d2::Pool<ConnectionManager<T>>;
 
 pub struct AppOption{
     pub same_student_enable: bool,
+    pub local_mail_enable: bool,
 }
 
 impl AppOption {
     pub fn new() -> Self {
         AppOption {
             same_student_enable: false,
+            local_mail_enable: false,
         }
     }
 }

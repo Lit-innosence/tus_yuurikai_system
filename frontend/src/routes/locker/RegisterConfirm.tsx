@@ -16,7 +16,7 @@ const LockerRegisterConfirm: React.FC = () => {
 
     const [isChecked, setIsChecked] = useState(false); // チェックボックスの状態を管理
     const [loading, setLoading] = useState(false); // ローディング状態を管理
-    const [pairInfo, setPairInfo] = useState(initialPairInfo); // ペア情報を state で管理
+    const [pairInfo] = useState(initialPairInfo); // ペア情報を state で管理
     const [lastClicked, setLastClicked] = useState<number | null>(null); // 最後のクリック時刻を記録する state
 
     // ページ読み込み時に必要なデータが存在しなければ /locker/nopage にリダイレクト

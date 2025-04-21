@@ -6,7 +6,7 @@ import CustomFooter from '../../components/CustomFooter';
 import MovieButton from '../../components/MovieButton';
 
 const { Content } = Layout;
-const { Paragraph, Text } = Typography;
+const { Paragraph } = Typography;
 
 const ImportantConfirm: React.FC = () => {
     const navigate = useNavigate();
