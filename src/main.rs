@@ -39,7 +39,11 @@ async fn main() -> Result<(), rocket::Error> {
         match arg.as_str() {
             "same-student" => {
                 app_option.same_student_enable = true;
-                println!("option changed.");
+                println!("option same student changed.");
+            },
+            "local-mail" => {
+                app_option.local_mail_enable = true;
+                println!("option local mail changed.");
             },
             _ => {
                 panic!("Error: Invalid option.")
