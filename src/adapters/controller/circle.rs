@@ -220,7 +220,7 @@ pub async fn register_token_generator(request: Json<CircleTokenGenRequest>, app:
     }
 
     // 団体名ふりがな
-    let re = Regex::new(r"^[\p{Hira}]+$").unwrap();
+    let re = Regex::new(r"^[\p{Hira}ー]+$").unwrap();
     if !(re.is_match(data.organization.organization_ruby.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
