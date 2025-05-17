@@ -72,10 +72,11 @@ pub async fn token_generator(request: Json<LockerTokenGenRequest>, app: &State<A
     let main_user = &data.main_user;
 
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
+    let signature = env::var("EMAIL_SIGNATURE").expect("EMAIL_SIGNATURE must be set.");
 
     let user_address = format!("{}@ed.tus.ac.jp", main_user.student_id);
-    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n\n{}/locker/user-register?method=1&token={}", main_user.family_name, main_user.given_name, app_url, token);
-    let subject = "ロッカーシステム メール認証";
+    let content = format!("{}{} 様\n\n申請を受け付けました。\n以下のURLにアクセスして申請者のメール認証を完了してください。\n\n{}/locker/user-register?method=1&token={}\n\n{}", main_user.family_name, main_user.given_name, app_url, token, signature);
+    let subject = "【ロッカー登録システム】 メール認証を行ってください";
 
     if app.option.local_mail_enable {
         if app.auth.mail_sender_local(user_address, content, subject).await.is_err(){
@@ -143,10 +144,11 @@ pub async fn main_auth(token: String, app: &State<App>) -> Status {
     // メール内容の作成
     dotenv().ok();
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
+    let signature = env::var("EMAIL_SIGNATURE").expect("EMAIL_SIGNATURE must be set.");
 
     let user_address = format!("{}@ed.tus.ac.jp", co_user.student_id);
-    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n\n{}/locker/user-register?method=0&token={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token);
-    let subject = "ロッカーシステム メール認証";
+    let content = format!("{}{} 様\n\n申請者のメール認証が完了しました。\n以下のURLにアクセスして共同利用者のメール認証を完了してください。\n\n{}/locker/user-register?method=0&token={}\n\n{}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token, signature);
+    let subject = "【ロッカーシステム】 メール認証を行ってください";
 
     // メールの送信
     if app.option.local_mail_enable {
@@ -249,10 +251,19 @@ pub async fn co_auth(token: String, app: &State<App>) -> Status {
     // メールの作成
     dotenv().ok();
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
+    let signature = env::var("EMAIL_SIGNATURE").expect("EMAIL_SIGNATURE must be set.");
 
     let user_address = format!("{}@ed.tus.ac.jp", main_user.student_id);
-    let content = format!("認証が完了しました。\n以下のリンクから使用するロッカー番号を選択してください。\n\n{}/locker/user-register/?method=2&token={}", app_url, token);
-    let subject = "ロッカーシステム 認証完了通知";
+    let content = format!("{}{} 様\n\nメール認証が完了しました。\n\n\
+                                    以下のURLにアクセスして使用するロッカー番号を選択してください。\n\
+                                    {}/locker/user-register/?method=2&token={}\n\n\
+                                    認証された情報は以下の通りです。\n【認証情報】\n\
+                                    申請者\n　学籍番号：{}\n　名前：{} {}\n\
+                                    共同利用者\n　学籍番号：{}\n　名前：{} {}\n\n{}",
+                                    main_user.family_name.clone(), main_user.given_name.clone(), app_url, token,
+                                    main_user.student_id, main_user.family_name, main_user.given_name,
+                                    co_user.student_id, co_user.family_name, co_user.given_name, signature);
+    let subject = "【ロッカー登録システム】 メール認証が完了しました";
 
     // メールの送信
     if app.option.local_mail_enable {
@@ -429,6 +440,9 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
         return (Status::InternalServerError, "failed to delete auth table");
     }
 
+    dotenv().ok();
+    let signature = env::var("EMAIL_SIGNATURE").expect("EMAIL_SIGNATURE must be set");
+
     let user_address = format!("{}@ed.tus.ac.jp", user_pair.student_id1.clone());
     let content = format!(
         "ロッカーの登録が完了しました。\n\n\
@@ -443,10 +457,10 @@ pub async fn locker_register(request: Json<LockerResisterRequest>, app: &State<A
         ・ロッカー使用時には必ず鍵を使用してください。\n\
         ・鍵の購入はこちら： https://www.univcoop.jp/rikadai/time/index.html#s02 \n\n\
         ご不明点がございましたら、お問い合わせください。\n\n\
-        よろしくお願いいたします。\n",
-        assignment.locker_id
+        よろしくお願いいたします。\n\n{}",
+        assignment.locker_id, signature
     );
-    let subject = "ロッカーシステム ロッカー登録通知";
+    let subject = "【ロッカー登録システム】 ロッカー登録完了のお知らせ";
 
     // メールの送信
     if app.option.local_mail_enable {

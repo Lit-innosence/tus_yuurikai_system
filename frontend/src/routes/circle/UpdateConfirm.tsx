@@ -10,7 +10,7 @@ const { Content } = Layout;
 const CircleUpdateConfirm: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const formData = location.state?.formData;  
+    const formData = location.state?.formData;
 
     const [isChecked, setIsChecked] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -41,11 +41,11 @@ const CircleUpdateConfirm: React.FC = () => {
         try {
             const response = await axios.post('/api/circle/update/entry', formData);
             if (response.status === 200) {
-                message.success('団体情報が正常に更新されました');
+                message.success('フォームの提出に成功しました');
                 navigate('/circle/update/complete');
             }
         } catch (error) {
-            message.error('団体情報の更新に失敗しました');
+            message.error('フォームの提出に失敗しました');
         } finally {
             setLoading(false);
         }
@@ -64,14 +64,14 @@ const CircleUpdateConfirm: React.FC = () => {
                     <h3>団体情報</h3>
                     <p><strong>団体ID:</strong> {formData.organizationId}</p>
                     <p><strong>団体名:</strong> {formData.organizationName}</p>
-                    
+
                     <hr style={{ width: '100%', border: 'none', borderTop: '1px solid #e8e8e8', margin: '20px 0' }} />
 
                     <h3>旧代表者情報</h3>
                     <p><strong>代表者名:</strong> {formData.familyName} {formData.givenName}</p>
                     <p><strong>代表者の学籍番号:</strong> {formData.studentId}</p>
                     <p><strong>代表者のメールアドレス:</strong> {formData.email}</p>
-                    
+
                     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
                         <Checkbox onChange={handleCheckboxChange}>
                             入力内容を確認しました。
@@ -79,10 +79,10 @@ const CircleUpdateConfirm: React.FC = () => {
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px' }}>
-                        <Button 
-                            type="primary" 
-                            onClick={handleConfirm} 
-                            disabled={!isChecked || loading} 
+                        <Button
+                            type="primary"
+                            onClick={handleConfirm}
+                            disabled={!isChecked || loading}
                             loading={loading}
                         >
                             確認して更新
