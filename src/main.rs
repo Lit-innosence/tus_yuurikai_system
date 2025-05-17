@@ -122,10 +122,10 @@ async fn main() -> Result<(), rocket::Error> {
             ]
         )
         .mount("/", FileServer::from(relative!("frontend/build")))
-        .mount(
-            "/",
-            SwaggerUi::new("/swagger-ui/<_..>").url("/api-docs/openapi.json", ApiDoc::openapi()),
-        )
+        // .mount(
+        //     "/",
+        //     SwaggerUi::new("/swagger-ui/<_..>").url("/api-docs/openapi.json", ApiDoc::openapi()),
+        // )
         .mount("/", routes![catch_all])
         .ignite().await?
         .launch().await?;
