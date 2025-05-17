@@ -56,9 +56,11 @@ pub async fn update_entry(request: Json<CircleUpdateRequest>, app: &State<App>) 
     // 団体が存在しているかの確認
 
     // メール内容の作成
+    let signature = env::var("EMAIL_SIGNATURE").expect("EMAIL_SIGNATURE must be set.");
+
     let user_address = request.email.to_string();
-    let content = format!("{} 代表 {}{} 様\n\n以下のURLから団体情報更新用GoogleFormにアクセスして更新内容を入力してください。\n\n{}", request.organization_name, request.family_name, request.given_name, app_url);
-    let subject = "団体情報更新 更新用URLのお知らせ";
+    let content = format!("{} 代表 {}{} 様\n\n以下のURLから団体情報更新用GoogleFormにアクセスして更新内容を入力してください。\n\n{}\n\n{}", request.organization_name, request.family_name, request.given_name, app_url, signature);
+    let subject = "【団体登録システム】団体情報更新 更新用URLのお知らせ";
 
     // 認証メールを送信
     if app.option.local_mail_enable {
@@ -162,10 +164,11 @@ pub async fn update_token_generator(request: Json<CircleUpdateTokenGenRequest>, 
 
     dotenv().ok();
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
+    let signature = env::var("EMAIL_SIGNATURE").expect("EMAIL_SIGNATURE must be set.");
 
     let user_address = main_user.email.to_string();
-    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/circle/update/auth?method=1&token={}&id={}", main_user.family_name, main_user.given_name, app_url, token, data.organization_id);
-    let subject = "団体登録システム メール認証";
+    let content = format!("{}{} 様\n\n申請を受け付けました。\n以下のURLにアクセスして代表者の認証を完了してください。\n{}/circle/update/auth?method=1&token={}&id={}\n\n{}", main_user.family_name, main_user.given_name, app_url, token, data.organization_id, signature);
+    let subject = "【団体登録システム】 認証手続きを行ってください。";
 
     // メールの送信
     if app.option.local_mail_enable {
@@ -254,10 +257,11 @@ pub async fn register_token_generator(request: Json<CircleTokenGenRequest>, app:
 
     dotenv().ok();
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
+    let signature = env::var("EMAIL_SIGNATURE").expect("EMAIL_SIGNATURE must be set.");
 
     let user_address = main_user.email.to_string();
-    let content = format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/circle/register/auth?method=1&token={}", main_user.family_name, main_user.given_name, app_url, token);
-    let subject = "団体登録システム メール認証";
+    let content = format!("{}{} 様\n\n申請を受け付けました。\n以下のURLにアクセスして代表者の認証を完了してください。\n{}/circle/register/auth?method=1&token={}\n\n{}", main_user.family_name, main_user.given_name, app_url, token, signature);
+    let subject = "【団体登録システム】 認証手続きを行ってください";
 
     // メールの送信
     if app.option.local_mail_enable {
@@ -336,13 +340,14 @@ pub async fn circle_main_auth(token: String, id: Option<String>, app:&State<App>
 
     dotenv().ok();
     let app_url = env::var("APP_URL").expect("APP_URL must be set.");
+    let signature = env::var("EMAIL_SIGNATURE").expect("EMAIL_SIGNATURE must be set.");
 
     let user_address = co_user.email.to_string();
     let content = match id {
-        Some(id) => format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/circle/update/auth?method=0&token={}&id={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token, id),
-        None => format!("{}{} 様\n\n以下のURLにアクセスして認証を完了してください。\n{}/circle/register/auth?method=0&token={}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token),
+        Some(id) => format!("{}{} 様\n\n代表者の認証が完了しました。\n以下のURLにアクセスして認証を完了してください。\n{}/circle/update/auth?method=0&token={}&id={}\n\n{}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token, id, signature),
+        None => format!("{}{} 様\n\n代表者の認証が完了しました。\n以下のURLにアクセスして認証を完了してください。\n{}/circle/register/auth?method=0&token={}\n\n{}", co_user.family_name, co_user.given_name, app_url, auth.co_auth_token, signature),
     };
-    let subject = "団体登録システム メール認証";
+    let subject = "【団体登録システム】 認証手続きを行ってください";
 
     // メールの送信
     if app.option.local_mail_enable {
@@ -463,7 +468,7 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
             let organization_info = &OrganizationInfo{
                 organization: organization.clone(),
                 main_user: main_user.clone(),
-                co_user,
+                co_user: co_user.clone(),
                 b_doc: auth_info.b_doc,
                 c_doc: auth_info.c_doc,
                 d_doc: auth_info.d_doc,
@@ -485,12 +490,31 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
         }
     }
 
+    dotenv().ok();
+    let signature = env::var("EMAIL_SIGNATURE").expect("EMAIL_SIGNATURE must be set.");
+
     let user_address = main_user.email.to_string();
     let content = match id {
-        Some(_) => format!("{}{} 様\n\nメール認証が完了し、団体情報が更新されました。\n", main_user.family_name, main_user.given_name),
-        None => format!("{}{} 様\n\nメール認証が完了し、団体情報が登録されました。\n", main_user.family_name, main_user.given_name),
+        Some(_) => format!("{}{} 様\n\nメール認証が完了し、団体情報が更新されました。\n\
+                            【更新情報】\n団体メールアドレス：{}\n\
+                            代表者\n　氏名：{} {}\n　学籍番号：{}\n　メールアドレス：{}\n　電話番号：{}\n\
+                            副代表者\n　氏名：{} {}\n　学籍番号：{}\n　メールアドレス：{}\n　電話番号：{}\n\n{}
+                            ", main_user.family_name.clone(), main_user.given_name.clone(),
+                            organization.organization_email,
+                            main_user.family_name, main_user.given_name, main_user.student_id, main_user.email, main_user.phone_number,
+                            co_user.family_name, co_user.given_name, co_user.student_id, co_user.email, co_user.phone_number, signature),
+        None => format!("{}{} 様\n\nメール認証が完了し、団体情報が登録されました。\n\
+                            【登録情報】\n団体名：{}\n\
+                            団体名ふりがな：{}\n\
+                            団体メールアドレス：{}\n\
+                            代表者\n　氏名：{} {}\n　学籍番号：{}\n　メールアドレス：{}\n　電話番号：{}\n\
+                            副代表者\n　氏名：{} {}\n　学籍番号：{}\n　メールアドレス：{}\n　電話番号：{}\n\n{}
+                            ", main_user.family_name.clone(), main_user.given_name.clone(),
+                            organization.organization_name, organization.organization_ruby, organization.organization_email,
+                            main_user.family_name, main_user.given_name, main_user.student_id, main_user.email, main_user.phone_number,
+                            co_user.family_name, co_user.given_name, co_user.student_id, co_user.email, co_user.phone_number, signature),
     };
-    let subject = "団体登録システム メール認証完了のお知らせ";
+    let subject = "【団体登録システム】 メール認証完了のお知らせ";
 
     // 登録完了メールの送信
     if app.option.local_mail_enable {
@@ -505,7 +529,7 @@ pub async fn circle_co_auth(token: String, id: Option<String>, app:&State<App>) 
     }
 
     (Status::Created, "Organization Infomation updated successfully")
-    
+
 }
 
 // 団体情報取得API
