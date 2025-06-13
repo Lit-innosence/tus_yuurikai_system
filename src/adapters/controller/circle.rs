@@ -33,7 +33,7 @@ pub async fn update_entry(request: Json<CircleUpdateRequest>, app: &State<App>) 
     }
 
     // 旧代表者学籍番号
-    let re = Regex::new(r"^[1-46-9][1-9]\d{5}$").unwrap();
+    let re = Regex::new(r"^[1-46-9][1-9AB]\d{5}$").unwrap();
     if !(re.is_match(request.student_id.as_str())) {
         return (Status::BadRequest, "request data is not valid");
     }
